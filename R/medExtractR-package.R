@@ -10,7 +10,7 @@
 #' Leena Choi \email{leena.choi@@Vanderbilt.Edu},\cr
 #' Cole Beck \email{cole.beck@@vumc.org}
 #'
-#' Maintainer: Cole Beck \email{cole.beck@@vumc.org}
+#' Maintainer: Hannah Weeks \email{hannah.l.weeks@@Vanderbilt.Edu}
 #'
 #' @importFrom magrittr %>% %<>%
 #' @importFrom stringr str_extract str_extract_all str_replace_all

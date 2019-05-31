@@ -1,8 +1,6 @@
 Package: medExtractR
 Title: What the Package Does (One Line, Title Case)
 Version: 0.1
-Author: Hannah Weeks [aut, cre], Cole Beck [aut], Leena Choi [aut]
-Maintainer: Cole Beck <cole.beck@vumc.org>
 Authors@R:
     c(person("Hannah", "Weeks", role = c("aut", "cre"),
              email = "hannah.l.weeks@Vanderbilt.Edu"),
