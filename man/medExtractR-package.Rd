@@ -6,7 +6,7 @@
 \alias{_PACKAGE}
 \title{Medication Extraction With R}
 \description{
-It provides a function \code{\link{medExtractR}} for extracting
+Provides a function \code{\link{medExtractR}} for extracting
 dose attributes for medications within a given EHR note.
 }
 \examples{
@@ -17,9 +17,9 @@ follow up in three months
 LTG 10 mg tablet - 2 tab daily"
 note3 <- "Adderall - 30 mg tablet 1 tablet by mouth daily"
 data(rxnorm_druglist)
-medExtractR(note1, c("lamotrigine", "ltg"), rxnorm_druglist, 130, 1, "mg")
-medExtractR(note2, c("lamotrigine", "ltg"), rxnorm_druglist, 130, 1, "mg")
-medExtractR(note3, c("lamotrigine", "ltg"), rxnorm_druglist, 130, 1, "mg")
+medExtractR(note1, c("lamotrigine", "ltg"), rxnorm_druglist, 130, "mg", 1)
+medExtractR(note2, c("lamotrigine", "ltg"), rxnorm_druglist, 130, "mg", 1)
+medExtractR(note3, c("lamotrigine", "ltg"), rxnorm_druglist, 130, "mg", 1)
 }
 \author{
 Hannah Weeks \email{hannah.l.weeks@Vanderbilt.Edu},\cr

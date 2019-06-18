@@ -13,8 +13,9 @@
 freq_vals
 }
 \description{
-A dictionary mapping frequency expressions to numeric values. The form
-is given as a regular expression.
+A dictionary mapping frequency expressions to numeric values representing 
+the corresponding number of doses per day. The form of each frequency is
+given as a regular expression.
 }
 \examples{
 data(freq_vals)

@@ -2,7 +2,7 @@
 % Please edit documentation in R/extract_entities.R
 \name{extract_entities}
 \alias{extract_entities}
-\title{Extract Entities From Phrase}
+\title{Extract Medication Entities From Phrase}
 \usage{
 extract_entities(phrase, p_start, p_stop, unit, freq_fun = NULL,
   intaketime_fun = NULL, strength_sep = NULL, ...)
@@ -14,7 +14,7 @@ extract_entities(phrase, p_start, p_stop, unit, freq_fun = NULL,
 
 \item{p_stop}{End position of phrase within original text.}
 
-\item{unit}{Unit of measurement for medication strength.}
+\item{unit}{Unit of measurement for medication strength, e.g. \dQuote{mg}.}
 
 \item{freq_fun}{Function used to extract frequency.}
 
@@ -26,8 +26,43 @@ extract_entities(phrase, p_start, p_stop, unit, freq_fun = NULL,
 frequency and intake time.}
 }
 \value{
-data.frame with entity information
+data.frame with entities information
 }
 \description{
-This function searches a phrase for expressions of interest.
+This function searches a phrase for medication dosing entities of interest.
+}
+\details{
+Various medication dosing entities are extracted within this function
+including the following:
+
+\emph{strength}: The strength of an individual unit (i.e. tablet, capsule) of
+  the drug.\cr
+\emph{dose amount}: The number of tablets, capsules, etc taken with each dose.\cr
+\emph{dose}: The total strength given intake. This quantity would be
+  equivalent to strength x dose amount, and appears similar to strength when
+  dose amount is absent.\cr
+\emph{frequency}: The number of times per day a dose is taken, e.g.
+  \dQuote{once daily} or \dQuote{2x/day}.\cr
+\emph{intaketime}: The time period of the day during which a dose is taken,
+  e.g. \dQuote{morning}, \dQuote{lunch}, \dQuote{in the pm}.\cr
+
+Strength, dose amount, and dose are primarily numeric quantities, and are
+identified using a combination of regular expressions and rule-based
+approaches. Frequency and intake time, on the other hand, use dictionaries
+for identification.
+
+By default, when freq_fun and/or intaketime_fun are \code{NULL}, the 
+\code{\link{extract_generic}} function will be used for these entities.
+
+The \code{stength_sep} argument is \code{NULL} by default, but can be used to
+identify shorthand for morning and evening doses. For example, consider the
+phrase \sQuote{Lamotrigine 300-200} (meaning 300 mg in the morning and 200 mg
+in the evening). The argument \code{strength_sep = '-'} can identify both
+\emph{300} and \emph{200} as \emph{dose} in this phrase.
+}
+\examples{
+note <- "Lamotrigine 25 mg tablet - 3 tablets oral twice daily"
+extract_entities(note, 1, 53, "mg")
+extract_entities(note, 1, 53, "mg",
+                   freq_dict = data.frame(c("daily", "twice daily")))
 }

@@ -1,21 +1,56 @@
-#' Extract Entities From Phrase
+#' Extract Medication Entities From Phrase
 #'
-#' This function searches a phrase for expressions of interest.
+#' This function searches a phrase for medication dosing entities of interest.
 #'
 #' @param phrase Text to search.
 #' @param p_start Start position of phrase within original text.
 #' @param p_stop End position of phrase within original text.
-#' @param unit Unit of measurement for medication strength.
+#' @param unit Unit of measurement for medication strength, e.g. \dQuote{mg}.
 #' @param freq_fun Function used to extract frequency.
 #' @param intaketime_fun Function used to extract intaketime.
 #' @param strength_sep Delimiter for contiguous medication strengths.
 #' @param \dots Parameter settings that will be used in extracting
 #' frequency and intake time.
+#' 
+#' @details Various medication dosing entities are extracted within this function
+#' including the following:
+#' 
+#' \emph{strength}: The strength of an individual unit (i.e. tablet, capsule) of
+#'   the drug.\cr
+#' \emph{dose amount}: The number of tablets, capsules, etc taken with each dose.\cr
+#' \emph{dose}: The total strength given intake. This quantity would be
+#'   equivalent to strength x dose amount, and appears similar to strength when
+#'   dose amount is absent.\cr
+#' \emph{frequency}: The number of times per day a dose is taken, e.g.
+#'   \dQuote{once daily} or \dQuote{2x/day}.\cr
+#' \emph{intaketime}: The time period of the day during which a dose is taken,
+#'   e.g. \dQuote{morning}, \dQuote{lunch}, \dQuote{in the pm}.\cr
+#' 
+#' Strength, dose amount, and dose are primarily numeric quantities, and are
+#' identified using a combination of regular expressions and rule-based
+#' approaches. Frequency and intake time, on the other hand, use dictionaries
+#' for identification.
+#' 
+#' By default, when freq_fun and/or intaketime_fun are \code{NULL}, the 
+#' \code{\link{extract_generic}} function will be used for these entities.
+#' 
+#' The \code{stength_sep} argument is \code{NULL} by default, but can be used to
+#' identify shorthand for morning and evening doses. For example, consider the
+#' phrase \sQuote{Lamotrigine 300-200} (meaning 300 mg in the morning and 200 mg
+#' in the evening). The argument \code{strength_sep = '-'} can identify both
+#' \emph{300} and \emph{200} as \emph{dose} in this phrase.
 #'
-#' @return data.frame with entity information
+#' @return data.frame with entities information
 #' @export
+#'
+#' @examples
+#' note <- "Lamotrigine 25 mg tablet - 3 tablets oral twice daily"
+#' extract_entities(note, 1, 53, "mg")
+#' extract_entities(note, 1, 53, "mg",
+#'                    freq_dict = data.frame(c("daily", "twice daily")))
 
-extract_entities <- function(phrase, p_start, p_stop, unit, freq_fun = NULL, intaketime_fun = NULL, strength_sep = NULL, ...){
+extract_entities <- function(phrase, p_start, p_stop, unit, freq_fun = NULL,
+                               intaketime_fun = NULL, strength_sep = NULL, ...){
   p_start <- p_start-1
 
   # A bit of pre-processing: ##-##-(## or ####) often represents a date, but can get picked up as DoseSC
@@ -30,7 +65,6 @@ extract_entities <- function(phrase, p_start, p_stop, unit, freq_fun = NULL, int
     }
   }
 
-  # Replace am/pm time expressions?
   time_present <- gregexpr("\\d[^a-zA-Z]+\\s?(?=((am)|(pm))\\b)",
                            phrase, perl=T, ignore.case=T)[[1]]
   if(any(time_present != -1)){
@@ -78,7 +112,6 @@ extract_entities <- function(phrase, p_start, p_stop, unit, freq_fun = NULL, int
   date_yrs <- c(paste0(197, 0:9), paste0(198, 0:9), paste0(199, 0:9),
                 paste0(200, 0:9), paste0(201,0:8))
 
-  # should I also add in something to remove time expressions?
   is_year <- which(all_numbers %in% date_yrs)
   if(length(is_year)==0){is_year <- 0}
   if(any(is_year>1)){
@@ -94,20 +127,21 @@ extract_entities <- function(phrase, p_start, p_stop, unit, freq_fun = NULL, int
     all_numbers <- all_numbers[keep_nums]
   }
 
-  if(length(all_numbers) == 0){
+  if(length(all_numbers) == 0) {
     strength <- NA;doseamt <- NA;dosesc <- NA
     remaining_numbers <- all_numbers
     num_pos <- num_positions
-  }else{ # only look for entities if they exist
-
+  } else { # only look for entities if they exist
 
     ### STRENGTH ####
 
+    unit_len <- nchar(unit)
+    phrase_lc <- tolower(phrase)
     # check if any numbers are followed by unit
     strength <- mapply(function(an, np){
 
       # Need narrow window in case same number appears both with and without unit
-      r <- regexpr(paste0(an, "(\\s+)?", unit), tolower(substr(phrase, np, np+nchar(an)+nchar(unit)+3)))
+      r <- regexpr(paste0(an, "(\\s+)?", unit), substr(phrase_lc, np, np + nchar(an) + unit_len + 3))
 
       if(r == -1){c(NA)}else{
         stp <- np + attributes(r)$match.length
@@ -128,7 +162,9 @@ extract_entities <- function(phrase, p_start, p_stop, unit, freq_fun = NULL, int
 
     ### DOSEAMT ###
 
-    if(length(remaining_numbers) == 0){doseamt <- NA}else{
+    if(length(remaining_numbers) == 0) {
+      doseamt <- NA
+    } else {
       doseamt <- mapply(function(rn, np){
         # substr is used to define narrow search windows
         # this helps prevent overlap between adjacent numeric values
@@ -185,7 +221,6 @@ extract_entities <- function(phrase, p_start, p_stop, unit, freq_fun = NULL, int
         if(da == -1){da <- regexpr(paste0("(?<=[(])", tne, "(?=[)])"),
                                    substr(phrase, max(1, tnp-2), tnp+nchar(tne)+1), perl=T)}
 
-
         if(da == -1){da <- NA}else{
           stp <- tnp + attributes(da)$match.length
           da <- paste(substr(phrase, tnp, stp-1), paste(tnp + p_start, stp + p_start, sep = ":"), sep = ";")
@@ -201,11 +236,11 @@ extract_entities <- function(phrase, p_start, p_stop, unit, freq_fun = NULL, int
       }
     }
 
-
     ## DOSESC ##
 
-    if(!is.null(strength_sep)){
-      if(length(remaining_numbers) > 0){
+    dosesc <- NA
+    if(!is.null(strength_sep)) {
+      if(length(remaining_numbers) > 0) {
         # Cases where times of doses are denoted as ##-##
 
         # NOT separated with : because it could be a time
@@ -218,7 +253,6 @@ extract_entities <- function(phrase, p_start, p_stop, unit, freq_fun = NULL, int
         }) %in% strength_sep
         dsc_index <- c(maybe_dsc[c(is_dsc)], maybe_dsc[c(is_dsc)]+1)
 
-
         is_time <- which(sapply(remaining_numbers, function(rn){
           regexpr(paste(rn, "\\s?(weeks|hours|hrs)"), phrase)
         }) != -1)
@@ -227,9 +261,8 @@ extract_entities <- function(phrase, p_start, p_stop, unit, freq_fun = NULL, int
           dsc_index <- dsc_index[-c(is_time-1, is_time)]
         }
 
-
         # Add to dosesc results
-        if(length(dsc_index) > 0){
+        if(length(dsc_index) > 0) {
           dsc_split <- remaining_numbers[dsc_index]
           dsc_split_pos <- num_pos[dsc_index]
 
@@ -242,44 +275,12 @@ extract_entities <- function(phrase, p_start, p_stop, unit, freq_fun = NULL, int
 
           #if(all(is.na(dosesc))){dosesc <- dsc}else{dosesc <- c(dosesc, dsc)}
           dosesc <- dsc
-        }else{dosesc <- NA}
-      }else{dosesc <- NA}
-    }else{dosesc <- NA}
+        }
+      }
+    }
 
   }
   # non-numeric entities
-
-#   df <- do.call(rbind.data.frame, apply(freq_dict, MARGIN=1, function(row){
-#     r1 <- row[1];r2 <- row[2]
-#     fq <- gregexpr(paste0(r1, "\\b"), phrase, ignore.case=T, perl=T)[[1]]
-#
-#     fq_len <- attributes(fq)$match.length
-#     stp <- fq+fq_len
-#
-#     data.frame("expr" = sapply(1:length(fq), function(i){substr(phrase, fq[i], stp[i]-1)}),
-#                "start_stop" = paste(fq + p_start, stp + p_start, sep=":"),
-#                "pos" = fq,
-#                "expr_len" = fq_len,
-#                "freq" = as.numeric(r2))
-#   }))
-#   df$expr <- as.character(df$expr)
-#   df$start_stop <- as.character(df$start_stop)
-#
-#   df <- subset(df, pos != -1)
-#
-#   # No freq matches
-#   if(nrow(df) == 0){freq <- NA}
-#
-#   # If some expressions overlap, it keeps the longest one
-#   # Happens when one expression is a subset of another and starts at the same place
-#   freq_df <- df %>% dplyr::group_by(pos) %>% dplyr::filter(expr_len == max(expr_len)) %>% dplyr::ungroup() %>%
-#     dplyr::arrange(pos) %>% dplyr::mutate(end_prev = dplyr::lag(pos) + dplyr::lag(expr_len)) %>%
-#     dplyr::filter(is.na(end_prev) | pos > end_prev) %>% dplyr::select(-end_prev)
-#
-#   freq <- paste(freq_df$expr, freq_df$start_stop, sep = ";")
-#
-#   # If no results found, make NA
-#   freq <- if(length(freq)==0){NA}else{freq}
 
   ### FREQ ####
 
@@ -318,8 +319,9 @@ extract_entities <- function(phrase, p_start, p_stop, unit, freq_fun = NULL, int
   ## BACK TO DOSESC ##
 
   # This is for cases where we have drug_name # freq, and # is dosesc
-  if(!all(is.na(freq)) & length(remaining_numbers) > 0){
-    freq_sp <- dplyr::pull(.data$freq_df %>% dplyr::mutate(sp = as.numeric(sub(":.+", "", .data$start_stop))), .data$sp)
+  if(!all(is.na(freq)) & length(remaining_numbers) > 0) {
+    # start position from frequency
+    freq_sp <- as.numeric(sub('[^;]*;([0-9]+):.*', '\\1', freq))
 
     # if format is drug_name rn freq, classify as dosesc
     dsc <- mapply(function(rn, np){
@@ -333,7 +335,6 @@ extract_entities <- function(phrase, p_start, p_stop, unit, freq_fun = NULL, int
 
       }else{NA}
 
-
     }, rn = remaining_numbers, np = num_pos, USE.NAMES=FALSE)
 
     # If anything found, remove from further examination
@@ -343,7 +344,6 @@ extract_entities <- function(phrase, p_start, p_stop, unit, freq_fun = NULL, int
       num_pos <- num_pos[is.na(dsc)]
     }
 
-
     dsc <- dsc[!is.na(dsc)]
 
     # Add to dosesc results
@@ -351,8 +351,6 @@ extract_entities <- function(phrase, p_start, p_stop, unit, freq_fun = NULL, int
       if(all(is.na(dosesc))){dosesc <- dsc}else{dosesc <- c(dosesc, dsc)}
     }
   }
-
-
 
   ## BACK TO DOSEAMT ##
   ## Try to classify other numbers found among existing entities ##
@@ -396,12 +394,6 @@ extract_entities <- function(phrase, p_start, p_stop, unit, freq_fun = NULL, int
 
   }
 
-
-
-
-
-
-
   ## ONE FINAL LOOK AT DOSESC ##
   # Reclassify strength as dosesc when necessary
   keep_str <- sapply(strength, function(st){
@@ -434,14 +426,15 @@ extract_entities <- function(phrase, p_start, p_stop, unit, freq_fun = NULL, int
   if(all(is.na(doseamt))){ # If doseamt missing, reclassify strength as dosesc. works even if strength=NA
     if(all(is.na(dosesc))){dosesc <- strength}else{dosesc <- c(dosesc, strength)}
     strength <- NA
-  }else{
-    if(!all(is.na(strength))){
+  } else {
+    if(!all(is.na(strength))) {
       # If both are non-missing - get start positions
       da_sp <- as.numeric(str_extract(doseamt, "(?<=;).+(?=:)"))
       str_sp <- as.numeric(str_extract(strength, "(?<=;).+(?=:)"))
 
       df_sp <- data.frame(sp = c(da_sp, str_sp),
-                          ent = c(rep("da", length(da_sp)), rep("str", length(str_sp)))) %>% dplyr::arrange(.data$sp)
+                          ent = c(rep("da", length(da_sp)), rep("str", length(str_sp))))
+      df_sp <- df_sp[order(df_sp[,'sp']),]
 
       # entity indicators
       is_str <- which(df_sp$ent=="str")
@@ -451,7 +444,7 @@ extract_entities <- function(phrase, p_start, p_stop, unit, freq_fun = NULL, int
       is_dosesc <- sapply(is_str, function(i){
         !any(is_da == i + 1)
       })
-      if(any(is_dosesc)){
+      if(any(is_dosesc)) {
         dosesc <- strength[is_dosesc]
         strength <- ifelse(all(is_dosesc), NA, strength[!is_dosesc])
       }

@@ -4,9 +4,9 @@
 \alias{medExtractR}
 \title{Extract Medication Entities From Clinical Note}
 \usage{
-medExtractR(note, drug_names, drug_list, window_length, max_dist, unit,
-  strength_sep = NULL, flag_window = 30, doseschange_dict = NULL,
-  ...)
+medExtractR(note, drug_names, drug_list, window_length, unit,
+  max_dist = 0, lastdose = FALSE, lastdose_window_ext = 1.5,
+  strength_sep = NULL, flag_window = 30, dosechange_dict = NULL, ...)
 }
 \arguments{
 \item{note}{Text to search.}
@@ -18,25 +18,75 @@ medExtractR(note, drug_names, drug_list, window_length, max_dist, unit,
 \item{window_length}{Length (number of characters) of window after drug
 in which to look.}
 
+\item{unit}{Strength unit to look for (e.g. \dQuote{mg}).}
+
 \item{max_dist}{Numeric - edit distance to use when searching for drug_names.}
 
-\item{unit}{Strength unit to look for (e.g. "mg").}
+\item{lastdose}{Logical - whether or not last dose time entity should be
+extracted}
+
+\item{lastdose_window_ext}{Numeric - multiplicative factor by which
+window_length should be extended when identifying last dose time}
 
 \item{strength_sep}{Delimiter for contiguous medication strengths.}
 
 \item{flag_window}{How far around drug (number of characters) to look for
-dosechange keyword - default fixed to 30.}
+dose change keyword - default fixed to 30.}
 
-\item{doseschange_dict}{List of keywords used to determine if a dose change occurs.}
+\item{dosechange_dict}{List of keywords used to determine if a dose change
+occurs.}
 
 \item{\dots}{Parameter settings that will be used in extracting
-frequency and intake time. Potentially useful parameters include \sQuote{freq_dict}
-and \sQuote{intaketime_dict} to specify frequency or intake time keywords, as well
-as \sQuote{freq_fun} and \sQuote{intaketime_fun} for user-specifed extraction functions.}
+frequency and intake time. Potentially useful parameters include
+\sQuote{freq_dict} and \sQuote{intaketime_dict} to specify frequency or
+intake time keywords, as well as \sQuote{freq_fun} and
+\sQuote{intaketime_fun} for user-specifed extraction functions.}
 }
 \value{
 data.frame with entity information
 }
 \description{
-This function extracts dose attributes.
+This function extracts dose entities and returns found expressions with start
+and stop positions.
+}
+\details{
+This function uses a combination of regular expressions, rule-based
+approaches, and dictionaries to identify various drug entities of interest.
+Specific medications to be found are specified with \code{drug_names}, which
+is not case-sensitive. Entities to be extracted include drug name, strength,
+dose amount, dose, frequency, intake time, and time of last dose. See
+\code{\link{extract_entities}} for more details.
+
+(**Once the RxNorm License issue is determined, I will add in a comment about
+drug_list. Is there a default we can assign?)
+
+When searching for medication names of interest, fuzzy matching may be used.
+The \code{max_dist} argument determines the maximum edit distance allowed for
+such matches. If using fuzzy matching, any drug name with less than 5
+characters will only allow an edit distance of 1, regardless of the value of
+\code{max_dist}.
+
+Most medication entities are searched for in a window after the drug. The
+dose change entity, or presence of a keyword to indicate a non-current drug
+regimen, may occur before the drug name. The \code{flag_window} argument
+adjusts the width of the pre-drug window.
+
+The \code{stength_sep} argument is \code{NULL} by default, but can be used to
+identify shorthand for morning and evening doses. For example, consider the
+phrase \sQuote{Lamotrigine 300-200} (meaning 300 mg in the morning and 200 mg
+in the evening). The argument \code{strength_sep = '-'} can identify both
+\emph{300} and \emph{200} as \emph{dose} in this phrase.
+}
+\examples{
+note1 <- "Lamotrigine 25 mg tablet - 3 tablets oral twice daily"
+note2 <- "Lamotrigine 25 mg tablet - 3 tablets oral twice daily
+lamotrigine 50 mg cap before bedtime
+follow up in three months
+LTG 10 mg tablet - 2 tab daily"
+note3 <- "Lamotrigine 300-200"
+data(rxnorm_druglist)
+medExtractR(note1, c("lamotrigine", "ltg"), rxnorm_druglist, 130, "mg", 1)
+medExtractR(note2, c("lamotrigine", "ltg"), rxnorm_druglist, 130, "mg", 1)
+medExtractR(note3, c("lamotrigine", "ltg"), rxnorm_druglist, 130, "mg", 1,
+              strength_sep = '-')
 }

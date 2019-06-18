@@ -9,14 +9,14 @@ entity_metadata(phrase, p_offset, df)
 \arguments{
 \item{phrase}{Text of interest.}
 
-\item{p_offset}{Position of text within greater document.}
+\item{p_offset}{Start position of text within greater document.}
 
-\item{df}{data.frame with position and length of found entities.}
+\item{df}{data.frame with position and length of found medication entities}
 }
 \value{
-data.frame with found entities and accompanying metadata.
+data.frame with found medication entities and accompanying metadata.
 }
 \description{
-This function standardizes various forms of "tablet" with the string "tabs".
+This function builds the metadata based on position.
 }
 \keyword{internal}

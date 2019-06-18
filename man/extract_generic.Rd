@@ -2,14 +2,15 @@
 % Please edit documentation in R/extract_generic.R
 \name{extract_generic}
 \alias{extract_generic}
-\title{Extract Generic Attributes From Phrase}
+\title{Extract Generic Entities From Phrase}
 \usage{
 extract_generic(phrase, dict)
 }
 \arguments{
 \item{phrase}{Text to search.}
 
-\item{dict}{data.frame, the first column should contain expressions to find.}
+\item{dict}{data.frame, the first column should contain expressions to find. 
+These can be regular expressions or exact phrases.}
 }
 \value{
 A numeric matrix with position and expression length.
@@ -17,4 +18,16 @@ A numeric matrix with position and expression length.
 \description{
 This function searches a phrase for the position and length
 of expressions specified in a dictionary.
+}
+\details{
+\code{extract_generic} is used to extract entities that are
+identified with an associated dictionary of phrases or regular expressions,
+such as frequency or intake time in \code{\link{medExtractR}}. This function
+is called within \code{\link{extract_entities}}.
+}
+\examples{
+data(freq_vals)
+extract_generic("take two every day", freq_vals)
+extract_generic("take two every morning",
+                  data.frame(c("morning", "every morning")))
 }

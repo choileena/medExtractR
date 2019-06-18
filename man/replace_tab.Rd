@@ -13,6 +13,12 @@ replace_tab(phrase)
 Updated phrase.
 }
 \description{
-This function standardizes various forms of "tablet" with the string "tabs".
+This function standardizes various forms of \dQuote{tablet} or
+\dQuote{capsule} with the string \dQuote{tabs}.
+}
+\details{
+Some entities use a keyword such as tablet, capsule, or pill to
+identify the entities, e.g. dose amount. This standardizes possible
+expressions of similar keywords.
 }
 \keyword{internal}
