@@ -7,24 +7,21 @@
 \title{Medication Extraction With R}
 \description{
 Provides a function \code{\link{medExtractR}} for extracting
-dose attributes for medications within a given EHR note.
+dose attributes for medications within a given electronic health record (EHR) note.
 }
 \examples{
-note1 <- "Lamotrigine 25 mg tablet - 3 tablets oral twice daily"
-note2 <- "Lamotrigine 25 mg tablet - 3 tablets oral twice daily
-lamotrigine 50 mg cap before bedtime
-follow up in three months
-LTG 10 mg tablet - 2 tab daily"
-note3 <- "Adderall - 30 mg tablet 1 tablet by mouth daily"
-data(rxnorm_druglist)
-medExtractR(note1, c("lamotrigine", "ltg"), rxnorm_druglist, 130, "mg", 1)
-medExtractR(note2, c("lamotrigine", "ltg"), rxnorm_druglist, 130, "mg", 1)
-medExtractR(note3, c("lamotrigine", "ltg"), rxnorm_druglist, 130, "mg", 1)
+\donttest{
+note1 <- "Progrf Oral Capsule 1 mg 3 capsules by mouth twice a day - last
+dose at 10pm"
+note2 <- "Currently on lamotrigine 150-200, but will increase to lamotrigine 200mg bid"
+medExtractR(note1, c("prograf", "tacrolimus"), 60, "mg", 2, lastdose=TRUE)
+medExtractR(note2, c("lamotrigine", "ltg"), 130, "mg", 1, strength_sep = "-")
+}
 }
 \author{
-Hannah Weeks \email{hannah.l.weeks@Vanderbilt.Edu},\cr
-Leena Choi \email{leena.choi@Vanderbilt.Edu},\cr
-Cole Beck \email{cole.beck@vumc.org}
+Hannah Weeks \email{hannah.l.weeks@vanderbilt.edu},\cr
+Cole Beck \email{cole.beck@vumc.org},\cr
+Leena Choi \email{leena.choi@vumc.org}
 
-Maintainer: Hannah Weeks \email{hannah.l.weeks@Vanderbilt.Edu}
+Maintainer: Hannah Weeks \email{hannah.l.weeks@vanderbilt.edu}
 }

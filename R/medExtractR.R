@@ -1,81 +1,99 @@
 #' Extract Medication Entities From Clinical Note
 #'
-#' This function extracts dose entities and returns found expressions with start
-#' and stop positions.
+#' This function identifies medication entities of interest and returns found
+#' expressions with start and stop positions.
 #'
 #' @param note Text to search.
 #' @param drug_names Vector of drug names to locate.
-#' @param drug_list Vector of known drugs that may end expression window.
-#' @param window_length Length (number of characters) of window after drug
+#' @param window_length Length (in number of characters) of window after drug
 #' in which to look.
-#' @param max_dist Numeric - edit distance to use when searching for drug_names.
+#' @param max_dist Numeric - edit distance to use when searching for \code{drug_names}.
+#' @param drug_list Vector of known drugs that may end search window. By default calls
+#' \code{\link{rxnorm_druglist}}.
 #' @param lastdose Logical - whether or not last dose time entity should be
-#' extracted
+#' extracted.
 #' @param lastdose_window_ext Numeric - multiplicative factor by which
-#' window_length should be extended when identifying last dose time
-#' @param unit Strength unit to look for (e.g. \dQuote{mg}).
-#' @param strength_sep Delimiter for contiguous medication strengths.
-#' @param flag_window How far around drug (number of characters) to look for
+#' \code{window_length} should be extended when identifying last dose time.
+#' @param unit Strength unit to look for (e.g., \sQuote{mg}).
+#' @param strength_sep Delimiter for contiguous medication strengths (e.g., \sQuote{-} for \dQuote{LTG 200-300}).
+#' @param flag_window How far around drug (in number of characters) to look for
 #' dose change keyword - default fixed to 30.
-#' @param dosechange_dict List of keywords used to determine if a dose change
-#' occurs.
-#' @param \dots Parameter settings that will be used in extracting
-#' frequency and intake time. Potentially useful parameters include
-#' \sQuote{freq_dict} and \sQuote{intaketime_dict} to specify frequency or
-#' intake time keywords, as well as \sQuote{freq_fun} and
-#' \sQuote{intaketime_fun} for user-specifed extraction functions.
+#' @param dosechange_dict List of keywords used to determine if a dose change entity is present.
+#' @param \dots Parameter settings used in extracting frequency and intake time. Potentially useful
+#' parameters include \code{freq_dict} and \code{intaketime_dict} (see \code{\dots} argument in
+#' \code{\link{extract_entities}}) to specify frequency or intake time dictionaries, as well as
+#' \sQuote{freq_fun} and \sQuote{intaketime_fun} for user-specified extraction functions. See
+#' \code{\link{extract_entities}} documentation for details.
 #'
 #' @details This function uses a combination of regular expressions, rule-based
 #' approaches, and dictionaries to identify various drug entities of interest.
 #' Specific medications to be found are specified with \code{drug_names}, which
-#' is not case-sensitive. Entities to be extracted include drug name, strength,
+#' is not case-sensitive or space-sensitive (e.g., \sQuote{lamotrigine XR} is treated
+#' the same as \sQuote{lamotrigineXR}). Entities to be extracted include drug name, strength,
 #' dose amount, dose, frequency, intake time, and time of last dose. See
-#' \code{\link{extract_entities}} for more details.
-#' 
-#' (**Once the RxNorm License issue is determined, I will add in a comment about
-#' drug_list. Is there a default we can assign?)
-#' 
+#' \code{\link{extract_entities}} and \code{\link{extract_lastdose}} for more details.
+#'
 #' When searching for medication names of interest, fuzzy matching may be used.
 #' The \code{max_dist} argument determines the maximum edit distance allowed for
 #' such matches. If using fuzzy matching, any drug name with less than 5
 #' characters will only allow an edit distance of 1, regardless of the value of
 #' \code{max_dist}.
-#' 
+#'
 #' Most medication entities are searched for in a window after the drug. The
 #' dose change entity, or presence of a keyword to indicate a non-current drug
 #' regimen, may occur before the drug name. The \code{flag_window} argument
 #' adjusts the width of the pre-drug window.
-#' 
+#'
 #' The \code{stength_sep} argument is \code{NULL} by default, but can be used to
 #' identify shorthand for morning and evening doses. For example, consider the
 #' phrase \sQuote{Lamotrigine 300-200} (meaning 300 mg in the morning and 200 mg
 #' in the evening). The argument \code{strength_sep = '-'} can identify both
 #' \emph{300} and \emph{200} as \emph{dose} in this phrase.
 #'
-#' @return data.frame with entity information
+#' By default, the \code{drug_list} argument is \dQuote{rxnorm} which calls \code{data(rxnorm_druglist)}.
+#' A custom drug list in the form of a character string can be supplied instead, or can be appended
+#' to \code{rxnorm_druglist} by specifying \code{drug_list = c("rxnorm", custom_drug_list)}. This uses
+#' publicly available data courtesy of the U.S. National Library of Medicine (NLM), National
+#' Institutes of Health, Department of Health and Human Services; NLM is not responsible for the product and
+#' does not endorse or recommend this or any other product. See \code{rxnorm_druglist} documentation for details.
+#'
+#'
+#' @return data.frame with entity information\cr
+#' Sample output:\cr
+#' \tabular{rrr}{
+#' entity    \tab  expr   \tab    pos\cr
+#' DoseChange\tab  decrease \tab  66:74\cr
+#' DrugName   \tab Prograf \tab   78:85\cr
+#' Strength  \tab  2 mg   \tab    86:90\cr
+#' DoseAmt   \tab  1     \tab     91:92\cr
+#' Frequency \tab  bid    \tab    101:104\cr
+#' LastDose  \tab  2100    \tab   121:125\cr
+#' }
+#'
 #' @export
 #'
+#' @references
+#' Nelson SJ, Zeng K, Kilbourne J, Powell T, Moore R. Normalized names for clinical drugs: RxNorm at 6 years.
+#' J Am Med Inform Assoc. 2011 Jul-Aug;18(4)441-8. doi: 10.1136/amiajnl-2011-000116. Epub 2011 Apr 21.
+#' PubMed PMID: 21515544; PubMed Central PMCID: PMC3128404.
+#'
 #' @examples
-#' note1 <- "Lamotrigine 25 mg tablet - 3 tablets oral twice daily"
-#' note2 <- "Lamotrigine 25 mg tablet - 3 tablets oral twice daily
-#' lamotrigine 50 mg cap before bedtime
-#' follow up in three months
-#' LTG 10 mg tablet - 2 tab daily"
-#' note3 <- "Lamotrigine 300-200"
-#' data(rxnorm_druglist)
-#' medExtractR(note1, c("lamotrigine", "ltg"), rxnorm_druglist, 130, "mg", 1)
-#' medExtractR(note2, c("lamotrigine", "ltg"), rxnorm_druglist, 130, "mg", 1)
-#' medExtractR(note3, c("lamotrigine", "ltg"), rxnorm_druglist, 130, "mg", 1,
-#'               strength_sep = '-')
+#' \donttest{
+#' note1 <- "Progrf Oral Capsule 1 mg 3 capsules by mouth twice a day - last
+#' dose at 10pm"
+#' note2 <- "Currently on lamotrigine 150-200, but will increase to lamotrigine 200mg bid"
+#' medExtractR(note1, c("prograf", "tacrolimus"), 60, "mg", 2, lastdose=TRUE)
+#' medExtractR(note2, c("lamotrigine", "ltg"), 130, "mg", 1, strength_sep = "-")
+#' }
 
 medExtractR <- function(note,
                           drug_names,
-                          drug_list,
                           window_length,
                           unit,
                           max_dist = 0,
-                          lastdose = FALSE, # whether or not to extract time of last dose
-                          lastdose_window_ext = 1.5, # multiplier of window_length - how much to extend when looking for last dose time
+                          drug_list = "rxnorm",
+                          lastdose = FALSE,
+                          lastdose_window_ext = 1.5,
                           strength_sep = NULL,
                           flag_window = 30,
                           dosechange_dict = NULL, ...) {
@@ -89,7 +107,7 @@ medExtractR <- function(note,
   }
 
   # Find all mentions of any of the drug names listed above
-  # aregexec performs approximate matching - allows for max.distance discrepancies
+  # aregexec performs approximate matching - allows for `max_dist` discrepancies
   match_info <- c()
   num_char <- nchar(note)
   for(drug in drug_names){
@@ -111,7 +129,7 @@ medExtractR <- function(note,
       }else{
         is_match <- utils::aregexec(paste0(drug, "\\b"), current_string,
                                     max.distance = ifelse(nchar(drug) <= 5, 1, max_dist),
-                                    ignore.case = TRUE, fixed = FALSE) 
+                                    ignore.case = TRUE, fixed = FALSE)
 
       }
 
@@ -139,8 +157,8 @@ medExtractR <- function(note,
     }
   }
 
-  # Quit now if no matches are found
-  if(is.null(match_info)){return("No matches found for drug regimen")}
+  # Quit now if no drug name matches are found
+  if(is.null(match_info)){return(data.frame("entity" = NA,"expr"=NA,"pos"=NA))}
 
   colnames(match_info) <- c("drug", "start_pos", "length")
 
@@ -151,10 +169,10 @@ medExtractR <- function(note,
 
   nr <- nrow(match_info)
   # Quit now if no matches are found
-  if(nr == 0){return("No matches found for drug regimen")}
+  if(nr == 0){return(data.frame("entity" = NA,"expr"=NA,"pos"=NA))}
 
-  # If some drug names are subsets of another, this prevents entities being assigned to both longer *and* shorter
-  # when longer is present (and thus correct)
+  # If some drug names are subsets of another, this prevents entities being assigned to both
+  # longer *and* shorter when longer is present (and thus correct)
   mi <- match_info[order(match_info[,'start_pos']),]
   lmi <- split(mi, mi[,'start_pos'])
   match_info <- do.call(rbind, lapply(lmi, function(dd) {
@@ -192,25 +210,25 @@ medExtractR <- function(note,
 
   # String to extract based on number of characters
   # Will search within this string to get drug regimen
-  # Look for first occurrence of different phrases after drug name?
-  # up to certain point (in case it's not actually a dose attr mention)
   wndw <- sapply(seq_len(nr), function(i){
     start_pos <- match_info[i,'start_pos']
     len <- match_info[i,'length']
 
     window_string <- substr(note, start = start_pos, stop = start_pos + len + window_length)
   })
-  
+
   # Add in extended window if last dose time is desired
   if(lastdose){
     ld_wndw_ext <- do.call(rbind, lapply(seq(nr), function(i){
       start_pos <- match_info[i,'start_pos']
       len <- match_info[i,'length']
-      
+
       #lastdose needs more of a buffer
-      c(substr(note, start = start_pos-window_length*(lastdose_window_ext/2), stop = start_pos-1),
-        substr(note, start = start_pos + len + window_length+1, start_pos + len + window_length*lastdose_window_ext))
-    })) 
+      c(substr(note, start = max(1,start_pos-window_length*(lastdose_window_ext/2)),
+               stop = start_pos-1),# before window
+        substr(note, start = start_pos + len + window_length+1,
+               stop = min(nchar(note), start_pos + len + window_length*lastdose_window_ext))) # after window
+    }))
   }
 
   # Window around drug to look for entities
@@ -236,7 +254,7 @@ medExtractR <- function(note,
     }else{return(drg_wndw)}
   })
 
-  # Want to keep alternative drug names in same window, even if strength/dosesc appears between them
+  # Want to keep alternative drug names in same window, even if strength/dose appears between them
   drug_window$keep_drug <- sapply(1:nrow(drug_window), function(i){
     if(i==1){return(FALSE)}else{
       drug_window$drug_start[i] < drug_window$drug_stop[i-1] + window_length
@@ -244,22 +262,34 @@ medExtractR <- function(note,
   })
 
   # exclude drug_names from drug_list
-  dl_lc <- setdiff(tolower(drug_list), tolower(drug_names))
+  if("rxnorm" %in% drug_list) {
+    # default - using rxnorm drug list
+    e <- new.env()
+    data("rxnorm_druglist", envir = e)
+    dl <- get("rxnorm_druglist", envir = e)
+
+    # add additional terms if specified
+    if(length(drug_list)>1){
+      dl <- c(dl, setdiff(drug_list, "rxnorm"))
+    }
+  }else{
+    # non-rxnorm drug list provided
+    dl <- drug_list
+  }
+  # make sure drug names of interest are not in list
+  dl_lc <- setdiff(tolower(dl), tolower(drug_names))
   dl_wb <- paste0("\\b", dl_lc, "\\b")
   wndw_lc <- tolower(drug_window[,'window'])
-  other_drug_list <- lapply(dl_wb, regexec, text = wndw_lc)
+  other_drug_list <- lapply(dl_wb, regexec, text=wndw_lc)
 
   # Cut window short if another drug name appears
   drug_window$window <- sapply(seq_along(wndw_lc), function(ix) {
     wndw <- drug_window[ix,'window']
     other_drugs <- lapply(other_drug_list, `[[`, ix)
-    # What other drug names occur in string?
     other_drugs <- other_drugs[other_drugs != -1]
 
     if(length(other_drugs) == 0) {
       #If no other drugs found, return original window
-      # Shorten if crossing into new note
-      new_wndw <- sub("PKPDnote.+", "", wndw)
       return(wndw)
     } else {
       # Only keep first one that appears
@@ -279,39 +309,30 @@ medExtractR <- function(note,
       new_wndw <- if(class(try_sub)[1] == "simpleError"){wndw} else {
         sub(paste0(ds_expr, ".+"), "", wndw)
       }
-      # Shorten if crossing into new note
-      new_wndw <- sub("PKPDnote.+", "", new_wndw)
-
       return(new_wndw)
     }
   }, USE.NAMES = F)
 
-  # Calibrate window if last dose time is desired
-  if(lastdose){
-    drug_window$ld_offset <-  sapply(1:nrow(drug_window), function(i){
-      window_length - nchar(drug_window$window[i]) + 
-        (drug_window$drug_stop[i] - drug_window$drug_start[i])
-    })
-    
-    drug_window$phrase_stop <-  sapply(1:nrow(drug_window), function(i){
-      nchar(drug_window$window[i]) + drug_window$drug_start[i]
-    })
-  }
-  
+
   # Extract dose entities
   res <- lapply(seq_along(drug_window$window), function(i) {
     rdf <- extract_entities(phrase = drug_window$window[i], p_start = drug_window$drug_start[i],
                             p_stop = drug_window$drug_stop[i], unit = unit,
                             strength_sep = strength_sep, ...)
     rdf <- rdf[!is.na(rdf[,'expr']),]
-    
+
     # Extract last dose time if desired
     if(lastdose){
-      ld_rdf <- extract_lastdose(phrase = paste0(ld_wndw_ext[i,1], drug_window$window[i], ld_wndw_ext[i,2]),
-                                 p_start = drug_window$drug_start[i]-window_length*(lastdose_window_ext/2), 
-                                 p_stop = drug_window$phrase_stop[i], p_offset = drug_window$ld_offset[i],
+      # Only include extension after window if the window was not cut short by another drug
+      phrase <- if(nchar(drug_window$window[i]) - nchar(drug_window$drug[i])-1 == window_length){
+        paste0(ld_wndw_ext[i,1], drug_window$window[i], ld_wndw_ext[i,2])
+      }else{
+        paste0(ld_wndw_ext[i,1], drug_window$window[i])
+      }
+      ld_rdf <- extract_lastdose(phrase,
+                                 p_start = max(1,drug_window$drug_start[i]-window_length*(lastdose_window_ext/2)),
                                  d_start = drug_window$drug_start[i], d_stop = drug_window$drug_stop[i])
-      
+
       if(!all(is.na(ld_rdf$expr))){
         rdf <- if(nrow(rdf)==0){
           ld_rdf
@@ -321,9 +342,7 @@ medExtractR <- function(note,
       }
     }
 
-    ## can this even happen if NA is filtered out?
-
-    if(all(is.na(rdf$expr))){
+    if(nrow(rdf)==0){
       if(drug_window$keep_drug[i]){
         data.frame("entity" = 'DrugName',
                    "expr" = paste(drug_window$drug[i],
@@ -347,7 +366,7 @@ medExtractR <- function(note,
       dc_start_pos <- as.numeric(gsub(":.+", "", drug_window$dosechange_pos[i]))
       ent_last_pos <- as.numeric(max(gsub(".+:", "", rdf$expr)))
 
-      # Only add if dosechange occurs before end of last entity
+      # Only add if dosechange occurs before end of last entity (to be reasonably certain it belongs to the drug of interest)
       if(dc_start_pos < ent_last_pos){
         rdf[nrow(rdf)+1,] <- c("DoseChange", paste(drug_window$dosechange[i], drug_window$dosechange_pos[i], sep=";"))
       }

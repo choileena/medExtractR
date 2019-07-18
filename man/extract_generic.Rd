@@ -9,7 +9,7 @@ extract_generic(phrase, dict)
 \arguments{
 \item{phrase}{Text to search.}
 
-\item{dict}{data.frame, the first column should contain expressions to find. 
+\item{dict}{data.frame, the first column should contain expressions to find.
 These can be regular expressions or exact phrases.}
 }
 \value{

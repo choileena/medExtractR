@@ -1,11 +1,11 @@
 #' Extract Generic Entities From Phrase
 #'
 #' This function searches a phrase for the position and length
-#' of expressions specified in a dictionary. 
+#' of expressions specified in a dictionary.
 #'
 #' @param phrase Text to search.
-#' @param dict data.frame, the first column should contain expressions to find. 
-#' These can be regular expressions or exact phrases. 
+#' @param dict data.frame, the first column should contain expressions to find.
+#' These can be regular expressions or exact phrases.
 #'
 #' @details \code{extract_generic} is used to extract entities that are
 #' identified with an associated dictionary of phrases or regular expressions,
@@ -23,7 +23,7 @@
 
 extract_generic <- function(phrase, dict) {
   df <- do.call(rbind, lapply(dict[,1], function(r1) {
-    expr <- gregexpr(paste0(r1, "\\b"), phrase, ignore.case=TRUE, perl=TRUE)[[1]]
+    expr <- gregexpr(paste0("\\b", r1, "\\b"), phrase, ignore.case=TRUE, perl=TRUE)[[1]]
     expr_len <- attributes(expr)$match.length
     cbind(expr, expr_len)
   }))

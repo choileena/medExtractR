@@ -14,7 +14,7 @@ extract_entities(phrase, p_start, p_stop, unit, freq_fun = NULL,
 
 \item{p_stop}{End position of phrase within original text.}
 
-\item{unit}{Unit of measurement for medication strength, e.g. \dQuote{mg}.}
+\item{unit}{Unit of measurement for medication strength, e.g. \sQuote{mg}.}
 
 \item{freq_fun}{Function used to extract frequency.}
 
@@ -22,14 +22,29 @@ extract_entities(phrase, p_start, p_stop, unit, freq_fun = NULL,
 
 \item{strength_sep}{Delimiter for contiguous medication strengths.}
 
-\item{\dots}{Parameter settings that will be used in extracting
-frequency and intake time.}
+\item{\dots}{Parameter settings used in extracting frequency and intake time,
+including additional arguments to \code{freq_fun} and
+\code{intaketime_fun}. Use \code{freq_dict} to identify custom frequency
+dictionaries and \code{intaketime_dict } to identify custom intake time
+dictionaries.}
 }
 \value{
-data.frame with entities information
+data.frame with entities information. At least one row per entity is returned,
+using \code{NA} when no expression was found for a given entity.\cr
+Sample output for the phrase \dQuote{Lamotrigine 200mg bid} would look like:\cr
+\tabular{rr}{
+ entity   \tab  expr\cr
+ IntakeTime  \tab  <NA>\cr
+   Strength  \tab   <NA>\cr
+    DoseAmt   \tab  <NA>\cr
+  Frequency \tab  bid;19:22\cr
+       Dose  \tab  200mg;13:18
+}
 }
 \description{
-This function searches a phrase for medication dosing entities of interest.
+This function searches a phrase for medication dosing entities of interest. It
+is called within \code{\link{medExtractR}} and generally not intended for use outside
+that function.
 }
 \details{
 Various medication dosing entities are extracted within this function
@@ -42,27 +57,28 @@ including the following:
   equivalent to strength x dose amount, and appears similar to strength when
   dose amount is absent.\cr
 \emph{frequency}: The number of times per day a dose is taken, e.g.
-  \dQuote{once daily} or \dQuote{2x/day}.\cr
+  \dQuote{once daily} or \sQuote{2x/day}.\cr
 \emph{intaketime}: The time period of the day during which a dose is taken,
-  e.g. \dQuote{morning}, \dQuote{lunch}, \dQuote{in the pm}.\cr
+  e.g. \sQuote{morning}, \sQuote{lunch}, \sQuote{in the pm}.\cr
 
 Strength, dose amount, and dose are primarily numeric quantities, and are
 identified using a combination of regular expressions and rule-based
 approaches. Frequency and intake time, on the other hand, use dictionaries
 for identification.
 
-By default, when freq_fun and/or intaketime_fun are \code{NULL}, the 
+By default and when \code{freq_fun} and/or \code{intaketime_fun} are \code{NULL}, the
 \code{\link{extract_generic}} function will be used for these entities.
 
 The \code{stength_sep} argument is \code{NULL} by default, but can be used to
 identify shorthand for morning and evening doses. For example, consider the
-phrase \sQuote{Lamotrigine 300-200} (meaning 300 mg in the morning and 200 mg
+phrase \dQuote{Lamotrigine 300-200} (meaning 300 mg in the morning and 200 mg
 in the evening). The argument \code{strength_sep = '-'} can identify both
 \emph{300} and \emph{200} as \emph{dose} in this phrase.
 }
 \examples{
 note <- "Lamotrigine 25 mg tablet - 3 tablets oral twice daily"
-extract_entities(note, 1, 53, "mg")
-extract_entities(note, 1, 53, "mg",
-                   freq_dict = data.frame(c("daily", "twice daily")))
+extract_entities(note, 1, nchar(note), "mg")
+# A user-defined dictionary can be used instead of the default
+my_dictionary <- data.frame(c("daily", "twice daily"))
+extract_entities(note, 1, 53, "mg", freq_dict = my_dictionary)
 }

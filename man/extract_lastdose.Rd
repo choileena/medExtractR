@@ -2,33 +2,48 @@
 % Please edit documentation in R/extract_lastdose.R
 \name{extract_lastdose}
 \alias{extract_lastdose}
-\title{Function that extracts time of last dose}
+\title{Extract Last Dose Time From Phrase}
 \usage{
-extract_lastdose(phrase, p_start, p_stop, p_offset, d_start, d_stop,
-  time_exp = "default")
+extract_lastdose(phrase, p_start, d_start, d_stop, time_exp = "default")
 }
 \arguments{
-\item{phrase}{Text to search}
+\item{phrase}{Text to search.}
 
 \item{p_start}{Start position of phrase in larger text.}
-
-\item{p_stop}{Stop position of phrase in larger text.}
-
-\item{p_offset}{Offset in characters used for calibrating last dose time
-positions (used when part of phrase was truncated/removed)}
 
 \item{d_start}{Start position of drug name in larger text.}
 
 \item{d_stop}{Start position of drug name in larger text.}
 
-\item{time_exp}{Vector of regular expressions to identify time expressions}
+\item{time_exp}{Vector of regular expressions to identify time expressions.}
 }
 \value{
-data.frame with last dose time entity information
+data.frame with last dose time entity information. This output format is consistent with
+the output of \code{\link{extract_entities}} \cr
+Sample output for the phrase \dQuote{Last prograf at 5pm} would look like:\cr
+\tabular{rr}{
+ entity    \tab    expr\cr
+ LastDose  \tab    5pm;17:20
+ }
 }
 \description{
-Function that extracts time of last dose
+This function searches a phrase for the expression and postion
+of the time at which the last dose of a drug was taken. It
+is called within \code{\link{medExtractR}} and generally not intended for use outside
+that function.
+}
+\details{
+This function identifies the time at which the last dose of a drug of interest was taken.
+The arguments \code{p_start}, \code{d_start}, and \code{d_stop} represent global start or stop
+positions for the phrase or drug. These arguments are used to determine the position of any found
+last dose time expressions relative to the overall clinical note, not just within \code{phrase}.
+
+The \code{time_exp} argument contains regular expressions for numeric or text representations of
+last dose time. See \code{\link{time_regex}} for more information about the default regular
+expressions used in \code{\link{medExtractR}}.
 }
 \examples{
-extract_lastdose("aspirin last night at 10pm", 25, 50, 0, 25, 31)
+# Suppose this phrase begins at character 120 in the overall clinical note
+extract_lastdose("took aspirin last night at 8pm", p_start = 120,
+                  d_start = 125, d_stop = 131)
 }

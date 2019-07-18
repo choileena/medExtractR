@@ -3,14 +3,14 @@ Title: Extraction of Medication Information from Clinical Text
 Version: 0.1
 Authors@R:
     c(person("Hannah", "Weeks", role = c("aut", "cre"),
-             email = "hannah.l.weeks@Vanderbilt.Edu"),
+             email = "hannah.l.weeks@vanderbilt.edu"),
     person("Cole", "Beck", role = "aut",
            email = "cole.beck@vumc.org",
            comment = c(ORCID = "0000-0002-6849-6255")),
     person("Leena", "Choi", role = "aut",
            email = "leena.choi@Vanderbilt.Edu"))
 Description: Function and support for medication and dosing information extraction from free-text clinical notes. Medication entities that can be extracted include drug name, strength, dose amount, dose, frequency, intake time, and time of last dose.
-License: file LICENSE
+License: GPL (>= 2)
 Depends: R (>= 2.10)
 Encoding: UTF-8
 LazyData: true
