@@ -87,20 +87,20 @@
 #' }
 
 medExtractR <- function(note,
-                          drug_names,
-                          window_length,
-                          unit,
-                          max_dist = 0,
-                          drug_list = "rxnorm",
-                          lastdose = FALSE,
-                          lastdose_window_ext = 1.5,
-                          strength_sep = NULL,
-                          flag_window = 30,
-                          dosechange_dict = NULL, ...) {
+                        drug_names,
+                        window_length,
+                        unit,
+                        max_dist = 0,
+                        drug_list = "rxnorm",
+                        lastdose = FALSE,
+                        lastdose_window_ext = 1.5,
+                        strength_sep = NULL,
+                        flag_window = 30,
+                        dosechange_dict = 'default', ...) {
   def.saf <- getOption('stringsAsFactors')
   on.exit(options(stringsAsFactors = def.saf))
   options(stringsAsFactors = FALSE)
-  if(is.null(dosechange_dict)) {
+  if(dosechange_dict=='default') {
     e <- new.env()
     data("dosechange_vals", envir = e)
     dosechange_dict <- get("dosechange_vals", envir = e)
@@ -176,8 +176,8 @@ medExtractR <- function(note,
   mi <- match_info[order(match_info[,'start_pos']),]
   lmi <- split(mi, mi[,'start_pos'])
   match_info <- do.call(rbind, lapply(lmi, function(dd) {
-      ddl <- dd[,'length']
-      dd[ddl == max(ddl),,drop = FALSE]
+    ddl <- dd[,'length']
+    dd[ddl == max(ddl),,drop = FALSE]
   }))
 
   nr <- nrow(match_info)
@@ -277,7 +277,11 @@ medExtractR <- function(note,
     dl <- drug_list
   }
   # make sure drug names of interest are not in list
-  dl_lc <- setdiff(tolower(dl), tolower(drug_names))
+  rm_index <- unique(unlist(sapply(tolower(drug_names), function(x){
+    grep(x, tolower(dl))
+  })))
+  dl_lc <- dl[-rm_index]
+
   dl_wb <- paste0("\\b", dl_lc, "\\b")
   wndw_lc <- tolower(drug_window[,'window'])
   other_drug_list <- lapply(dl_wb, regexec, text=wndw_lc)
@@ -318,7 +322,7 @@ medExtractR <- function(note,
   res <- lapply(seq_along(drug_window$window), function(i) {
     rdf <- extract_entities(phrase = drug_window$window[i], p_start = drug_window$drug_start[i],
                             p_stop = drug_window$drug_stop[i], unit = unit,
-                            strength_sep = strength_sep, ...)
+                            strength_sep = strength_sep)#, ...)
     rdf <- rdf[!is.na(rdf[,'expr']),]
 
     # Extract last dose time if desired

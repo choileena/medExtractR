@@ -72,17 +72,35 @@ extract_entities <- function(phrase, p_start, p_stop, unit, freq_fun = NULL,
                                intaketime_fun = NULL, strength_sep = NULL, ...){
   p_start <- p_start-1
 
-  # A bit of pre-processing: ##-##-(## or ####) often represents a date, but can get picked up as Dose
-  # Replace ##-##-## with XX-XX-XX to prevent these from being captured
-  if(grepl("\\d{2}-\\d{2}-\\d{2,4}", phrase)){
-    # Do longer one first or else you end up with XX-XX-XX##
-    if(grepl("\\d{2}-\\d{2}-\\d{4}", phrase)){
-      phrase <- str_replace_all(phrase, "\\d{2}-\\d{2}-\\d{4}","XX-XX-XXXX")
-    }
-    if(grepl("\\d{2}-\\d{2}-\\d{2}", phrase)){
-      phrase <- str_replace_all(phrase, "\\d{2}-\\d{2}-\\d{2}","XX-XX-XX")
+  # Common issues: censor the expressions "24/7" and "24 hr"
+  phrase <- gsub("24/7", "XX/X", phrase)
+  phrase <- gsub("24(\\s?[hr|hour])", "XX\\1", phrase)
+
+  # A bit of pre-processing: censor various date formats to prevent them being identified as drug information
+  phrase <- gsub("\\d{2}[-/\\.]\\d{2}[-/\\.]\\d{4}", "##-##-####", phrase) # 11/11/1111
+  phrase <- gsub("\\d{2}[-/\\.]\\d{1}[-/\\.]\\d{4}", "##-#-####", phrase) # 11/1/1111
+  phrase <- gsub("\\d{1}[-/\\.]\\d{2}[-/\\.]\\d{4}", "#-##-####", phrase) # 1/11/1111
+  phrase <- gsub("\\d{1}[-/\\.]\\d{1}[-/\\.]\\d{4}", "#-#-####", phrase) # 1/1/1111
+
+  phrase <- gsub("\\d{2}[-/\\.]\\d{2}[-/\\.]\\d{2}", "##-##-##", phrase) # 11/11/11
+  phrase <- gsub("\\d{2}[-/\\.]\\d{1}[-/\\.]\\d{2}", "##-#-##", phrase) # 11/1/11
+  phrase <- gsub("\\d{1}[-/\\.]\\d{2}[-/\\.]\\d{2}", "#-##-##", phrase) # 1/11/11
+  phrase <- gsub("\\d{1}[-/\\.]\\d{1}[-/\\.]\\d{2}", "#-#-##", phrase) # 1/1/11
+
+  # check is some month/day formats are dates. If so, censor it
+  possible_dates <- unique(unlist(str_extract_all(phrase, "\\b\\d{1,2}[-/]\\d{1,2}\\b")))
+  if(length(possible_dates)>0){
+    censor <- sapply(possible_dates, function(x){
+      y <- tryCatch(as.Date(paste0('2000', str_extract(x, "[-/]"), x)),
+               error = function(e) e)
+      if(class(y)[1]=="Date"){T}else{F}
+    }, USE.NAMES = F)
+    possible_dates <- possible_dates[censor]
+    for(pd in possible_dates){
+      phrase <- gsub(pd, paste0(rep("X", nchar(pd)), collapse=''), phrase)
     }
   }
+
 
   time_present <- gregexpr("\\d[^a-zA-Z]+\\s?(?=((am)|(pm))\\b)",
                            phrase, perl=T, ignore.case=T)[[1]]
@@ -97,13 +115,16 @@ extract_entities <- function(phrase, p_start, p_stop, unit, freq_fun = NULL,
   }}
 
   # Numbers in phrase
-  all_numbers <- unlist(str_extract_all(phrase, "(?<!\\d|q)(\\.)?\\d+(\\.\\d+)?(?!\\d)"))
-  num_positions <- gregexpr("(?<!\\d|q)(\\.)?\\d+(\\.?)(\\d+)?(?!\\d)", phrase, perl=T)[[1]]
+  all_numbers <- unlist(str_extract_all(phrase, "\\.?\\d+(\\.\\d+)?"))
+  num_positions <- gregexpr("\\.?\\d+(\\.\\d+)?", phrase, perl=T)[[1]]
+  # Don't allow 0 to be returned on its own
+  num_positions <- num_positions[all_numbers != "0"]
+  all_numbers <- all_numbers[all_numbers != "0"]
 
   # ignore dosesequence numbers
   if(length(all_numbers) > 0){
     ds_id <- mapply(function(an, np){
-        grepl(paste0(an, "\\s?(weeks|wks|days|a(m?)|p(m?))\\b"), substr(phrase, np, np+nchar(an)+7), ignore.case = T)
+        grepl(paste0(an, "\\s?(weeks|wks|days|seconds|months|a(m?)|p(m?))\\b"), substr(phrase, np, np+nchar(an)+7), ignore.case = T)
       }, an=all_numbers, np=num_positions)
     all_numbers <- all_numbers[!ds_id]
     num_positions <- num_positions[!ds_id]
@@ -390,7 +411,7 @@ extract_entities <- function(phrase, p_start, p_stop, unit, freq_fun = NULL,
       da_ids <- which(as.numeric(rnums) < 11)
       if(length(da_ids)>0){
         add_das <- sapply(da_ids, function(i){
-          stp <- npos[i] + length(rnums[i])
+          stp <- npos[i] + nchar(rnums[i])
 
           paste(substr(phrase, npos[i], stp-1),
                 paste(npos[i] + p_start, stp + p_start, sep = ":"), sep = ";")

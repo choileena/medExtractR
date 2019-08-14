@@ -6,7 +6,8 @@
 \usage{
 medExtractR(note, drug_names, window_length, unit, max_dist = 0,
   drug_list = "rxnorm", lastdose = FALSE, lastdose_window_ext = 1.5,
-  strength_sep = NULL, flag_window = 30, dosechange_dict = NULL, ...)
+  strength_sep = NULL, flag_window = 30, dosechange_dict = "default",
+  ...)
 }
 \arguments{
 \item{note}{Text to search.}

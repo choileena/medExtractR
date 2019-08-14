@@ -15,7 +15,7 @@
 #' Institutes of Health, Department of Health and Human Services; NLM is not responsible for the product and
 #' does not endorse or recommend this or any other product.
 #'
-#' @format A vector with 59,326 character strings.
+#' @format A vector with 59,327 character strings.
 #'
 #' @keywords datasets
 #'
