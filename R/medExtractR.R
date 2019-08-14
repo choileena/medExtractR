@@ -280,7 +280,7 @@ medExtractR <- function(note,
   rm_index <- unique(unlist(sapply(tolower(drug_names), function(x){
     grep(x, tolower(dl))
   })))
-  dl_lc <- dl[-rm_index]
+  dl_lc <- tolower(dl[-rm_index])
 
   dl_wb <- paste0("\\b", dl_lc, "\\b")
   wndw_lc <- tolower(drug_window[,'window'])
@@ -322,7 +322,7 @@ medExtractR <- function(note,
   res <- lapply(seq_along(drug_window$window), function(i) {
     rdf <- extract_entities(phrase = drug_window$window[i], p_start = drug_window$drug_start[i],
                             p_stop = drug_window$drug_stop[i], unit = unit,
-                            strength_sep = strength_sep)#, ...)
+                            strength_sep = strength_sep, ...)
     rdf <- rdf[!is.na(rdf[,'expr']),]
 
     # Extract last dose time if desired
