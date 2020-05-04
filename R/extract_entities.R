@@ -326,7 +326,7 @@ extract_entities <- function(phrase, p_start, p_stop, unit, freq_fun = NULL,
     dict <- addl[['freq_dict']]
     if(is.null(dict)) {
       e <- new.env()
-      data("freq_vals", envir = e)
+      data("freq_vals", package = 'medExtractR', envir = e)
       dict <- get("freq_vals", envir = e)
     }
     df <- extract_generic(phrase, dict)
@@ -342,7 +342,7 @@ extract_entities <- function(phrase, p_start, p_stop, unit, freq_fun = NULL,
     dict <- addl[['intaketime_dict']]
     if(is.null(dict)) {
       e <- new.env()
-      data("intaketime_vals", envir = e)
+      data("intaketime_vals", package = 'medExtractR', envir = e)
       dict <- get("intaketime_vals", envir = e)
     }
     df <- extract_generic(phrase, dict)

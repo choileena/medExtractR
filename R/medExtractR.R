@@ -100,9 +100,9 @@ medExtractR <- function(note,
   def.saf <- getOption('stringsAsFactors')
   on.exit(options(stringsAsFactors = def.saf))
   options(stringsAsFactors = FALSE)
-  if(dosechange_dict=='default') {
+  if(length(dosechange_dict) == 1 && dosechange_dict == 'default') {
     e <- new.env()
-    data("dosechange_vals", envir = e)
+    data("dosechange_vals", package = 'medExtractR', envir = e)
     dosechange_dict <- get("dosechange_vals", envir = e)
   }
 
@@ -265,7 +265,7 @@ medExtractR <- function(note,
   if("rxnorm" %in% drug_list) {
     # default - using rxnorm drug list
     e <- new.env()
-    data("rxnorm_druglist", envir = e)
+    data("rxnorm_druglist", package = 'medExtractR', envir = e)
     dl <- get("rxnorm_druglist", envir = e)
 
     # add additional terms if specified

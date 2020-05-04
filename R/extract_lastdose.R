@@ -38,7 +38,7 @@ extract_lastdose <- function(phrase, p_start, d_start, d_stop,
                                time_exp = "default") {
   time_exp <- if(time_exp == "default"){
     e <- new.env()
-    data("time_regex", envir = e)
+    data("time_regex", package = 'medExtractR', envir = e)
     get("time_regex", envir = e)
   }else{time_exp}
 
