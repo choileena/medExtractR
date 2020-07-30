@@ -42,7 +42,7 @@
 #' The \code{stength_sep} argument is \code{NULL} by default, but can be used to
 #' identify shorthand for morning and evening doses. For example, consider the
 #' phrase \dQuote{Lamotrigine 300-200} (meaning 300 mg in the morning and 200 mg
-#' in the evening). The argument \code{strength_sep = '-'} identifies both
+#' in the evening). The argument \code{strength_sep = '-'} identifies
 #' the full expression \emph{300-200} as \emph{dose} in this phrase.
 #'
 #' @return data.frame with entities information. At least one row per entity is returned,
