@@ -47,8 +47,8 @@
 #' The \code{stength_sep} argument is \code{NULL} by default, but can be used to
 #' identify shorthand for morning and evening doses. For example, consider the
 #' phrase \sQuote{Lamotrigine 300-200} (meaning 300 mg in the morning and 200 mg
-#' in the evening). The argument \code{strength_sep = '-'} can identify both
-#' \emph{300} and \emph{200} as \emph{dose} in this phrase.
+#' in the evening). The argument \code{strength_sep = '-'} identifies both
+#' the full expression \emph{300-200} as \emph{dose} in this phrase.
 #'
 #' By default, the \code{drug_list} argument is \dQuote{rxnorm} which calls \code{data(rxnorm_druglist)}.
 #' A custom drug list in the form of a character string can be supplied instead, or can be appended
@@ -143,6 +143,23 @@ medExtractR <- function(note,
         # need to make sure position is relative to full note
         pos <- is_match[[1]][1] + last_pos - 1
         match_info <- rbind(match_info, c(drug_match, pos, len))
+
+        # include misspelling in between current and previous, if it exists
+        if(nchar(drug)>3){
+          im <- utils::aregexec(paste0(drug, "\\b"),
+                                substr(current_string, 1, current_pos),
+                                max.distance = ifelse(nchar(drug) <=
+                                                        5, 1, max_dist), ignore.case = TRUE, fixed = FALSE)
+          if(im > 0){
+            l <- attributes(im[[1]])$match.length
+
+            match_info <- rbind(match_info, c(substr(current_string,
+                                                     start = im[[1]][1],
+                                                     stop = im[[1]][1] + l - 1),
+                                              im[[1]][1] + last_pos - 1, l))
+          }
+        }
+
       }
 
       if(!exists("pos")){pos <- 0}
@@ -248,7 +265,7 @@ medExtractR <- function(note,
     drg <- drug_window$drug[i]
     drg_wndw <- drug_window$window[i]
 
-    after_drg <- substr(drg_wndw, nchar(drg)+1, nchar(wndw))
+    after_drg <- substr(drg_wndw, nchar(drg)+1, nchar(drg_wndw))
     if(grepl(drg, after_drg, ignore.case = T)){
       return(paste0(drg, sub(paste0(drg, ".+"), "", after_drg)))
     }else{return(drg_wndw)}
@@ -323,6 +340,7 @@ medExtractR <- function(note,
     rdf <- extract_entities(phrase = drug_window$window[i], p_start = drug_window$drug_start[i],
                             p_stop = drug_window$drug_stop[i], unit = unit,
                             strength_sep = strength_sep, ...)
+
     rdf <- rdf[!is.na(rdf[,'expr']),]
 
     # Extract last dose time if desired
@@ -346,17 +364,7 @@ medExtractR <- function(note,
       }
     }
 
-    if(nrow(rdf)==0){
-      if(drug_window$keep_drug[i]){
-        data.frame("entity" = 'DrugName',
-                   "expr" = paste(drug_window$drug[i],
-                                  paste(drug_window$drug_start[i],
-                                        drug_window$drug_start[i] + nchar(drug_window$drug[i]),
-                                        sep = ":"),
-                                  sep = ";"))
-      }
-      return(NA)
-    }
+    if(nrow(rdf)==0){return(NA)}
 
     rdf[nrow(rdf)+1,] <- c("DrugName", paste(drug_window$drug[i],
                                              paste(drug_window$drug_start[i],
@@ -392,6 +400,16 @@ medExtractR <- function(note,
   sp <- as.numeric(sub(":.+", "", results[,'pos']))
   results <- unique(results[order(sp),])
   row.names(results) <- NULL
+
+  # sometimes same expression gets extracted as strength and dose due to second drug name cutting off doseamt
+  # check/correct for this here
+  ix <- names(which(table(results$pos)>1))
+  for(x in ix){
+    rs <- results[results$pos==x,]
+    if(all(sort(rs$entity)==c("Dose", "Strength"))){
+      results <- results[-which(results$entity=="Dose" & results$pos==x),]
+    }
+  }
 
   return(results)
 }

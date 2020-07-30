@@ -42,8 +42,8 @@
 #' The \code{stength_sep} argument is \code{NULL} by default, but can be used to
 #' identify shorthand for morning and evening doses. For example, consider the
 #' phrase \dQuote{Lamotrigine 300-200} (meaning 300 mg in the morning and 200 mg
-#' in the evening). The argument \code{strength_sep = '-'} can identify both
-#' \emph{300} and \emph{200} as \emph{dose} in this phrase.
+#' in the evening). The argument \code{strength_sep = '-'} identifies both
+#' the full expression \emph{300-200} as \emph{dose} in this phrase.
 #'
 #' @return data.frame with entities information. At least one row per entity is returned,
 #' using \code{NA} when no expression was found for a given entity.\cr
@@ -101,6 +101,22 @@ extract_entities <- function(phrase, p_start, p_stop, unit, freq_fun = NULL,
     }
   }
 
+  # This could potentially be problematic (e.g., if a dose like 5/10 might be expected since it would be confused as a date)
+  # censor partial dates (missing year)
+  if(grepl("\\d{1,2}/\\d{1,2}", phrase)){
+    # could turn this into a helper function
+    month <- '((0?(1(?!\\d)|[2-9]))|1[0-2])'
+    day <- '((0?([1-3](?!\\d)|[4-9]))|1[0-9]|2[0-9]|3[0-1])'
+    slash_date <- str_extract_all(phrase, paste(month, day, sep="/"))[[1]]
+    dash_date <- str_extract_all(phrase, paste(month, day, sep="-"))[[1]]
+    dates <- c(slash_date, dash_date)
+
+    if(length(dates)>0){
+      for(i in 1:length(dates))
+        phrase <- str_replace_all(phrase, dates[i], paste0(rep('X', nchar(dates[i])), collapse=""))
+    }
+
+  }
 
   time_present <- gregexpr("\\d[^a-zA-Z]+\\s?(?=((am)|(pm))\\b)",
                            phrase, perl=T, ignore.case=T)[[1]]
@@ -112,7 +128,7 @@ extract_entities <- function(phrase, p_start, p_stop, unit, freq_fun = NULL,
       replace_time <- gsub("\\d", "X", substr(phrase, tpi, tpi+tpli))
       phrase <- paste0(substr(phrase, 1, tpi-1), replace_time,
                        substr(phrase, tpi+tpli+1, nchar(phrase)))
-  }}
+    }}
 
   # Numbers in phrase
   all_numbers <- unlist(str_extract_all(phrase, "\\.?\\d+(\\.\\d+)?"))
@@ -121,25 +137,46 @@ extract_entities <- function(phrase, p_start, p_stop, unit, freq_fun = NULL,
   num_positions <- num_positions[all_numbers != "0"]
   all_numbers <- all_numbers[all_numbers != "0"]
 
-  # ignore dosesequence numbers
+  # ignore isolated 0, "O2" for oxygen
+  # ignore dosesequence numbers, percentages,
   if(length(all_numbers) > 0){
+    iszero <- which(all_numbers=="0")
+    if(length(iszero)>0){
+      all_numbers <- all_numbers[-iszero]
+      num_positions <- num_positions[-iszero]
+    }
+    maybeoxy <- which(all_numbers=="2")
+    if(length(maybeoxy)>0){
+      isoxy <- sapply(maybeoxy, function(x){
+        grepl("(o|O)2",substr(phrase,num_positions[x]-1, num_positions[x]))
+      })
+      if(sum(isoxy>0)){
+        all_numbers <- all_numbers[-maybeoxy[isoxy]]
+        num_positions <- num_positions[-maybeoxy[isoxy]]
+      }
+    }
+
+    # changed \\b to (?![a-zA-Z0-9])
     ds_id <- mapply(function(an, np){
-        grepl(paste0(an, "\\s?(weeks|wks|days|seconds|months|a(m?)|p(m?))\\b"), substr(phrase, np, np+nchar(an)+7), ignore.case = T)
-      }, an=all_numbers, np=num_positions)
+
+      grepl(paste0(an, "\\s?(%|dose(s?)|hours|hrs|weeks|wks|days|years|yrs|a(m?)|p(m?))(?![a-zA-Z0-9])"),
+            substr(phrase, np, np+nchar(an)+7), ignore.case = T, perl=TRUE)
+    }, an=all_numbers, np=num_positions)
+
     all_numbers <- all_numbers[!ds_id]
     num_positions <- num_positions[!ds_id]
   }
 
   # Only used for doseamt, unlikely that people would be taking too many pills at once
-  t_num <- c("one", "two", "three", "four", "five")
+  t_num <- c("one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten")
 
-  text_numbers <- lapply(t_num, function(n){regexpr(n, phrase)})
+  text_numbers <- lapply(t_num, function(n){regexpr(n, phrase, ignore.case=TRUE)})
   inum <- which(unlist(text_numbers) != -1)
   if(length(inum) > 0){
     # which word expressions were found
     text_num <- t_num[inum]
 
-    text_res <- lapply(text_num, function(n){gregexpr(n, phrase)[[1]]})
+    text_res <- lapply(text_num, function(n){gregexpr(n, phrase, ignore.case=TRUE)[[1]]})
 
     # extract from note
     tn_expr <- unlist(sapply(seq_along(text_res), function(i){
@@ -248,20 +285,20 @@ extract_entities <- function(phrase, p_start, p_stop, unit, freq_fun = NULL,
       text_doseamt <- mapply(function(tne, tnp){
         # tablet notation
         da <- regexpr(paste0(tne, "(?=(\\s+)?(\\(\\w*\\)\\s+)?tabs)"),
-                      replace_tab(substr(phrase, tnp, tnp+15)), perl=T)
+                      replace_tab(substr(phrase_lc, tnp, tnp+15)), perl=T)
 
         # "take" notation
-        if(da == -1){da_expr <- str_extract(substr(phrase, max(1, tnp-8), tnp+nchar(tne)),
+        if(da == -1){da_expr <- str_extract(substr(phrase_lc, max(1, tnp-8), tnp+nchar(tne)),
                                             paste0("(?<=(take|takes|taking)(\\s?))", tne))
-        if(!is.na(da_expr)){da <- regexpr(tne, substr(phrase, tnp, tnp+nchar(tne)))}}
+        if(!is.na(da_expr)){da <- regexpr(tne, substr(phrase_lc, tnp, tnp+nchar(tne)))}}
 
         # parenthetical notation
         if(da == -1){da <- regexpr(paste0("(?<=[(])", tne, "(?=[)])"),
-                                   substr(phrase, max(1, tnp-2), tnp+nchar(tne)+1), perl=T)}
+                                   substr(phrase_lc, max(1, tnp-2), tnp+nchar(tne)+1), perl=T)}
 
         if(da == -1){da <- NA}else{
           stp <- tnp + attributes(da)$match.length
-          da <- paste(substr(phrase, tnp, stp-1), paste(tnp + p_start, stp + p_start, sep = ":"), sep = ";")
+          da <- paste(substr(phrase_lc, tnp, stp-1), paste(tnp + p_start, stp + p_start, sep = ":"), sep = ";")
         }
 
         return(da)
@@ -288,23 +325,22 @@ extract_entities <- function(phrase, p_start, p_stop, unit, freq_fun = NULL,
         is_dsc <- sapply(maybe_dsc, function(j){
           substr(phrase, num_end[j], num_pos[j+1]-1)
         }) %in% strength_sep
-        dsc_index <- c(maybe_dsc[c(is_dsc)], maybe_dsc[c(is_dsc)]+1)
-
-        is_time <- which(sapply(remaining_numbers, function(rn){
-          regexpr(paste(rn, "\\s?(weeks|hours|hrs)"), phrase)
-        }) != -1)
-        if(any(is_time %in% dsc_index)){
-          # Ignore ones that are actually time ranges
-          dsc_index <- dsc_index[-c(is_time-1, is_time)]
-        }
+        dsc_index <- sort(c(maybe_dsc[c(is_dsc)], maybe_dsc[c(is_dsc)]+1))
 
         # Add to dose results
         if(length(dsc_index) > 0) {
-          dsc_split <- remaining_numbers[dsc_index]
-          dsc_split_pos <- num_pos[dsc_index]
+          # Extract full expression - allow for variable number of dose separated by marker (e.g. x/x or x/x/x)
+          rpt <- which(dsc_index==c(NA,dsc_index[1:(length(dsc_index)-1)]))
+          dsci <- if(length(rpt)>0){dsc_index[-c(rpt-1,rpt)]}else{dsc_index}
 
-          dsc <- paste(dsc_split, paste(dsc_split_pos+ p_start,
-                                        dsc_split_pos+nchar(dsc_split)+ p_start, sep=":"), sep=";")
+
+          # right now assumes only one dose expression like this in phrase (e.g. wouldn't account for "y/y" in "drug name x/x then y/y")
+          dsc_split <- remaining_numbers[dsci]
+          dsc_split_pos <- num_pos[dsci]
+
+          dsc <- paste(substr(phrase, dsc_split_pos[1], dsc_split_pos[2]+nchar(dsc_split[2])-1),
+                       paste(dsc_split_pos[1]+ p_start,
+                             dsc_split_pos[2]+nchar(dsc_split[2])+ p_start, sep=":"), sep=";")
 
           num_pos <- num_pos[setdiff(1:length(remaining_numbers), dsc_index)]
           remaining_numbers <- remaining_numbers[setdiff(1:length(remaining_numbers), dsc_index)]
@@ -408,7 +444,7 @@ extract_entities <- function(phrase, p_start, p_stop, unit, freq_fun = NULL,
       npos <- num_pos[keep_num_id]
 
       # probably not doseamt if over 10
-      da_ids <- which(as.numeric(rnums) < 11)
+      da_ids <- which(as.numeric(rnums) <= 10)
       if(length(da_ids)>0){
         add_das <- sapply(da_ids, function(i){
           stp <- npos[i] + nchar(rnums[i])
@@ -548,7 +584,3 @@ extract_entities <- function(phrase, p_start, p_stop, unit, freq_fun = NULL,
 
   return(res)
 }
-
-
-
-

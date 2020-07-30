@@ -83,8 +83,8 @@ adjusts the width of the pre-drug window.
 The \code{stength_sep} argument is \code{NULL} by default, but can be used to
 identify shorthand for morning and evening doses. For example, consider the
 phrase \sQuote{Lamotrigine 300-200} (meaning 300 mg in the morning and 200 mg
-in the evening). The argument \code{strength_sep = '-'} can identify both
-\emph{300} and \emph{200} as \emph{dose} in this phrase.
+in the evening). The argument \code{strength_sep = '-'} identifies both
+the full expression \emph{300-200} as \emph{dose} in this phrase.
 
 By default, the \code{drug_list} argument is \dQuote{rxnorm} which calls \code{data(rxnorm_druglist)}.
 A custom drug list in the form of a character string can be supplied instead, or can be appended

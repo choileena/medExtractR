@@ -4,8 +4,16 @@
 \alias{extract_entities}
 \title{Extract Medication Entities From Phrase}
 \usage{
-extract_entities(phrase, p_start, p_stop, unit, freq_fun = NULL,
-  intaketime_fun = NULL, strength_sep = NULL, ...)
+extract_entities(
+  phrase,
+  p_start,
+  p_stop,
+  unit,
+  freq_fun = NULL,
+  intaketime_fun = NULL,
+  strength_sep = NULL,
+  ...
+)
 }
 \arguments{
 \item{phrase}{Text to search.}
@@ -72,8 +80,8 @@ By default and when \code{freq_fun} and/or \code{intaketime_fun} are \code{NULL}
 The \code{stength_sep} argument is \code{NULL} by default, but can be used to
 identify shorthand for morning and evening doses. For example, consider the
 phrase \dQuote{Lamotrigine 300-200} (meaning 300 mg in the morning and 200 mg
-in the evening). The argument \code{strength_sep = '-'} can identify both
-\emph{300} and \emph{200} as \emph{dose} in this phrase.
+in the evening). The argument \code{strength_sep = '-'} identifies both
+the full expression \emph{300-200} as \emph{dose} in this phrase.
 }
 \examples{
 note <- "Lamotrigine 25 mg tablet - 3 tablets oral twice daily"
