@@ -4,7 +4,9 @@
 \name{rxnorm_druglist}
 \alias{rxnorm_druglist}
 \title{List of Medications}
-\format{A vector with 59,333 character strings.}
+\format{
+A vector with 59,333 character strings.
+}
 \usage{
 rxnorm_druglist
 }
