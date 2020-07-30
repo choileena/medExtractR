@@ -5,7 +5,7 @@
 #' reduce, or switch. In the following example of clinical text, the word
 #' \sQuote{increase} represents a dose change keyword: \dQuote{Increase prograf to 5mg bid.}
 #'
-#' @format A vector with 17 character strings.
+#' @format A vector with 18 character strings.
 #'
 #' @keywords datasets
 #'
