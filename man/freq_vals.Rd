@@ -4,11 +4,13 @@
 \name{freq_vals}
 \alias{freq_vals}
 \title{Keywords Specifying Frequency}
-\format{A data frame with 77 observations on the following variables.
+\format{
+A data frame with 77 observations on the following variables.
 \describe{
   \item{expr}{A character vector, expressions to consider as frequency}
   \item{value}{A numeric vector, numeric value of frequency}
-}}
+}
+}
 \usage{
 freq_vals
 }

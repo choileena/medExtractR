@@ -4,7 +4,8 @@
 \name{time_regex}
 \alias{time_regex}
 \title{Keywords Specifying Time Expressions}
-\format{A vector with 5 regular expressions for the following categories.
+\format{
+A vector with 5 regular expressions for the following categories.
 \describe{
   \item{am/pm}{Time is indicated by the presence of \sQuote{am} or
     \sQuote{pm} following a numeric expression.}
@@ -18,7 +19,8 @@
     occurs before the time, e.g. \sQuote{last night at 10.}}
   \item{duration}{Time (in hours) between the last dose and most recent lab
     value}
-}}
+}
+}
 \usage{
 time_regex
 }

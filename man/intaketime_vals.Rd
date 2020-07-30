@@ -4,11 +4,13 @@
 \name{intaketime_vals}
 \alias{intaketime_vals}
 \title{Keywords Specifying Intake Time}
-\format{A data frame with 23 observations on the following variables.
+\format{
+A data frame with 23 observations on the following variables.
 \describe{
   \item{expr}{A character vector, expressions to consider as intake time}
   \item{value}{A numeric vector, numeric value of intake time}
-}}
+}
+}
 \usage{
 intaketime_vals
 }
