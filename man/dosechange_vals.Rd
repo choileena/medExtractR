@@ -5,7 +5,7 @@
 \alias{dosechange_vals}
 \title{Keywords Specifying Dose Change}
 \format{
-A vector with 17 character strings.
+A vector with 18 character strings.
 }
 \usage{
 dosechange_vals
