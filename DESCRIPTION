@@ -1,6 +1,6 @@
 Package: medExtractR
 Title: Extraction of Medication Information from Clinical Text
-Version: 0.1
+Version: 0.2
 Authors@R:
     c(person("Hannah", "Weeks", role = c("aut", "cre"),
              email = "hannah.l.weeks@vanderbilt.edu"),
