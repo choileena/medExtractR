@@ -88,7 +88,7 @@
 
 medExtractR <- function(note, drug_names, window_length, unit, max_dist = 0,
                         drug_list = "rxnorm", lastdose = FALSE, lastdose_window_ext = 1.5,
-                        strength_sep = NULL, flag_window = 30, dosechange_dict = 'default', 
+                        strength_sep = NULL, flag_window = 30, dosechange_dict = 'default',
                         ...) {
   def.saf <- getOption('stringsAsFactors')
   on.exit(options(stringsAsFactors = def.saf))
@@ -218,6 +218,8 @@ medExtractR <- function(note, drug_names, window_length, unit, max_dist = 0,
     }
   }
 
+
+  ## ! INITIAL WINDOW LENGTH - MAKE LARGER IN BOTH DIRECTIONS
   # String to extract based on number of characters
   # Will search within this string to get drug regimen
   wndw <- sapply(seq_len(nr), function(i){
@@ -226,6 +228,7 @@ medExtractR <- function(note, drug_names, window_length, unit, max_dist = 0,
 
     window_string <- substr(note, start = start_pos, stop = start_pos + len + window_length)
   })
+
 
   # Add in extended window if last dose time is desired
   if(lastdose){

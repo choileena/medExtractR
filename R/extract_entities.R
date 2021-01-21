@@ -130,6 +130,29 @@ extract_entities <- function(phrase, p_start, p_stop, unit, freq_fun = NULL,
                        substr(phrase, tpi+tpli+1, nchar(phrase)))
     }}
 
+
+
+  ### DURATION ####
+  addl <- list(...)
+  if(is.null(duration_fun) || as.character(substitute(duration_fun)) == "extract_generic") {
+    dict <- addl[['duration_dict']]
+    if(is.null(dict)) {
+      e <- new.env()
+      data("duration_vals", package = 'medExtractR', envir = e)
+      dict <- get("duration_vals", envir = e)
+    }
+    df <- extract_generic(phrase, dict)
+  } else {
+    df <- duration_fun(phrase, ...)
+  }
+
+  duration <- entity_metadata(phrase, p_start, df)
+
+  ## DURATION - If a number is identified as part of a duration expression, we wouldn't want to
+  # extract that in the next part
+  # Need to check
+
+
   # Numbers in phrase
   all_numbers <- unlist(str_extract_all(phrase, "\\.?\\d+(\\.\\d+)?"))
   num_positions <- gregexpr("\\.?\\d+(\\.\\d+)?", phrase, perl=T)[[1]]
@@ -387,6 +410,25 @@ extract_entities <- function(phrase, p_start, p_stop, unit, freq_fun = NULL,
   }
 
   intaketime <- entity_metadata(phrase, p_start, df)
+
+
+  ### ROUTE ####
+
+  addl <- list(...)
+  if(is.null(route_fun) || as.character(substitute(route_fun)) == "extract_generic") {
+    dict <- addl[['route_dict']]
+    if(is.null(dict)) {
+      e <- new.env()
+      data("route_vals", package = 'medExtractR', envir = e)
+      dict <- get("route_vals", envir = e)
+    }
+    df <- extract_generic(phrase, dict)
+  } else {
+    df <- route_fun(phrase, ...)
+  }
+
+  route <- entity_metadata(phrase, p_start, df)
+
 
   ## BACK TO DOSE ##
 
