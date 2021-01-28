@@ -1,4 +1,4 @@
-#' Extract Medication Entities From Phrase
+#' Extract Medication Entities From Phrase - Extension for Tapering application
 #'
 #' This function searches a phrase for medication dosing entities of interest. It
 #' is called within \code{\link{medExtractR}} and generally not intended for use outside
@@ -12,12 +12,17 @@
 #' @param intaketime_fun Function used to extract intaketime.
 #' @param duration_fun Function used to extract duration
 #' @param route_fun Function used to extract route
+#' @param doseschedule_fun Function used to extract doseschedule
+#' @param preposition_fun Function used to extract preposition
+#' @param timekeyword_fun Function used to extract timekeyword
+#' @param transition_fun Function used to extract transition
+#' @param dosechange_fun Function used to extract dosechange
 #' @param strength_sep Delimiter for contiguous medication strengths.
 #' @param \dots Parameter settings used in extracting frequency and intake time,
 #' including additional arguments to \code{freq_fun} and
 #' \code{intaketime_fun}. Use \code{freq_dict} to identify custom frequency
 #' dictionaries and \code{intaketime_dict } to identify custom intake time
-#' dictionaries.
+#' dictionaries. (Similar for all other entities with a corresponding "*_fun" argument)
 #'
 #' @details Various medication dosing entities are extracted within this function
 #' including the following:
@@ -70,9 +75,16 @@
 #' my_dictionary <- data.frame(c("daily", "twice daily"))
 #' extract_entities(note, 1, 53, "mg", freq_dict = my_dictionary)
 
-extract_entities <- function(phrase, p_start, p_stop, unit, freq_fun = NULL,
-                             intaketime_fun = NULL, duration_fun = NULL, route_fun = NULL,
-                             strength_sep = NULL, ...){
+extract_entities_tapering <- function(phrase, p_start, p_stop, unit, freq_fun = NULL,
+                                      intaketime_fun = NULL,
+                                      duration_fun = NULL,
+                                      route_fun = NULL,
+                                      doseschedule_fun = NULL,
+                                      preposition_fun = NULL,
+                                      timekeyword_fun = NULL,
+                                      transition_fun = NULL,
+                                      dosechange_fun = NULL,
+                                      strength_sep = NULL, ...){
   p_start <- p_start-1
 
   # Common issues: censor the expressions "24/7" and "24 hr"
@@ -95,7 +107,7 @@ extract_entities <- function(phrase, p_start, p_stop, unit, freq_fun = NULL,
   if(length(possible_dates)>0){
     censor <- sapply(possible_dates, function(x){
       y <- tryCatch(as.Date(paste0('2000', str_extract(x, "[-/]"), x)),
-                    error = function(e) e)
+               error = function(e) e)
       if(class(y)[1]=="Date"){T}else{F}
     }, USE.NAMES = F)
     possible_dates <- possible_dates[censor]
@@ -133,6 +145,8 @@ extract_entities <- function(phrase, p_start, p_stop, unit, freq_fun = NULL,
                        substr(phrase, tpi+tpli+1, nchar(phrase)))
     }}
 
+
+
   ### DURATION ####
   addl <- list(...)
   if(is.null(duration_fun) || as.character(substitute(duration_fun)) == "extract_generic") {
@@ -148,6 +162,10 @@ extract_entities <- function(phrase, p_start, p_stop, unit, freq_fun = NULL,
   }
 
   duration <- entity_metadata(phrase, p_start, df)
+
+  ## DURATION - If a number is identified as part of a duration expression, we wouldn't want to
+  # extract that in the next part
+  # Need to check
 
 
   # Numbers in phrase
@@ -225,7 +243,7 @@ extract_entities <- function(phrase, p_start, p_stop, unit, freq_fun = NULL,
   }
 
   if(length(all_numbers) == 0) {
-    strength <- NA;doseamt <- NA;dose <- NA
+    strength <- NA;doseamt <- NA;dosestr <- NA
     remaining_numbers <- all_numbers
     num_pos <- num_positions
   } else { # only look for entities if they exist
@@ -333,7 +351,7 @@ extract_entities <- function(phrase, p_start, p_stop, unit, freq_fun = NULL,
 
     ## DOSE ##
 
-    dose <- NA
+    dosestr <- NA
     if(!is.null(strength_sep)) {
       if(length(remaining_numbers) > 0) {
         # Cases where times of doses are denoted as ##-##
@@ -366,7 +384,7 @@ extract_entities <- function(phrase, p_start, p_stop, unit, freq_fun = NULL,
           remaining_numbers <- remaining_numbers[setdiff(1:length(remaining_numbers), dsc_index)]
 
 
-          dose <- dsc
+          dosestr <- dsc
         }
       }
     }
@@ -408,6 +426,7 @@ extract_entities <- function(phrase, p_start, p_stop, unit, freq_fun = NULL,
 
   intaketime <- entity_metadata(phrase, p_start, df)
 
+
   ### ROUTE ####
 
   addl <- list(...)
@@ -424,6 +443,87 @@ extract_entities <- function(phrase, p_start, p_stop, unit, freq_fun = NULL,
   }
 
   route <- entity_metadata(phrase, p_start, df)
+
+  ### doseschedule ####
+  addl <- list(...)
+  if(is.null(doseschedule_fun) || as.character(substitute(doseschedule_fun)) == "extract_generic") {
+    dict <- addl[['doseschedule_dict']]
+    if(is.null(dict)) {
+      e <- new.env()
+      data("doseschedule_vals", package = 'medExtractR', envir = e)
+      dict <- get("doseschedule_vals", envir = e)
+    }
+    df <- extract_generic(phrase, dict)
+  } else {
+    df <- doseschedule_fun(phrase, ...)
+  }
+
+  doseschedule <- entity_metadata(phrase, p_start, df)
+
+  ### preposition ####
+  addl <- list(...)
+  if(is.null(preposition_fun) || as.character(substitute(preposition_fun)) == "extract_generic") {
+    dict <- addl[['preposition_dict']]
+    if(is.null(dict)) {
+      e <- new.env()
+      data("preposition_vals", package = 'medExtractR', envir = e)
+      dict <- get("preposition_vals", envir = e)
+    }
+    df <- extract_generic(phrase, dict)
+  } else {
+    df <- preposition_fun(phrase, ...)
+  }
+
+  preposition <- entity_metadata(phrase, p_start, df)
+
+  ### timekeyword ####
+  addl <- list(...)
+  if(is.null(timekeyword_fun) || as.character(substitute(timekeyword_fun)) == "extract_generic") {
+    dict <- addl[['timekeyword_dict']]
+    if(is.null(dict)) {
+      e <- new.env()
+      data("timekeyword_vals", package = 'medExtractR', envir = e)
+      dict <- get("timekeyword_vals", envir = e)
+    }
+    df <- extract_generic(phrase, dict)
+  } else {
+    df <- timekeyword_fun(phrase, ...)
+  }
+
+  timekeyword <- entity_metadata(phrase, p_start, df)
+
+  ### transition ####
+  addl <- list(...)
+  if(is.null(transition_fun) || as.character(substitute(transition_fun)) == "extract_generic") {
+    dict <- addl[['transition_dict']]
+    if(is.null(dict)) {
+      e <- new.env()
+      data("transition_vals", package = 'medExtractR', envir = e)
+      dict <- get("transition_vals", envir = e)
+    }
+    df <- extract_generic(phrase, dict)
+  } else {
+    df <- transition_fun(phrase, ...)
+  }
+
+  transition <- entity_metadata(phrase, p_start, df)
+
+
+  ### dosechange ####
+  addl <- list(...)
+  if(is.null(dosechange_fun) || as.character(substitute(dosechange_fun)) == "extract_generic") {
+    dict <- addl[['dosechange_dict']]
+    if(is.null(dict)) {
+      e <- new.env()
+      data("dosechange_vals", package = 'medExtractR', envir = e)
+      dict <- get("dosechange_vals", envir = e)
+    }
+    df <- extract_generic(phrase, dict)
+  } else {
+    df <- dosechange_fun(phrase, ...)
+  }
+
+  dosechange <- entity_metadata(phrase, p_start, df)
 
 
   ## BACK TO DOSE ##
@@ -458,7 +558,7 @@ extract_entities <- function(phrase, p_start, p_stop, unit, freq_fun = NULL,
 
     # Add to dose results
     if(length(dsc) > 0){
-      if(all(is.na(dose))){dose <- dsc}else{dose <- c(dose, dsc)}
+      if(all(is.na(dosestr))){dosestr <- dsc}else{dosestr <- c(dosestr, dsc)}
     }
   }
 
@@ -467,7 +567,7 @@ extract_entities <- function(phrase, p_start, p_stop, unit, freq_fun = NULL,
   #print(num_pos)
   if(length(remaining_numbers) > 0){
     # Find last position of any found entities
-    ent_list <- list(freq, intaketime, strength, doseamt, dose)
+    ent_list <- list(freq, intaketime, strength, doseamt, dosestr)
     last_pos_byent <- sapply(ent_list, function(x){
       y <- gsub(x, pattern = ".+;", replacement = "")
       max(as.numeric(gsub(y, pattern = ":.+", replacement = "")))
@@ -533,7 +633,7 @@ extract_entities <- function(phrase, p_start, p_stop, unit, freq_fun = NULL,
   str_holdout <- strength[keep_str]
 
   if(all(is.na(doseamt))){ # If doseamt missing, reclassify strength as dose. works even if strength=NA
-    if(all(is.na(dose))){dose <- strength}else{dose <- c(dose, strength)}
+    if(all(is.na(dosestr))){dosestr <- strength}else{dosestr <- c(dosestr, strength)}
     strength <- NA
   } else {
     if(!all(is.na(strength))) {
@@ -550,12 +650,12 @@ extract_entities <- function(phrase, p_start, p_stop, unit, freq_fun = NULL,
       is_da <- which(df_sp$ent=="da")
 
       # if doseamt isn't after strength, should be dose
-      is_dose <- sapply(is_str, function(i){
+      is_dosestr <- sapply(is_str, function(i){
         !any(is_da == i + 1)
       })
-      if(any(is_dose)) {
-        dose <- strength[is_dose]
-        strength <- ifelse(all(is_dose), NA, strength[!is_dose])
+      if(any(is_dosestr)) {
+        dosestr <- strength[is_dosestr]
+        strength <- ifelse(all(is_dosestr), NA, strength[!is_dosestr])
       }
     }
   }
@@ -563,9 +663,9 @@ extract_entities <- function(phrase, p_start, p_stop, unit, freq_fun = NULL,
   # Things that should not have been changed over
   if(length(str_holdout) > 0){
     # remove from dose
-    switch_back <- dose %in% str_holdout
-    dose <- dose[!switch_back]
-    if(length(dose)==0){dose <- NA}
+    switch_back <- dosestr %in% str_holdout
+    dosestr <- dosestr[!switch_back]
+    if(length(dosestr)==0){dose <- NA}
 
     # put back into strength
     if(all(is.na(strength))){
@@ -588,9 +688,12 @@ extract_entities <- function(phrase, p_start, p_stop, unit, freq_fun = NULL,
 
   ent_res <- list("Frequency" = freq, "IntakeTime" = intaketime,
                   "Strength" = strength, "DoseAmt" = doseamt, "DoseStrength" = dosestr,
-                  "Duration" = duration, "Route" = route)
+                  "Duration" = duration, "Route" = route,"Transition" = transition,
+                  "Preposition" = preposition, "TimeKeyword" = timekeyword, "DoseSchedule" = doseschedule,
+                  "DoseChange" = dosechange)
 
-  entities <- c("Frequency", "IntakeTime", "Strength", "DoseAmt", "DoseStrength", "Duration", "Route")
+  entities <- c("Frequency", "IntakeTime", "Strength", "DoseAmt", "DoseStrength", "Duration", "Route",
+                "Transition", "Preposition", "TimeKeyword", "DoseSchedule", "DoseChange")
 
   lf <- sum(!is.na(freq))
   lit <- sum(!is.na(intaketime))
@@ -599,11 +702,15 @@ extract_entities <- function(phrase, p_start, p_stop, unit, freq_fun = NULL,
   lds <- sum(!is.na(dosestr))
   ldur <- sum(!is.na(duration))
   lrt <- sum(!is.na(route))
+  lt <- sum(!is.na(transition))
+  lprep <- sum(!is.na(preposition))
+  ltk <- sum(!is.na(timekeyword))
+  ldsc <- sum(!is.na(doseschedule))
+  ldch <- sum(!is.na(dosechange))
 
 
-  not_found <- entities[which(c(lf, lit, lstr, lda, lds, ldur, lrt) == 0)]
+  not_found <- entities[which(c(lf, lit, lstr, lda, lds, ldur, lrt, lt, lprep, ltk, ldsc, ldch) == 0)]
   found <- setdiff(entities, not_found)
-
 
   res_nf <- if(length(not_found) > 0){
     data.frame(entity = not_found, expr = rep(NA, length(not_found)))
@@ -618,6 +725,10 @@ extract_entities <- function(phrase, p_start, p_stop, unit, freq_fun = NULL,
                  expr = fr)
     }))
   }
+
+
+  ## !! res_f CONTAINS ALL EXTRACTED ENTITIES - HERE IS WHERE I SHOULD REMOVE ENTITIES OUTSIDE "WINDOW" IF NECESSARY
+
 
   if(is.null(res_nf)){
     res <- res_f
