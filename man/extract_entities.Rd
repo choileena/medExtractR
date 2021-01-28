@@ -11,6 +11,12 @@ extract_entities(
   unit,
   freq_fun = NULL,
   intaketime_fun = NULL,
+  duration_fun = NULL,
+  route_fun = NULL,
+  doseschedule_fun = NULL,
+  preposition_fun = NULL,
+  timekeyword_fun = NULL,
+  transition_fun = NULL,
   strength_sep = NULL,
   ...
 )
@@ -27,6 +33,18 @@ extract_entities(
 \item{freq_fun}{Function used to extract frequency.}
 
 \item{intaketime_fun}{Function used to extract intaketime.}
+
+\item{duration_fun}{Function used to extract duration}
+
+\item{route_fun}{Function used to extract route}
+
+\item{doseschedule_fun}{Function used to extract doseschedule}
+
+\item{preposition_fun}{Function used to extract preposition}
+
+\item{timekeyword_fun}{Function used to extract timekeyword}
+
+\item{transition_fun}{Function used to extract transition}
 
 \item{strength_sep}{Delimiter for contiguous medication strengths.}
 

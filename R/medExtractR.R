@@ -331,6 +331,19 @@ medExtractR <- function(note, drug_names, window_length, unit, max_dist = 0,
   }, USE.NAMES = F)
 
 
+
+  ##!! LAST LOCATION TO EDIT DRUG WINDOW BEFORE ENTERING ENTITY EXTRACTION FUNCTION
+  # Respecifying window length
+  # -	Previously:
+  #   >	1. Define window
+  #   >	2. Extract all entities within window
+  # -	Now:
+  #   >	Need to make default window length longer
+  #   >	Need a way to make window length flexible – but this would depend on entity locations
+
+
+
+
   # Extract dose entities
   res <- lapply(seq_along(drug_window$window), function(i) {
     rdf <- extract_entities(phrase = drug_window$window[i], p_start = drug_window$drug_start[i],
