@@ -15,7 +15,6 @@ medExtractR(
   lastdose_window_ext = 1.5,
   strength_sep = NULL,
   flag_window = 30,
-  dosechange_dict = "default",
   ...
 )
 }
@@ -44,8 +43,6 @@ extracted.}
 
 \item{flag_window}{How far around drug (in number of characters) to look for
 dose change keyword - default fixed to 30.}
-
-\item{dosechange_dict}{List of keywords used to determine if a dose change entity is present.}
 
 \item{\dots}{Parameter settings used in extracting frequency and intake time. Potentially useful
 parameters include \code{freq_dict} and \code{intaketime_dict} (see \code{\dots} argument in

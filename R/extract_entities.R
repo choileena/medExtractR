@@ -16,12 +16,13 @@
 #' @param preposition_fun Function used to extract preposition
 #' @param timekeyword_fun Function used to extract timekeyword
 #' @param transition_fun Function used to extract transition
+#' @param dosechange_fun Function used to extract dosechange
 #' @param strength_sep Delimiter for contiguous medication strengths.
 #' @param \dots Parameter settings used in extracting frequency and intake time,
 #' including additional arguments to \code{freq_fun} and
 #' \code{intaketime_fun}. Use \code{freq_dict} to identify custom frequency
 #' dictionaries and \code{intaketime_dict } to identify custom intake time
-#' dictionaries.
+#' dictionaries. (Similar for all other entities with a corresponding "*_fun" argument)
 #'
 #' @details Various medication dosing entities are extracted within this function
 #' including the following:
@@ -82,6 +83,7 @@ extract_entities <- function(phrase, p_start, p_stop, unit, freq_fun = NULL,
                              preposition_fun = NULL,
                              timekeyword_fun = NULL,
                              transition_fun = NULL,
+                             dosechange_fun = NULL,
                              strength_sep = NULL, ...){
   p_start <- p_start-1
 
@@ -507,6 +509,23 @@ extract_entities <- function(phrase, p_start, p_stop, unit, freq_fun = NULL,
   transition <- entity_metadata(phrase, p_start, df)
 
 
+  ### dosechange ####
+  addl <- list(...)
+  if(is.null(dosechange_fun) || as.character(substitute(dosechange_fun)) == "extract_generic") {
+    dict <- addl[['dosechange_dict']]
+    if(is.null(dict)) {
+      e <- new.env()
+      data("dosechange_vals", package = 'medExtractR', envir = e)
+      dict <- get("dosechange_vals", envir = e)
+    }
+    df <- extract_generic(phrase, dict)
+  } else {
+    df <- dosechange_fun(phrase, ...)
+  }
+
+  dosechange <- entity_metadata(phrase, p_start, df)
+
+
   ## BACK TO DOSE ##
 
   # This is for cases where we have drug_name # freq, and # is dose
@@ -661,7 +680,7 @@ extract_entities <- function(phrase, p_start, p_stop, unit, freq_fun = NULL,
   #### Building results ###
 
   # If no strength/dose was found, then set all values to NA (only want when associated dose info is present)
-  if(all(sapply(list(strength, doseamt, dose), function(x) all(is.na(x))))){
+  if(all(sapply(list(strength, doseamt, dose, duration), function(x) all(is.na(x))))){
     return(data.frame("entity" = c("Frequency", "IntakeTime", "Strength", "DoseAmt", "Dose"),
                       "expr" = rep(NA, 5)))
   }
@@ -670,10 +689,11 @@ extract_entities <- function(phrase, p_start, p_stop, unit, freq_fun = NULL,
   ent_res <- list("Frequency" = freq, "IntakeTime" = intaketime,
                   "Strength" = strength, "DoseAmt" = doseamt, "Dose" = dose,
                   "Duration" = duration, "Route" = route,"Transition" = transition,
-                  "Preposition" = preposition, "TimeKeyword" = timekeyword, "DoseSchedule" = doseschedule)
+                  "Preposition" = preposition, "TimeKeyword" = timekeyword, "DoseSchedule" = doseschedule,
+                  "DoseChange" = dosechange)
 
   entities <- c("Frequency", "IntakeTime", "Strength", "DoseAmt", "Dose", "Duration", "Route",
-                "Transition", "Preposition", "TimeKeyword", "DoseSchedule")
+                "Transition", "Preposition", "TimeKeyword", "DoseSchedule", "DoseChange")
 
   lf <- sum(!is.na(freq))
   lit <- sum(!is.na(intaketime))
@@ -686,8 +706,10 @@ extract_entities <- function(phrase, p_start, p_stop, unit, freq_fun = NULL,
   lprep <- sum(!is.na(preposition))
   ltk <- sum(!is.na(timekeyword))
   ldsc <- sum(!is.na(doseschedule))
+  ldch <- sum(!is.na(dosechange))
 
-  not_found <- entities[which(c(lf, lit, lstr, lda, lds, ldur, lrt, lt, lprep, ltk, ldsc ) == 0)]
+
+  not_found <- entities[which(c(lf, lit, lstr, lda, lds, ldur, lrt, lt, lprep, ltk, ldsc, ldch) == 0)]
   found <- setdiff(entities, not_found)
 
   res_nf <- if(length(not_found) > 0){

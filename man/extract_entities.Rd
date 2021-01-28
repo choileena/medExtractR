@@ -17,6 +17,7 @@ extract_entities(
   preposition_fun = NULL,
   timekeyword_fun = NULL,
   transition_fun = NULL,
+  dosechange_fun = NULL,
   strength_sep = NULL,
   ...
 )
@@ -46,13 +47,15 @@ extract_entities(
 
 \item{transition_fun}{Function used to extract transition}
 
+\item{dosechange_fun}{Function used to extract dosechange}
+
 \item{strength_sep}{Delimiter for contiguous medication strengths.}
 
 \item{\dots}{Parameter settings used in extracting frequency and intake time,
 including additional arguments to \code{freq_fun} and
 \code{intaketime_fun}. Use \code{freq_dict} to identify custom frequency
 dictionaries and \code{intaketime_dict } to identify custom intake time
-dictionaries.}
+dictionaries. (Similar for all other entities with a corresponding "*_fun" argument)}
 }
 \value{
 data.frame with entities information. At least one row per entity is returned,

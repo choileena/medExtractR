@@ -18,7 +18,6 @@
 #' @param strength_sep Delimiter for contiguous medication strengths (e.g., \sQuote{-} for \dQuote{LTG 200-300}).
 #' @param flag_window How far around drug (in number of characters) to look for
 #' dose change keyword - default fixed to 30.
-#' @param dosechange_dict List of keywords used to determine if a dose change entity is present.
 #' @param \dots Parameter settings used in extracting frequency and intake time. Potentially useful
 #' parameters include \code{freq_dict} and \code{intaketime_dict} (see \code{\dots} argument in
 #' \code{\link{extract_entities}}) to specify frequency or intake time dictionaries, as well as
@@ -88,16 +87,12 @@
 
 medExtractR <- function(note, drug_names, window_length, unit, max_dist = 0,
                         drug_list = "rxnorm", lastdose = FALSE, lastdose_window_ext = 1.5,
-                        strength_sep = NULL, flag_window = 30, dosechange_dict = 'default',
+                        strength_sep = NULL, flag_window = 30,
                         ...) {
   def.saf <- getOption('stringsAsFactors')
   on.exit(options(stringsAsFactors = def.saf))
   options(stringsAsFactors = FALSE)
-  if(length(dosechange_dict) == 1 && dosechange_dict == 'default') {
-    e <- new.env()
-    data("dosechange_vals", package = 'medExtractR', envir = e)
-    dosechange_dict <- get("dosechange_vals", envir = e)
-  }
+
 
   # Find all mentions of any of the drug names listed above
   # aregexec performs approximate matching - allows for `max_dist` discrepancies
@@ -193,30 +188,8 @@ medExtractR <- function(note, drug_names, window_length, unit, max_dist = 0,
   nr <- nrow(match_info)
 
   # Mark mentions that indicate a regimen change
-  match_info[, 'DoseChange'] <- NA
-  match_info[, 'dc_pos'] <- NA
-
   note_lc <- tolower(note)
-  for(i in seq_len(nr)) {
-    sp <- as.numeric(match_info[i, 'start_pos'])
-    rc_window <- substr(note_lc, start = sp - flag_window, stop = sp + flag_window)
 
-    rc <- sapply(dosechange_dict, function(fw){
-      flag <- regexpr(pattern = paste0(fw, "\\b"), text = rc_window)
-      flag
-    })
-
-    if(!all(rc == -1)){
-      # Pick closest word to drug
-      flag_dist <- abs(rc - flag_window)
-      min_flag <- which.min(flag_dist)
-      flag_wd <- names(rc)[min_flag]
-      rc_sp = sp - flag_window + rc[min_flag] - 1
-
-      match_info[i, 'DoseChange'] <- substr(note, rc_sp, rc_sp + nchar(flag_wd)-1)
-      match_info[i, 'dc_pos'] <- paste(rc_sp, rc_sp + nchar(flag_wd), sep = ":")
-    }
-  }
 
 
   ## ! INITIAL WINDOW LENGTH - MAKE LARGER IN BOTH DIRECTIONS
@@ -250,9 +223,7 @@ medExtractR <- function(note, drug_names, window_length, unit, max_dist = 0,
     drug_start = as.numeric(match_info[,'start_pos']),
     # ends immediately after drug
     drug_stop = as.numeric(match_info[,'start_pos']) + as.numeric(match_info[,'length']) - 1,
-    window = wndw,
-    dosechange = match_info[,'DoseChange'],
-    dosechange_pos = match_info[,'dc_pos']
+    window = wndw
   )
   drug_window <- drug_window[order(drug_window$drug_start),]
 
@@ -380,18 +351,7 @@ medExtractR <- function(note, drug_names, window_length, unit, max_dist = 0,
                                                    drug_window$drug_start[i] + nchar(drug_window$drug[i]),
                                                    sep = ":"),
                                              sep = ";"))
-    # Add in DoseChange info if it exists
-    if(!is.na(drug_window$dosechange[i])){
-      # check if dosechange mention occurs AFTER all other entities
-      # if so, ignore it (probably talking about next drug in the list)
-      dc_start_pos <- as.numeric(gsub(":.+", "", drug_window$dosechange_pos[i]))
-      ent_last_pos <- as.numeric(max(gsub(".+:", "", rdf$expr)))
 
-      # Only add if dosechange occurs before end of last entity (to be reasonably certain it belongs to the drug of interest)
-      if(dc_start_pos < ent_last_pos){
-        rdf[nrow(rdf)+1,] <- c("DoseChange", paste(drug_window$dosechange[i], drug_window$dosechange_pos[i], sep=";"))
-      }
-    }
 
     return(rdf[,c("entity", "expr")])
   })
