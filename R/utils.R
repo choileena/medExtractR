@@ -50,3 +50,34 @@ entity_metadata <- function(phrase, p_offset, df) {
   }
   md
 }
+
+#' Right Trim Window with Druglist
+#'
+#' This function updates a window by removing text occurring
+#' after a drugname found in the druglist vector.
+#'
+#' @param window character vector with text of interest.
+#' @param dl character vector with drugnames
+#'
+#' @return character vector with elements trimmed
+#' @keywords internal
+
+trim_window_with_druglist <- function(window, dl) {
+  # both window and dl can be vectors
+  dl_wb <- paste0("\\b", tolower(dl), "\\b")
+  # REGEX may fail unless characters are escaped
+  dl_wb <- gsub('([+()])', '\\\\\\1', dl_wb)
+  # Cut window short if another drug name appears
+  for(i in seq_along(window)) {
+    wndw <- window[i]
+    other_drugs <- stringi::stri_locate_all_regex(wndw, dl_wb, omit_no_match = TRUE, case_insensitive = TRUE)
+    other_drugs <- do.call(rbind, other_drugs)
+    if(nrow(other_drugs) > 0) {
+      # Only keep first one that appears
+      other_drugs <- other_drugs[order(other_drugs[,1], other_drugs[,1] - other_drugs[,2])[1],]
+      # Shorten window by first position
+      window[i] <- substr(wndw, 1, other_drugs[1] - 1)
+    }
+  }
+  window
+}
