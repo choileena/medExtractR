@@ -7,7 +7,7 @@
 extract_entities_tapering(
   phrase,
   p_start,
-  p_stop,
+  d_stop,
   unit,
   freq_fun = NULL,
   intaketime_fun = NULL,
@@ -26,8 +26,6 @@ extract_entities_tapering(
 \item{phrase}{Text to search.}
 
 \item{p_start}{Start position of phrase within original text.}
-
-\item{p_stop}{End position of phrase within original text.}
 
 \item{unit}{Unit of measurement for medication strength, e.g. \sQuote{mg}.}
 
@@ -56,6 +54,8 @@ including additional arguments to \code{freq_fun} and
 \code{intaketime_fun}. Use \code{freq_dict} to identify custom frequency
 dictionaries and \code{intaketime_dict } to identify custom intake time
 dictionaries. (Similar for all other entities with a corresponding "*_fun" argument)}
+
+\item{p_stop}{End position of phrase within original text.}
 }
 \value{
 data.frame with entities information. At least one row per entity is returned,
@@ -105,9 +105,5 @@ in the evening). The argument \code{strength_sep = '-'} identifies
 the full expression \emph{300-200} as \emph{dose} in this phrase.
 }
 \examples{
-note <- "Lamotrigine 25 mg tablet - 3 tablets oral twice daily"
-extract_entities(note, 1, nchar(note), "mg")
-# A user-defined dictionary can be used instead of the default
-my_dictionary <- data.frame(c("daily", "twice daily"))
-extract_entities(note, 1, 53, "mg", freq_dict = my_dictionary)
+
 }

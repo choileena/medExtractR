@@ -78,11 +78,7 @@
 #'
 #' @examples
 #' \donttest{
-#' note1 <- "Progrf Oral Capsule 1 mg 3 capsules by mouth twice a day - last
-#' dose at 10pm"
-#' note2 <- "Currently on lamotrigine 150-200, but will increase to lamotrigine 200mg bid"
-#' medExtractR(note1, c("prograf", "tacrolimus"), 60, "mg", 2, lastdose=TRUE)
-#' medExtractR(note2, c("lamotrigine", "ltg"), 130, "mg", 1, strength_sep = "-")
+#'
 #' }
 
 
@@ -91,10 +87,10 @@ medExtractR_tapering <- function(note, drug_names,
                                  #window_length = NULL, ## !!
                                  unit, max_dist = 0,
                                  drug_list = "rxnorm", lastdose = FALSE, lastdose_window_ext = 1.5,
-                                 strength_sep = NULL, flag_window = 30,
+                                 strength_sep = NULL,
                                  ...) {
   ## !!
-  wndw <- note
+  #wndw <- note
 
   def.saf <- getOption('stringsAsFactors')
   on.exit(options(stringsAsFactors = def.saf))
@@ -198,34 +194,21 @@ medExtractR_tapering <- function(note, drug_names,
 
 
 
-  ## ! INITIAL WINDOW LENGTH - MAKE LARGER IN BOTH DIRECTIONS
-  # String to extract based on number of characters
-  # Will search within this string to get drug regimen
-  # wndw <- sapply(seq_len(nr), function(i){
-  #   start_pos <- match_info[i,'start_pos']
-  #   len <- match_info[i,'length']
-  #
-  #   if(is.null(window_length)){
-  #
-  #   }else{
-  #     window_string <- substr(note, start = start_pos, stop = start_pos + len + window_length)
-  #   }
-  # })
+  ## !! INITIAL WINDOW LENGTH
+  wndw <- sapply(seq_len(nr), function(i){
+    window_string <- substr(note,
+                            start = if(i == 1){1}else{match_info[i-1,'start_pos'] + match_info[i-1,'length'] + 1},  # start after prev drug name
+                            stop = if(i == nr){nchar(note)}else{match_info[i+1,'start_pos']}) # stop before next drug name
+  })
 
+  wndw_sp <- sapply(seq_len(nr), function(i){
+    if(i == 1){
+      1
+    }else{
+      match_info[i-1,'start_pos'] + match_info[i-1,'length'] + 1
+    }
+  })
 
-  # Add in extended window if last dose time is desired
-  if(lastdose){
-    ld_wndw_ext <- do.call(rbind, lapply(seq(nr), function(i){
-      start_pos <- match_info[i,'start_pos']
-      len <- match_info[i,'length']
-
-      #lastdose needs more of a buffer
-      c(substr(note, start = max(1,start_pos-window_length*(lastdose_window_ext/2)),
-               stop = start_pos-1),# before window
-        substr(note, start = start_pos + len + window_length+1,
-               stop = min(nchar(note), start_pos + len + window_length*lastdose_window_ext))) # after window
-    }))
-  }
 
   # Window around drug to look for entities
   drug_window <- data.frame(
@@ -233,107 +216,109 @@ medExtractR_tapering <- function(note, drug_names,
     drug_start = as.numeric(match_info[,'start_pos']),
     # ends immediately after drug
     drug_stop = as.numeric(match_info[,'start_pos']) + as.numeric(match_info[,'length']) - 1,
+    wndw_start = wndw_sp,
     window = wndw
   )
   drug_window <- drug_window[order(drug_window$drug_start),]
 
-  # Cut string short if *exact* same drug name is used later in the string
-  # drug_window$window <- sapply(1:nrow(drug_window), function(i){
-  #   drg <- drug_window$drug[i]
-  #   drg_wndw <- drug_window$window[i]
-  #
-  #   after_drg <- substr(drg_wndw, nchar(drg)+1, nchar(drg_wndw))
-  #   if(grepl(drg, after_drg, ignore.case = T)){
-  #     return(paste0(drg, sub(paste0(drg, ".+"), "", after_drg)))
-  #   }else{return(drg_wndw)}
-  # })
 
-  ## !! REPEAT IN OPPOSITE DIRECTION - FOR INFO BEFORE DRUG NAME
-
-
-  # # Want to keep alternative drug names in same window, even if strength/dose appears between them
-  # drug_window$keep_drug <- sapply(1:nrow(drug_window), function(i){
-  #   if(i==1){return(FALSE)}else{
-  #     drug_window$drug_start[i] < drug_window$drug_stop[i-1] + window_length
-  #   }
-  # })
-
+  ## CHANGE TO RESTRICT BEFORE/AFTER WINDOW
   # exclude drug_names from drug_list
-  # if("rxnorm" %in% drug_list) {
-  #   # default - using rxnorm drug list
-  #   e <- new.env()
-  #   data("rxnorm_druglist", package = 'medExtractR', envir = e)
-  #   dl <- get("rxnorm_druglist", envir = e)
-  #
-  #   # add additional terms if specified
-  #   if(length(drug_list)>1){
-  #     dl <- c(dl, setdiff(drug_list, "rxnorm"))
-  #   }
-  # }else{
-  #   # non-rxnorm drug list provided
-  #   dl <- drug_list
-  # }
-  # # make sure drug names of interest are not in list
-  # rm_index <- unique(unlist(sapply(tolower(drug_names), function(x){
-  #   grep(x, tolower(dl))
-  # })))
-  # dl_lc <- tolower(dl[-rm_index])
-  #
-  # dl_wb <- paste0("\\b", dl_lc, "\\b")
-  # wndw_lc <- tolower(drug_window[,'window'])
-  # other_drug_list <- lapply(dl_wb, regexec, text=wndw_lc)
-  #
-  # # Cut window short if another drug name appears
-  # drug_window$window <- sapply(seq_along(wndw_lc), function(ix) {
-  #   wndw <- drug_window[ix,'window']
-  #   other_drugs <- lapply(other_drug_list, `[[`, ix)
-  #   other_drugs <- other_drugs[other_drugs != -1]
-  #
-  #   if(length(other_drugs) == 0) {
-  #     #If no other drugs found, return original window
-  #     return(wndw)
-  #   } else {
-  #     # Only keep first one that appears
-  #     other_drugs <- other_drugs[other_drugs==min(unlist(other_drugs))]
-  #
-  #     # If multiple drugs match same earliest start position, pick the longer expression
-  #     ml <- vapply(other_drugs, attr, numeric(1), 'match.length')
-  #     drug_stop <- which.max(ml)
-  #     sp <- as.numeric(other_drugs[drug_stop])
-  #     l <- as.numeric(ml[drug_stop])
-  #
-  #     # Extract other drug name as written in note
-  #     ds_expr <- substr(wndw, sp, sp+l-1)
-  #     # Shorten window to exclude other drugs
-  #     # Use tryCatch in case the extracted expression contains invalid regex
-  #     try_sub <- tryCatch(sub(paste0(ds_expr, ".+"), "", wndw), error=function(e) e)
-  #     new_wndw <- if(class(try_sub)[1] == "simpleError"){wndw} else {
-  #       sub(paste0(ds_expr, ".+"), "", wndw)
-  #     }
-  #     return(new_wndw)
-  #   }
-  # }, USE.NAMES = F)
+  if("rxnorm" %in% drug_list) {
+    # default - using rxnorm drug list
+    e <- new.env()
+    data("rxnorm_druglist", package = 'medExtractR', envir = e)
+    dl <- get("rxnorm_druglist", envir = e)
+
+    # add additional terms if specified
+    if(length(drug_list)>1){
+      dl <- c(dl, setdiff(drug_list, "rxnorm"))
+    }
+  }else{
+    # non-rxnorm drug list provided
+    dl <- drug_list
+  }
+  # make sure drug names of interest are not in list
+  rm_index <- unique(unlist(sapply(tolower(drug_names), function(x){
+    grep(x, tolower(dl))
+  })))
+  dl_lc <- tolower(dl[-rm_index])
+
+  dl_wb <- paste0("\\b", dl_lc, "\\b")
+  wndw_lc <- tolower(drug_window[,'window'])
+  other_drug_list <- lapply(dl_wb, regexec, text=wndw_lc)
+
+  # Cut window short if another drug name appears
+  drug_wndw_update <- do.call(rbind, lapply(seq_along(wndw_lc), function(ix) {
+    wndw <- drug_window[ix,'window']
+    other_drugs <- lapply(other_drug_list, `[[`, ix)
+    other_drugs <- other_drugs[other_drugs != -1]
+
+    if(length(other_drugs) == 0) {
+      #If no other drugs found, return original window
+      return(data.frame("wndw_start" = drug_window[ix,'wndw_start'],
+                        "window" = wndw))
+    } else {
+      # Only keep the ones closest to the anchor drug
+      drg_st <- drug_window[ix,'drug_start']
+      drg_diff <- drg_st - unlist(other_drugs)
+      before <- ifelse(drg_diff > 0, drg_diff, NA)
+      after <- ifelse(drg_diff < 0, abs(drg_diff), NA)
 
 
+      # Extract other drug name as written in note
+      new_wndw <- wndw
+      new_wndw_start <- drug_window[ix,'wndw_start']
 
-  ##!! LAST LOCATION TO EDIT DRUG WINDOW BEFORE ENTERING ENTITY EXTRACTION FUNCTION
-  # Respecifying window length
-  # -	Previously:
-  #   >	1. Define window
-  #   >	2. Extract all entities within window
-  # -	Now:
-  #   >	Need to make default window length longer
-  #   >	Need a way to make window length flexible – but this would depend on entity locations
+      if(sum(!is.na(before)) > 0){
+        drg_before<- other_drugs[which.min(before)][[1]]
 
-  # Figure out why rows are getting duplicated
+        ds_before_expr <- substr(wndw, drg_before, drg_before[1]+attr(drg_before, "match.length")-1)
+
+        # Shorten window to exclude other drugs
+        # Use tryCatch in case the extracted expression contains invalid regex
+        try_sub <- tryCatch(sub(paste0(".+", ds_before_expr), "", wndw), error=function(e) e)
+        new_wndw <- if(class(try_sub)[1] == "simpleError"){new_wndw} else {
+          sub(paste0(".+", ds_before_expr), "", new_wndw)
+        }
+        new_wndw_start <- if(class(try_sub)[1] == "simpleError"){new_wndw_start} else {
+          drug_window[ix,'wndw_start'] + drg_before[1] + attr(drg_before, "match.length")-1
+        }
+      }
+
+      if(sum(!is.na(after)) > 0){
+        drg_after <- other_drugs[which.min(after)][[1]]
+
+        ds_after_expr <- substr(wndw, drg_after, drg_after[1]+attr(drg_after, "match.length")-1)
+
+        # Shorten window to exclude other drugs
+        # Use tryCatch in case the extracted expression contains invalid regex
+        try_sub <- tryCatch(sub(paste0(ds_after_expr, ".+"), "", wndw), error=function(e) e)
+        new_wndw <- if(class(try_sub)[1] == "simpleError"){new_wndw} else {
+          sub(paste0(ds_after_expr, ".+"), "", new_wndw)
+        }
+      }
+
+
+      return(data.frame("wndw_start" = new_wndw_start,
+                        "window" = new_wndw))
+    }
+  }))
+
+  drug_window$wndw_start <- drug_wndw_update$wndw_start
+  drug_window$wndw <- drug_wndw_update$wndw
+
+
+  # Check if rows are still getting duplicated
   drug_window <- unique(drug_window)
+
 
 
 
   # Extract dose entities
   res <- lapply(seq_along(drug_window$window), function(i) {
     rdf <- extract_entities_tapering(phrase = drug_window$window[i],
-                                     p_start = 1, ## !! NEEDS TO CHANGE - just 1 temporarily until window length sorted out
+                                     p_start = drug_wndw_update$wndw[i], ## !! NEEDS TO CHANGE - ASSUMES PHRASE STARTS WITH THE DRUG NAME - just 1 temporarily until window length sorted out
                                      d_stop = drug_window$drug_stop[i], unit = unit,
                                      strength_sep = strength_sep, ...)
 
@@ -411,7 +396,7 @@ medExtractR_tapering <- function(note, drug_names,
     }
   }
 
-  # For preposition entity - only keep if it is immediately adjacent to another extracted (non-preposition) entity
+  # For preposition entity - only keep if it is adjacent to another extracted (non-preposition) entity
   if(any(results$entity == "Preposition")){
     res_temp <- results
     res_temp$bp <- as.numeric(gsub(":.+", "", res_temp$pos))
@@ -436,6 +421,32 @@ medExtractR_tapering <- function(note, drug_names,
     results <- subset(results, pred_keep)
 
   }
+
+
+  ## Transition entity - Initial attempt, require duration to occur before transition (not necessarily immediately before)
+  if(any(results$entity == "Transition")){
+    res_temp <- results
+    res_temp$is_trans <- ifelse(res_temp$entity=="Transition", 1, 0)
+
+    # Break up results into transition subgroups
+    res_temp$trans_grp <- cumsum(res_temp$is_trans)
+    res_temp$trans_grp[which(res_temp$is_trans==1)] <- res_temp$trans_grp[which(res_temp$is_trans==1)] - 1
+
+    # If Duration not present in group, don't keep as transition
+
+    trans_keep <- c()
+    for(i in 1:nrow(res_temp)){
+      if(res_temp$entity[i] == "Transition"){
+        keep_trans_i <- any(res_temp$entity=="Duration" & res_temp$trans_grp==res_temp$trans_grp[i])
+        trans_keep <- c(trans_keep, keep_trans_i)
+      }else{
+        trans_keep <- c(trans_keep, TRUE)
+      }
+    }
+    results <- subset(results, trans_keep)
+  }
+
+
 
   return(results)
 }

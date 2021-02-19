@@ -23,7 +23,12 @@
 
 extract_generic <- function(phrase, dict) {
   df <- do.call(rbind, lapply(dict[,1], function(r1) {
-    expr <- gregexpr(paste0(r1, "\\b"), phrase, ignore.case=TRUE, perl=TRUE)[[1]]
+    r2 <- if(grepl("\\w", substr(r1, nchar(r1), nchar(r1)))){
+      paste0(r1, "\\b")
+    }else{
+      r1
+    }
+    expr <- gregexpr(r2, phrase, ignore.case=TRUE, perl=TRUE)[[1]]
     expr_len <- attributes(expr)$match.length
     cbind(expr, expr_len)
   }))

@@ -69,11 +69,7 @@
 #' @export
 #'
 #' @examples
-#' note <- "Lamotrigine 25 mg tablet - 3 tablets oral twice daily"
-#' extract_entities(note, 1, nchar(note), "mg")
-#' # A user-defined dictionary can be used instead of the default
-#' my_dictionary <- data.frame(c("daily", "twice daily"))
-#' extract_entities(note, 1, 53, "mg", freq_dict = my_dictionary)
+#'
 
 extract_entities_tapering <- function(phrase, p_start, d_stop, unit, freq_fun = NULL,
                                       intaketime_fun = NULL,
@@ -833,15 +829,49 @@ extract_entities_tapering <- function(phrase, p_start, d_stop, unit, freq_fun = 
   }
 
 
-  ## !! res_f CONTAINS ALL EXTRACTED ENTITIES - HERE IS WHERE I SHOULD REMOVE ENTITIES OUTSIDE "WINDOW" IF NECESSARY
-
 
   if(is.null(res_nf)){
     res <- res_f
   }else{
     res <- rbind.data.frame(res_nf, res_f)
   }
+  unique(res)
+
+  ## !! RESTRICT EXTRACTED ENTITIES
+  res$pos = gsub(".+;", "", res$expr)
+  res$start = as.numeric(gsub(":.+", "", res$pos))
+  res$stop = as.numeric(gsub(".+:", "", res$pos))
+  res <- res[order(res$start),]
+  res$gap = c(NA, res$start[2:length(res$start)] - res$stop[1:(length(res$stop)-1)])
+
+  # Need to add in adjusted distances for relation to drug stop since drug name not part of res table yet
+  # entity right before drug name
+  if(any(res$start - d_stop < 0, na.rm = TRUE)){
+    adj_gap <- max(which(res$start - d_stop < 0))
+    if(length(adj_gap) > 0){res$gap[adj_gap] <- d_stop - res$stop[adj_gap]}
+  }
+  # entity right after drug name
+  if(any(res$start - d_stop > 0, na.rm = TRUE)){
+    adj_gap <- min(which(!is.na(res$start) & res$start - d_stop > 0))
+    if(length(adj_gap) > 0){res$gap[adj_gap] <- res$start[adj_gap] - d_stop}
+  }
+
+
+  # Remove entities in gap before group starts
+  gap_size=50 # (consider possibly shorter for before drug name and longer for after)
+  start_ix <- which((res$gap > gap_size) & (res$start < d_stop))
+  if(length(start_ix)>0){
+    start_ix <- min(start_ix)
+    res <- res[-c(1:start_ix),]
+  }
+
+
+  # Remove entities in gap after drug group starts
+  stop_ix <- which((res$gap > gap_size) & (res$start > d_stop))
+  if(length(stop_ix)>0){
+    stop_ix <- min(stop_ix)
+    res <- res[-c(stop_ix:nrow(res)),]
+  }
 
   return(res)
 }
-

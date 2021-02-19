@@ -7,14 +7,12 @@
 medExtractR_tapering(
   note,
   drug_names,
-  window_length,
   unit,
   max_dist = 0,
   drug_list = "rxnorm",
   lastdose = FALSE,
   lastdose_window_ext = 1.5,
   strength_sep = NULL,
-  flag_window = 30,
   ...
 )
 }
@@ -22,9 +20,6 @@ medExtractR_tapering(
 \item{note}{Text to search.}
 
 \item{drug_names}{Vector of drug names to locate.}
-
-\item{window_length}{Length (in number of characters) of window after drug
-in which to look.}
 
 \item{unit}{Strength unit to look for (e.g., \sQuote{mg}).}
 
@@ -41,14 +36,17 @@ extracted.}
 
 \item{strength_sep}{Delimiter for contiguous medication strengths (e.g., \sQuote{-} for \dQuote{LTG 200-300}).}
 
-\item{flag_window}{How far around drug (in number of characters) to look for
-dose change keyword - default fixed to 30.}
-
 \item{\dots}{Parameter settings used in extracting frequency and intake time. Potentially useful
 parameters include \code{freq_dict} and \code{intaketime_dict} (see \code{\dots} argument in
 \code{\link{extract_entities_tapering}}) to specify frequency or intake time dictionaries, as well as
 \sQuote{freq_fun} and \sQuote{intaketime_fun} for user-specified extraction functions. See
 \code{\link{extract_entities_tapering}} documentation for details.}
+
+\item{window_length}{Length (in number of characters) of window after drug
+in which to look.}
+
+\item{flag_window}{How far around drug (in number of characters) to look for
+dose change keyword - default fixed to 30.}
 }
 \value{
 data.frame with entity information\cr
@@ -102,11 +100,7 @@ does not endorse or recommend this or any other product. See \code{rxnorm_drugli
 }
 \examples{
 \donttest{
-note1 <- "Progrf Oral Capsule 1 mg 3 capsules by mouth twice a day - last
-dose at 10pm"
-note2 <- "Currently on lamotrigine 150-200, but will increase to lamotrigine 200mg bid"
-medExtractR(note1, c("prograf", "tacrolimus"), 60, "mg", 2, lastdose=TRUE)
-medExtractR(note2, c("lamotrigine", "ltg"), 130, "mg", 1, strength_sep = "-")
+
 }
 }
 \references{
