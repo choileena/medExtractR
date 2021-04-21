@@ -81,13 +81,66 @@ extract_entities_tapering <- function(phrase, p_start, d_stop, unit, freq_fun = 
                                       transition_fun = NULL,
                                       dosechange_fun = NULL,
                                       strength_sep = NULL, ...){
+
+  phrase_orig <- phrase
   p_start <- p_start-1
+
+
+  ### DURATION ####
+  addl <- list(...)
+  if(is.null(duration_fun) || as.character(substitute(duration_fun)) == "extract_generic") {
+    dict <- addl[['duration_dict']]
+    if(is.null(dict)) {
+      e <- new.env()
+      data("duration_vals", package = 'medExtractR', envir = e)
+      dict <- get("duration_vals", envir = e)
+    }
+    df <- extract_generic(phrase, dict)
+  } else {
+    df <- duration_fun(phrase, ...)
+  }
+
+  duration <- medExtractR:::entity_metadata(phrase, p_start, df)
+
+  # Reclassify "1/2" as a doseamt
+  if(any(grepl("^1/2;", duration))){
+    ix <- which(grepl("^1/2;", duration))
+    doseamt <- duration[ix]
+
+    # Allow correction "1/2" if it's an expression like "1 1/2"
+    for(i in seq_along(doseamt)){
+      bp <- as.numeric(sub("(.+;)", "", sub(":.+", "", doseamt[i])))-2
+      ep <- as.numeric(sub(".+:", "", doseamt[i]))
+      da_phrase <- substr(phrase, bp-p_start, ep-p_start-1)
+
+      if(grepl("\\d\\s1/2", da_phrase)){
+        doseamt[i] <- paste(da_phrase,
+                            paste(bp, ep, sep=":"), sep = ";")
+      }
+    }
+
+
+    # Update duration
+    duration <- duration[-ix]
+    if(length(duration)==0){duration <- NA}
+  }
+
+
+  ## DURATION - If a number is identified as part of a duration expression, we wouldn't want to
+  # extract that in the next part. Censor extracted durations
+  if(!all(is.na(duration))){
+    for(i in 1:length(duration)){
+      phrase <- paste0(substr(phrase, 1, df[i,'pos']-1),
+                       paste0(rep("X", times=as.numeric(df[i,'expr_len'])),collapse=""),
+                       substr(phrase, df[i,'pos']+df[i,'expr_len'], nchar(phrase)))
+    }
+  }
 
   # Common issues: censor the expressions "24/7" and "24 hr"
   phrase <- gsub("24/7", "XX/X", phrase)
   phrase <- gsub("24(\\s?[hr|hour])", "XX\\1", phrase)
 
-  # A bit of pre-processing: censor various date formats to prevent them being identified as drug information
+  # Additional date pre-processing: censor various date formats to prevent them being identified as drug information
   phrase <- gsub("\\d{2}[-/\\.]\\d{2}[-/\\.]\\d{4}", "##-##-####", phrase) # 11/11/1111
   phrase <- gsub("\\d{2}[-/\\.]\\d{1}[-/\\.]\\d{4}", "##-#-####", phrase) # 11/1/1111
   phrase <- gsub("\\d{1}[-/\\.]\\d{2}[-/\\.]\\d{4}", "#-##-####", phrase) # 1/11/1111
@@ -143,37 +196,10 @@ extract_entities_tapering <- function(phrase, p_start, d_stop, unit, freq_fun = 
 
 
 
-  ### DURATION ####
-  addl <- list(...)
-  if(is.null(duration_fun) || as.character(substitute(duration_fun)) == "extract_generic") {
-    dict <- addl[['duration_dict']]
-    if(is.null(dict)) {
-      e <- new.env()
-      data("duration_vals", package = 'medExtractR', envir = e)
-      dict <- get("duration_vals", envir = e)
-    }
-    df <- extract_generic(phrase, dict)
-  } else {
-    df <- duration_fun(phrase, ...)
-  }
-
-  duration <- medExtractR:::entity_metadata(phrase, p_start, df)
-
-  ## DURATION - If a number is identified as part of a duration expression, we wouldn't want to
-  # extract that in the next part. Censor extracted durations
-  if(!all(is.na(duration))){
-    for(i in 1:length(duration)){
-      phrase <- paste0(substr(phrase, 1, df[i,'pos']-1),
-                       paste0(rep("X", times=as.numeric(df[i,'expr_len'])),collapse=""),
-                       substr(phrase, df[i,'pos']+df[i,'expr_len'], nchar(phrase)))
-    }
-  }
-
-
 
   # Numbers in phrase
-  all_numbers <- unlist(str_extract_all(phrase, "\\.?\\d+(\\.\\d+)?"))
-  num_positions <- gregexpr("\\.?\\d+(\\.\\d+)?", phrase, perl=T)[[1]]
+  all_numbers <- unlist(str_extract_all(phrase, "(?<!q)\\.?\\d+(\\.\\d+)?(?!(st|th))"))
+  num_positions <- gregexpr("(?<!q)\\.?\\d+(\\.\\d+)?(?!(st|th))", phrase, perl=T)[[1]]
   # Don't allow 0 to be returned on its own
   num_positions <- num_positions[all_numbers != "0"]
   all_numbers <- all_numbers[all_numbers != "0"]
@@ -200,7 +226,7 @@ extract_entities_tapering <- function(phrase, p_start, d_stop, unit, freq_fun = 
     # changed \\b to (?![a-zA-Z0-9])
     ds_id <- mapply(function(an, np){
 
-      grepl(paste0(an, "\\s?(%|dose(s?)|hours|hrs|weeks|wks|days|years|yrs|a(m?)|p(m?))(?![a-zA-Z0-9])"),
+      grepl(paste0(an, "\\s?(%|dose(s?)|hours|hrs|weeks|wks|days|years|yrs|am|pm)(?![a-zA-Z0-9])"),
             substr(phrase, np, np+nchar(an)+7), ignore.case = T, perl=TRUE)
     }, an=all_numbers, np=num_positions)
 
@@ -209,7 +235,7 @@ extract_entities_tapering <- function(phrase, p_start, d_stop, unit, freq_fun = 
   }
 
   # Only used for doseamt, unlikely that people would be taking too many pills at once
-  t_num <- c("one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten")
+  t_num <- c("\\bone", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten")
 
   text_numbers <- lapply(t_num, function(n){regexpr(n, phrase, ignore.case=TRUE)})
   inum <- which(unlist(text_numbers) != -1)
@@ -246,7 +272,11 @@ extract_entities_tapering <- function(phrase, p_start, d_stop, unit, freq_fun = 
   }
 
   if(length(all_numbers) == 0) {
-    strength <- NA;doseamt <- NA;dosestr <- NA;disp <- NA;refill <- NA
+    strength <- NA;dosestr <- NA;disp <- NA;refill <- NA
+    if(!exists("doseamt")){
+      doseamt <- NA
+    }
+
     remaining_numbers <- all_numbers
     num_pos <- num_positions
   } else { # only look for entities if they exist
@@ -263,7 +293,6 @@ extract_entities_tapering <- function(phrase, p_start, d_stop, unit, freq_fun = 
     }else{
 
       disp <- mapply(function(rn, np){
-
         if(grepl("disp(ense)?", substr(phrase_lc, np-10, np+10))){
 
           paste(rn, paste(np + p_start, np + nchar(rn) + p_start, sep = ":"), sep = ";")
@@ -287,8 +316,8 @@ extract_entities_tapering <- function(phrase, p_start, d_stop, unit, freq_fun = 
     }else{
 
       refill <- mapply(function(rn, np){
-
-        if(grepl("refill(s?)", substr(phrase_lc, np-10, np+10))){
+        # for number before refill - make sure not allowing colon
+        if(grepl(paste0("refill(s?):?\\s?",rn), substr(phrase_lc, np-10, np+10))){
 
           paste(rn, paste(np + p_start, np + nchar(rn) + p_start, sep = ":"), sep = ";")
 
@@ -305,6 +334,14 @@ extract_entities_tapering <- function(phrase, p_start, d_stop, unit, freq_fun = 
       if(length(refill)==0){refill <- NA}
     }
 
+    any_refill_0 <- grepl("refills:\\s0(?!\\d)", phrase_lc, perl=TRUE)
+    if(any_refill_0){
+      r0_pos <- gregexpr("(?<=refills:\\s)0", phrase_lc, perl=TRUE)
+
+      refill_0 <- paste("0", paste(r0_pos[[1]] + p_start, r0_pos[[1]] + p_start + 1, sep=":"), sep=";")
+
+      if(is.na(refill)){refill <- refill_0}else{refill <- c(refill, refill_0)}
+    }
 
 
 
@@ -343,44 +380,52 @@ extract_entities_tapering <- function(phrase, p_start, d_stop, unit, freq_fun = 
     ### DOSEAMT ###
 
     if(length(remaining_numbers) == 0) {
-      doseamt <- NA
+      if(!exists("doseamt")){doseamt <- NA}
     } else {
-      doseamt <- mapply(function(rn, np){
+
+      doseamt_addl <- mapply(function(rn, np){
         # substr is used to define narrow search windows
         # this helps prevent overlap between adjacent numeric values
-        da <- regexpr(paste0(rn, "(?=(\\s+)?(\\(\\w*\\)\\s+)?tabs)"),
-                      medExtractR:::replace_tab(substr(phrase, np, np+15)), perl=T)
+        da <- grepl(paste0(rn, "(\\s+)?(\\(\\w*\\)\\s+)?tabs"),
+                    medExtractR:::replace_tab(substr(phrase, np, np+15)), perl=T)
 
         # "take" notation
-        if(da == -1){da_expr <- str_extract(substr(phrase, max(1, np-8), np+nchar(rn)),
-                                            paste0("(?<=(take|takes|taking)(\\s?))", rn))
-        if(!is.na(da_expr)){da <- regexpr(rn, substr(phrase, np, np+nchar(rn)))}}
+        if(!da){da <- grepl(paste0("(take|takes|taking)(\\s?)", rn),
+                            substr(phrase, max(1, np-8), np+nchar(rn)), perl=TRUE)}
 
         # parenthetical notation
-        if(da == -1){da <- regexpr(paste0("(?<=[(])", rn, "(?=[)])"),
-                                   substr(phrase, max(1, np-2), np+nchar(rn)+1), perl=T)}
+        if(!da){da <- grepl(paste0("\\(", rn, "\\s?(p|t|c)?\\)"),
+                            substr(phrase, max(1, np-2), np+nchar(rn)+1), perl=T)}
 
         # number immediately after strength/dose mention, but not with another number immeiately after
-        if(da == -1){da_expr <- regexpr(paste0("(?<=", unit, ")\\)?\\s", rn, "\\s(?!(\\d|hours?|hrs?))"),
-                                        substr(phrase, max(1, np-8), np+nchar(rn)+7),perl=T)
+        if(!da){da <- grepl(paste0("", unit, "\\)?\\s?", rn, "\\s(?!(\\d|hours?|hrs?))"),
+                            substr(phrase, max(1, np-8), np+nchar(rn)+7),perl=T)}
 
-        if(da_expr!=-1){da <- regexpr(rn, substr(phrase, np, np+nchar(rn)))}}
+        if(!da){da <- grepl(paste0(rn, "\\son\\s(day|week)\\s\\d"),
+                            substr(phrase_orig, np, np+nchar(rn)+10),perl=T)}
 
-        if(da == -1){da <- NA}else{
-          stp <- np + attributes(da)$match.length
-          da <- paste(substr(phrase, np, stp-1), paste(np + p_start, stp + p_start, sep = ":"), sep = ";")
+        if(!da){da <- grepl(paste0(rn, "\\son\\s(first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth)\\s(day|week)"),
+                            substr(phrase_orig, np, np+nchar(rn)+20),perl=T)}
+
+        if(!da){da <- NA}else{
+          da <- paste(rn, paste(np + p_start, np + nchar(rn) + p_start, sep = ":"), sep = ";")
         }
 
         return(da)
       }, rn = remaining_numbers, np = num_pos, USE.NAMES=FALSE)
 
       # Numeric expressions that still need to be examined
-      remaining_numbers <- remaining_numbers[which(is.na(doseamt))]
-      num_pos <- num_pos[which(is.na(doseamt))]
+      remaining_numbers <- remaining_numbers[which(is.na(doseamt_addl))]
+      num_pos <- num_pos[which(is.na(doseamt_addl))]
 
       # Keep only non-NA values
-      doseamt <- doseamt[!is.na(doseamt)]
-      if(length(doseamt)==0){doseamt <- NA}
+      if(!exists("doseamt")){
+        doseamt <- doseamt_addl[!is.na(doseamt_addl)]
+        if(length(doseamt)==0){doseamt <- NA}
+      }else{
+        doseamt <- c(doseamt, doseamt_addl[!is.na(doseamt_addl)])
+      }
+
     }
 
     # text numbers for doseamt
@@ -399,6 +444,12 @@ extract_entities_tapering <- function(phrase, p_start, d_stop, unit, freq_fun = 
         if(da == -1){da <- regexpr(paste0("(?<=[(])", tne, "(?=[)])"),
                                    substr(phrase_lc, max(1, tnp-2), tnp+nchar(tne)+1), perl=T)}
 
+        if(da == -1){da <- regexpr(paste0(tne, "(?=\\son\\s(day|week)\\s\\d)"),
+                                   substr(phrase_orig, tnp, tnp+nchar(tne)+15),perl=T)}
+
+        if(da == -1){da <- regexpr(paste0(tne, "(?=\\son\\s(first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth)\\s(day|week))"),
+                                   substr(phrase_orig, tnp, tnp+nchar(tne)+25),perl=T)}
+
         if(da == -1){da <- NA}else{
           stp <- tnp + attributes(da)$match.length
           da <- paste(substr(phrase_lc, tnp, stp-1), paste(tnp + p_start, stp + p_start, sep = ":"), sep = ";")
@@ -413,6 +464,33 @@ extract_entities_tapering <- function(phrase, p_start, d_stop, unit, freq_fun = 
         if(any(is.na(doseamt))){doseamt <- text_doseamt}else{doseamt <- c(doseamt, text_doseamt)}
       }
     }
+
+    # Sequence of numbers
+    if(length(remaining_numbers) >= 2){
+      seq_num <- which(abs(diff(as.numeric(remaining_numbers))) %in% c(1,0.5))
+      if(length(seq_num) > 0){
+        seq_expr <- remaining_numbers[c(seq_num, max(seq_num)+1)]
+        seq_pos <- num_pos[c(seq_num, max(seq_num)+1)]
+
+        # Just keep ones that appear within 2-3 characters of each other
+        ix <- which(diff(seq_pos) <= 3)
+        if(length(ix)>0){
+          ix <- c(ix, max(ix)+1)
+
+          da_seq <- paste(remaining_numbers[ix],
+                          paste(num_pos[ix]+p_start,
+                                num_pos[ix]+p_start+nchar(remaining_numbers[ix]),sep=":"), sep=";")
+
+          remaining_numbers <- remaining_numbers[-ix]
+          num_pos <- num_pos[-ix]
+
+          if(all(is.na(doseamt))){doseamt <- da_seq}else{doseamt <- c(doseamt, da_seq)}
+
+
+        }
+      }
+    }
+
 
     ## DOSE ##
 
@@ -573,7 +651,6 @@ extract_entities_tapering <- function(phrase, p_start, d_stop, unit, freq_fun = 
 
   transition <- medExtractR:::entity_metadata(phrase, p_start, df)
 
-
   ### dosechange ####
   addl <- list(...)
   if(is.null(dosechange_fun) || as.character(substitute(dosechange_fun)) == "extract_generic") {
@@ -646,24 +723,6 @@ extract_entities_tapering <- function(phrase, p_start, d_stop, unit, freq_fun = 
       rnums <- remaining_numbers[keep_num_id]
       npos <- num_pos[keep_num_id]
 
-      # probably not doseamt if over 10
-      da_ids <- which(as.numeric(rnums) <= 10)
-      if(length(da_ids)>0){
-        add_das <- sapply(da_ids, function(i){
-          stp <- npos[i] + nchar(rnums[i])
-
-          paste(substr(phrase, npos[i], stp-1),
-                paste(npos[i] + p_start, stp + p_start, sep = ":"), sep = ";")
-
-        })
-
-        # Numeric expressions that still need to be examined
-        remaining_numbers <- remaining_numbers[!da_ids]
-        num_pos <- num_pos[!da_ids]
-
-        if(all(is.na(doseamt))){doseamt <- add_das}else{doseamt <- c(doseamt, add_das)}
-      }
-
     }
 
   }
@@ -698,6 +757,8 @@ extract_entities_tapering <- function(phrase, p_start, d_stop, unit, freq_fun = 
     #in_paren |
     return(after_da | before_tab)
   })
+  keep_str[which(is.na(keep_str))] <- FALSE
+
   str_holdout <- strength[keep_str]
 
   # Anything not marked as keep_str gets converted to dosestr
@@ -760,18 +821,34 @@ extract_entities_tapering <- function(phrase, p_start, d_stop, unit, freq_fun = 
   }
 
   # if doseamt is too high, convert to dispense amount
+  ## !! RETHINK THIS RULE
   if(!all(is.na(doseamt))){
     da_expr <- gsub(";.+", "", doseamt)
+    da_start <- as.numeric(gsub(".+;", "", gsub(":.+", "", doseamt)))
+    da_stop <- as.numeric(gsub(".+:", "", doseamt))
     # doseamts that are too high - chose 25 becuase 30 (monthly) is potentially a common dispense amt
     is_disp <- suppressWarnings(as.numeric(da_expr) > 25) # suppress warnings for text dose amounts
 
-    if(length(is_disp)> 0 & all(is.na(disp))){
+    if(sum(is_disp,na.rm = TRUE)> 0 & all(is.na(disp))){
       is_disp[is.na(is_disp)] <- FALSE
-      disp <- doseamt[is_disp]
+
+      # Only consider as dispense amt if tablet or dispense appears nearby
+      change_disp <- sapply(1:length(da_start), function(i){
+        ifelse(is_disp[i], grepl("dispense|tab(let)?s?|pills?|cap(sule)?s?",
+                                 substr(phrase, da_start[i]-p_start-15, da_stop[i]-p_start+15)), FALSE)
+      })
+      if(sum(change_disp)>0){disp <- doseamt[change_disp]}
+      # Either way, too high to be doseamt
       doseamt <- doseamt[!is_disp]
     }else if(length(is_disp)> 0 & !all(is.na(disp))){
       is_disp[is.na(is_disp)] <- FALSE
-      disp <- c(disp, doseamt[is_disp])
+
+      # Only consider as dispense amt if tablet or dispense appears nearby
+      change_disp <- sapply(1:length(da_start), function(i){
+        ifelse(is_disp[i], grepl("dispense|tab(let)?s?|pills?|cap(sule)?s?",
+                                 substr(phrase, da_start[i]-p_start-15, da_stop[i]-p_start+15)), FALSE)
+      })
+      if(sum(change_disp)>0){disp <- c(disp, doseamt[change_disp])}
       doseamt <- doseamt[!is_disp]
     }
     if(length(doseamt)==0){doseamt<-NA}
@@ -780,9 +857,14 @@ extract_entities_tapering <- function(phrase, p_start, d_stop, unit, freq_fun = 
   #### Building results ###
 
   # If no strength/dose was found, then set all values to NA (only want when associated dose info is present)
+  if(length(dosestr)==0){dosestr <- NA}
   if(all(sapply(list(strength, doseamt, dosestr, duration), function(x) all(is.na(x))))){
-    return(data.frame("entity" = c("Frequency", "IntakeTime", "Strength", "DoseAmt", "DoseStrength"),
-                      "expr" = rep(NA, 5)))
+    if(!any(tolower(gsub(";.+", "", doseschedule)) %in% c("done", "off", "stop", "last", "completed",
+                                                          "complete", "discontinue", "discontinuing",
+                                                          "finished"))){
+      return(data.frame("entity" = c("Frequency", "IntakeTime", "Strength", "DoseAmt", "DoseStrength"),
+                        "expr" = rep(NA, 5)))
+    }
   }
 
 
@@ -835,42 +917,118 @@ extract_entities_tapering <- function(phrase, p_start, d_stop, unit, freq_fun = 
   }else{
     res <- rbind.data.frame(res_nf, res_f)
   }
-  unique(res)
+  res <- unique(res)
+  res <- subset(res, !is.na(expr))
 
-  ## !! RESTRICT EXTRACTED ENTITIES
+
+  ## !! RESTRICT EXTRACTED ENTITIES - only consider distances between dose-critical entities (str/dose, doseamt, duration)
   res$pos = gsub(".+;", "", res$expr)
   res$start = as.numeric(gsub(":.+", "", res$pos))
   res$stop = as.numeric(gsub(".+:", "", res$pos))
   res <- res[order(res$start),]
-  res$gap = c(NA, res$start[2:length(res$start)] - res$stop[1:(length(res$stop)-1)])
+  res <- subset(res, !is.na(entity))
+  res$rn <- 1:nrow(res)
+  res1 <- subset(res, !(entity %in% c("Preposition", "TimeKeyword", "Transition")))
 
-  # Need to add in adjusted distances for relation to drug stop since drug name not part of res table yet
-  # entity right before drug name
-  if(any(res$start - d_stop < 0, na.rm = TRUE)){
-    adj_gap <- max(which(res$start - d_stop < 0))
-    if(length(adj_gap) > 0){res$gap[adj_gap] <- d_stop - res$stop[adj_gap]}
+  # Only look for gaps if there is more than one row
+  if(nrow(res1)>1){
+    res1$gap = c(NA, res1$start[2:length(res1$start)] - res1$stop[1:(length(res1$stop)-1)])
+
+    # Need to add in adjusted distances for relation to drug stop since drug name not part of res table yet
+    # entity right before drug name
+    if(any(res1$start - d_stop < 0, na.rm = TRUE)){
+      adj_gap <- max(which(res1$start - d_stop < 0))
+      if(length(adj_gap) > 0){res1$gap[adj_gap] <- d_stop - res1$stop[adj_gap]}
+    }
+    # entity right after drug name
+    if(any(res1$start - d_stop > 0, na.rm = TRUE)){
+      adj_gap <- min(which(!is.na(res1$start) & res1$start - d_stop > 0))
+      if(length(adj_gap) > 0){res1$gap[adj_gap] <- res1$start[adj_gap] - d_stop}
+    }
+
+    # Remove entities in gap before group starts
+    gap_size=50 # (consider possibly shorter for before drug name and longer for after)
+    start_ix <- which((res1$gap > gap_size/2) & (res1$start < d_stop))
+    if(length(start_ix)>0){
+      start_ix <- min(start_ix)
+
+      # Keep excluded entities if close to where we start excluding
+      rn <- res1$rn[start_ix]
+      while(rn > 1){
+        ent_gap <- res$start[rn] - res$stop[rn-1]
+        if(res$entity[rn-1] %in% c("Preposition", "Transition")){
+          # If preceding entity is a preposition or transition, require it to occur immediately before
+          if(ent_gap <= 1){
+            rn <- rn-1
+          }else{
+            break
+          }
+        }else{
+          # If preceding entity is a time keyword, allow a short gap
+          if(ent_gap <= 5){
+            rn <- rn-1
+          }else{
+            break
+          }
+        }
+      }
+
+      if(rn > 1){
+        res <- res[-c(1:(rn-1)),]
+      }else{
+        res <- res[-1,]
+      }
+    }
+
+
+    # Remove entities in gap after drug group starts
+    stop_ix <- which((res1$gap > gap_size) & (res1$start > d_stop))
+    if(length(stop_ix)>0){
+      stop_ix <- min(stop_ix)
+
+      if(stop_ix==1){
+        # All key entities are far away from drug name
+        res <- subset(res, start < d_stop)
+      }else{
+        # Keep excluded entities if close to where we start excluding
+        rn <- res1$rn[stop_ix-1]
+        while(rn < res1$rn[stop_ix]){
+          ent_gap <- res$start[res$rn == rn+1] - res$stop[res$rn == rn]
+          if(length(ent_gap)==0){ent_gap <- 6}
+          if(res$entity[res$rn == rn+1] %in% c("Preposition", "Transition")){
+            # If next entity is a preposition or transition, require it to occur immediately before
+            if(ent_gap <= 1){
+              rn <- rn+1
+            }else{
+              break
+            }
+          }else{
+            # If next entity is a time keyword, allow a short gap
+            if(ent_gap <= 5){
+              rn <- rn+1
+            }else{
+              break
+            }
+          }
+        }
+
+        res <- res[-c((rn+1):nrow(res)),]
+      }
+
+
+    }
   }
-  # entity right after drug name
-  if(any(res$start - d_stop > 0, na.rm = TRUE)){
-    adj_gap <- min(which(!is.na(res$start) & res$start - d_stop > 0))
-    if(length(adj_gap) > 0){res$gap[adj_gap] <- res$start[adj_gap] - d_stop}
-  }
 
 
-  # Remove entities in gap before group starts
-  gap_size=50 # (consider possibly shorter for before drug name and longer for after)
-  start_ix <- which((res$gap > gap_size) & (res$start < d_stop))
-  if(length(start_ix)>0){
-    start_ix <- min(start_ix)
-    res <- res[-c(1:start_ix),]
-  }
 
-
-  # Remove entities in gap after drug group starts
-  stop_ix <- which((res$gap > gap_size) & (res$start > d_stop))
-  if(length(stop_ix)>0){
-    stop_ix <- min(stop_ix)
-    res <- res[-c(stop_ix:nrow(res)),]
+  # Check for key entities again
+  if(!any(res$entity %in% c("Strength", "DoseAmt", "DoseStrength", "Duration"))){
+    if(!any(tolower(gsub(";.+", "", doseschedule)) %in% c("done", "off", "stop", "last", "completed",
+                                                          "complete", "discontinue", "discontinuing",
+                                                          "finished"))){
+      return(data.frame("entity" = c("Frequency", "IntakeTime", "Strength", "DoseAmt", "DoseStrength"),
+                        "expr" = rep(NA, 5)))
+    }
   }
 
   return(res)
