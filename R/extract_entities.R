@@ -25,7 +25,7 @@
 #' \emph{strength}: The strength of an individual unit (i.e. tablet, capsule) of
 #'   the drug.\cr
 #' \emph{dose amount}: The number of tablets, capsules, etc taken with each dose.\cr
-#' \emph{dose}: The total strength given intake. This quantity would be
+#' \emph{dose strength}: The total strength given intake. This quantity would be
 #'   equivalent to strength x dose amount, and appears similar to strength when
 #'   dose amount is absent.\cr
 #' \emph{frequency}: The number of times per day a dose is taken, e.g.
@@ -33,7 +33,7 @@
 #' \emph{intaketime}: The time period of the day during which a dose is taken,
 #'   e.g. \sQuote{morning}, \sQuote{lunch}, \sQuote{in the pm}.\cr
 #'
-#' Strength, dose amount, and dose are primarily numeric quantities, and are
+#' Strength, dose amount, and dose strength are primarily numeric quantities, and are
 #' identified using a combination of regular expressions and rule-based
 #' approaches. Frequency and intake time, on the other hand, use dictionaries
 #' for identification.
@@ -147,7 +147,7 @@ extract_entities <- function(phrase, p_start, p_stop, unit, freq_fun = NULL,
     df <- duration_fun(phrase, ...)
   }
 
-  duration <- entity_metadata(phrase, p_start, df)
+  duration <- medExtractR:::entity_metadata(phrase, p_start, df)
 
 
   # Numbers in phrase
@@ -225,7 +225,7 @@ extract_entities <- function(phrase, p_start, p_stop, unit, freq_fun = NULL,
   }
 
   if(length(all_numbers) == 0) {
-    strength <- NA;doseamt <- NA;dose <- NA
+    strength <- NA;doseamt <- NA;dosestr <- NA
     remaining_numbers <- all_numbers
     num_pos <- num_positions
   } else { # only look for entities if they exist
@@ -266,7 +266,7 @@ extract_entities <- function(phrase, p_start, p_stop, unit, freq_fun = NULL,
         # substr is used to define narrow search windows
         # this helps prevent overlap between adjacent numeric values
         da <- regexpr(paste0(rn, "(?=(\\s+)?(\\(\\w*\\)\\s+)?tabs)"),
-                      replace_tab(substr(phrase, np, np+15)), perl=T)
+                      medExtractR:::replace_tab(substr(phrase, np, np+15)), perl=T)
 
         # "take" notation
         if(da == -1){da_expr <- str_extract(substr(phrase, max(1, np-8), np+nchar(rn)),
@@ -305,7 +305,7 @@ extract_entities <- function(phrase, p_start, p_stop, unit, freq_fun = NULL,
       text_doseamt <- mapply(function(tne, tnp){
         # tablet notation
         da <- regexpr(paste0(tne, "(?=(\\s+)?(\\(\\w*\\)\\s+)?tabs)"),
-                      replace_tab(substr(phrase_lc, tnp, tnp+15)), perl=T)
+                      medExtractR:::replace_tab(substr(phrase_lc, tnp, tnp+15)), perl=T)
 
         # "take" notation
         if(da == -1){da_expr <- str_extract(substr(phrase_lc, max(1, tnp-8), tnp+nchar(tne)),
@@ -333,7 +333,7 @@ extract_entities <- function(phrase, p_start, p_stop, unit, freq_fun = NULL,
 
     ## DOSE ##
 
-    dose <- NA
+    dosestr <- NA
     if(!is.null(strength_sep)) {
       if(length(remaining_numbers) > 0) {
         # Cases where times of doses are denoted as ##-##
@@ -366,7 +366,7 @@ extract_entities <- function(phrase, p_start, p_stop, unit, freq_fun = NULL,
           remaining_numbers <- remaining_numbers[setdiff(1:length(remaining_numbers), dsc_index)]
 
 
-          dose <- dsc
+          dosestr <- dsc
         }
       }
     }
@@ -390,7 +390,7 @@ extract_entities <- function(phrase, p_start, p_stop, unit, freq_fun = NULL,
     df <- freq_fun(phrase, ...)
   }
 
-  freq <- entity_metadata(phrase, p_start, df)
+  freq <- medExtractR:::entity_metadata(phrase, p_start, df)
 
   ### INTAKETIME ###
 
@@ -406,7 +406,7 @@ extract_entities <- function(phrase, p_start, p_stop, unit, freq_fun = NULL,
     df <- intaketime_fun(phrase, ...)
   }
 
-  intaketime <- entity_metadata(phrase, p_start, df)
+  intaketime <- medExtractR:::entity_metadata(phrase, p_start, df)
 
   ### ROUTE ####
 
@@ -423,12 +423,13 @@ extract_entities <- function(phrase, p_start, p_stop, unit, freq_fun = NULL,
     df <- route_fun(phrase, ...)
   }
 
-  route <- entity_metadata(phrase, p_start, df)
+  route <- medExtractR:::entity_metadata(phrase, p_start, df)
 
 
   ## BACK TO DOSE ##
 
   # This is for cases where we have drug_name # freq, and # is dose
+  if(!exists("dosestr")){dosestr <- NA}
   if(!all(is.na(freq)) & length(remaining_numbers) > 0) {
     # start position from frequency
     freq_sp <- as.numeric(sub('[^;]*;([0-9]+):.*', '\\1', freq))
@@ -458,7 +459,7 @@ extract_entities <- function(phrase, p_start, p_stop, unit, freq_fun = NULL,
 
     # Add to dose results
     if(length(dsc) > 0){
-      if(all(is.na(dose))){dose <- dsc}else{dose <- c(dose, dsc)}
+      if(all(is.na(dosestr))){dosestr <- dsc}else{dosestr <- c(dosestr, dsc)}
     }
   }
 
@@ -467,7 +468,7 @@ extract_entities <- function(phrase, p_start, p_stop, unit, freq_fun = NULL,
   #print(num_pos)
   if(length(remaining_numbers) > 0){
     # Find last position of any found entities
-    ent_list <- list(freq, intaketime, strength, doseamt, dose)
+    ent_list <- list(freq, intaketime, strength, doseamt, dosestr)
     last_pos_byent <- sapply(ent_list, function(x){
       y <- gsub(x, pattern = ".+;", replacement = "")
       max(as.numeric(gsub(y, pattern = ":.+", replacement = "")))
@@ -516,7 +517,7 @@ extract_entities <- function(phrase, p_start, p_stop, unit, freq_fun = NULL,
     ep <- as.numeric(sub(".+:", "", st)) - p_start
 
     in_paren <- grepl(paste0("(?<=[(])", expr, "((\\s\\w\\s)?tabs)?"),
-                      replace_tab(substr(phrase, bp-1, ep+20)), perl=T)
+                      medExtractR:::replace_tab(substr(phrase, bp-1, ep+20)), perl=T)
 
     # doseamt occurs right before strength (allow <=1 in case number is in parentheses)
     after_da <- any(abs((bp+p_start-1) - as.numeric(sapply(doseamt, gsub,
@@ -525,7 +526,7 @@ extract_entities <- function(phrase, p_start, p_stop, unit, freq_fun = NULL,
 
     # strength has tablet after it, not necessarily in parentheses
     before_tab <- grepl(paste0(expr, "(\\s\\w\\s)?tabs"),
-                        replace_tab(substr(phrase, bp-1, ep+20)), perl=T)
+                        medExtractR:::replace_tab(substr(phrase, bp-1, ep+20)), perl=T)
 
 
     return(in_paren | after_da | before_tab)
@@ -533,7 +534,7 @@ extract_entities <- function(phrase, p_start, p_stop, unit, freq_fun = NULL,
   str_holdout <- strength[keep_str]
 
   if(all(is.na(doseamt))){ # If doseamt missing, reclassify strength as dose. works even if strength=NA
-    if(all(is.na(dose))){dose <- strength}else{dose <- c(dose, strength)}
+    if(all(is.na(dosestr))){dosestr <- strength}else{dosestr <- c(dosestr, strength)}
     strength <- NA
   } else {
     if(!all(is.na(strength))) {
@@ -554,7 +555,7 @@ extract_entities <- function(phrase, p_start, p_stop, unit, freq_fun = NULL,
         !any(is_da == i + 1)
       })
       if(any(is_dose)) {
-        dose <- strength[is_dose]
+        dosestr <- strength[is_dose]
         strength <- ifelse(all(is_dose), NA, strength[!is_dose])
       }
     }
@@ -563,9 +564,9 @@ extract_entities <- function(phrase, p_start, p_stop, unit, freq_fun = NULL,
   # Things that should not have been changed over
   if(length(str_holdout) > 0){
     # remove from dose
-    switch_back <- dose %in% str_holdout
-    dose <- dose[!switch_back]
-    if(length(dose)==0){dose <- NA}
+    switch_back <- dosestr %in% str_holdout
+    dosestr <- dosestr[!switch_back]
+    if(length(dosestr)==0){dosestr <- NA}
 
     # put back into strength
     if(all(is.na(strength))){

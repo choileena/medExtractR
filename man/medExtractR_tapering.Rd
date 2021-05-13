@@ -11,7 +11,6 @@ medExtractR_tapering(
   max_dist = 0,
   drug_list = "rxnorm",
   lastdose = FALSE,
-  lastdose_window_ext = 1.5,
   strength_sep = NULL,
   ...
 )
@@ -29,9 +28,7 @@ medExtractR_tapering(
 \code{\link{rxnorm_druglist}}.}
 
 \item{lastdose}{Logical - whether or not last dose time entity should be
-extracted.}
-
-\item{lastdose_window_ext}{Numeric - multiplicative factor by which
+extracted.
 \code{window_length} should be extended when identifying last dose time.}
 
 \item{strength_sep}{Delimiter for contiguous medication strengths (e.g., \sQuote{-} for \dQuote{LTG 200-300}).}
@@ -41,12 +38,6 @@ parameters include \code{freq_dict} and \code{intaketime_dict} (see \code{\dots}
 \code{\link{extract_entities_tapering}}) to specify frequency or intake time dictionaries, as well as
 \sQuote{freq_fun} and \sQuote{intaketime_fun} for user-specified extraction functions. See
 \code{\link{extract_entities_tapering}} documentation for details.}
-
-\item{window_length}{Length (in number of characters) of window after drug
-in which to look.}
-
-\item{flag_window}{How far around drug (in number of characters) to look for
-dose change keyword - default fixed to 30.}
 }
 \value{
 data.frame with entity information\cr
@@ -79,11 +70,6 @@ The \code{max_dist} argument determines the maximum edit distance allowed for
 such matches. If using fuzzy matching, any drug name with less than 5
 characters will only allow an edit distance of 1, regardless of the value of
 \code{max_dist}.
-
-Most medication entities are searched for in a window after the drug. The
-dose change entity, or presence of a keyword to indicate a non-current drug
-regimen, may occur before the drug name. The \code{flag_window} argument
-adjusts the width of the pre-drug window.
 
 The \code{stength_sep} argument is \code{NULL} by default, but can be used to
 identify shorthand for morning and evening doses. For example, consider the

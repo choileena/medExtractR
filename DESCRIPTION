@@ -2,13 +2,13 @@ Package: medExtractR
 Title: Extraction of Medication Information from Clinical Text
 Version: 0.2
 Authors@R:
-    c(person("Hannah", "Weeks", role = c("aut", "cre"),
-             email = "hannah.l.weeks@vanderbilt.edu"),
+    c(person("Leena", "Choi", role = c("aut","cre"),
+           email = "leena.choi@Vanderbilt.Edu"),
     person("Cole", "Beck", role = "aut",
            email = "cole.beck@vumc.org",
            comment = c(ORCID = "0000-0002-6849-6255")),
-    person("Leena", "Choi", role = "aut",
-           email = "leena.choi@Vanderbilt.Edu"))
+    person("Hannah", "Weeks", role = "aut",
+             email = "hannah.l.weeks@vanderbilt.edu"))
 Description: Function and support for medication and dosing information extraction from free-text clinical notes. Medication entities that can be extracted include drug name, strength, dose amount, dose, frequency, intake time, and time of last dose.
 License: GPL (>= 2)
 Depends: R (>= 2.10)

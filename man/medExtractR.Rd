@@ -62,8 +62,9 @@ DoseChange\tab  decrease \tab  66:74\cr
 DrugName   \tab Prograf \tab   78:85\cr
 Strength  \tab  2 mg   \tab    86:90\cr
 DoseAmt   \tab  1     \tab     91:92\cr
-Frequency \tab  bid    \tab    101:104\cr
-LastDose  \tab  2100    \tab   121:125\cr
+Route   \tab  by mouth     \tab     100:108\cr
+Frequency \tab  bid    \tab    109:112\cr
+LastDose  \tab  2100    \tab   129:133\cr
 }
 }
 \description{

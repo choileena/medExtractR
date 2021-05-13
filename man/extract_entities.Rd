@@ -67,7 +67,7 @@ including the following:
 \emph{strength}: The strength of an individual unit (i.e. tablet, capsule) of
   the drug.\cr
 \emph{dose amount}: The number of tablets, capsules, etc taken with each dose.\cr
-\emph{dose}: The total strength given intake. This quantity would be
+\emph{dose strength}: The total strength given intake. This quantity would be
   equivalent to strength x dose amount, and appears similar to strength when
   dose amount is absent.\cr
 \emph{frequency}: The number of times per day a dose is taken, e.g.
@@ -75,7 +75,7 @@ including the following:
 \emph{intaketime}: The time period of the day during which a dose is taken,
   e.g. \sQuote{morning}, \sQuote{lunch}, \sQuote{in the pm}.\cr
 
-Strength, dose amount, and dose are primarily numeric quantities, and are
+Strength, dose amount, and dose strength are primarily numeric quantities, and are
 identified using a combination of regular expressions and rule-based
 approaches. Frequency and intake time, on the other hand, use dictionaries
 for identification.

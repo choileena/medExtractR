@@ -1,16 +1,16 @@
 #' Keywords Specifying Route
 #'
-#' A dictionary mapping duration expressions to standardized expressions
+#' A dictionary mapping route expressions to standardized expressions
 #' The form of each duration is given as a regular expression.
 #'
-#' @format A data frame with XX observations on the following variables.
+#' @format A data frame with the following variables
 #' \describe{
-#'   \item{expr}{A character vector, expressions to consider as duration}
-#'   \item{value}{A numeric vector, numeric value of duration}?
+#'   \item{expr}{A character vector, expressions to consider as route}
+#'   \item{value}{A character vector, standardized route expression}
 #' }
 #'
 #' @keywords datasets
 #'
 #' @examples
-#' data(duration_vals)
-"duration_vals"
+#' data(route_vals)
+"route_vals"

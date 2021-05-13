@@ -23,7 +23,8 @@
 
 extract_generic <- function (phrase, dict){
   df <- do.call(rbind, lapply(dict[, 1], function(r1) {
-    r2 <- if (grepl("\\?|\\w|\\}", substr(r1, nchar(r1), nchar(r1)))) {
+    r2 <- if (grepl("\\?|\\w|\\}", substr(r1, nchar(r1), nchar(r1))) &
+              !grepl("\\\\", substr(r1, nchar(r1)-1, nchar(r1)-1))) {
       paste0(r1, "\\b")
     }else{
       r1
