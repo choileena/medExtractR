@@ -203,7 +203,7 @@ medExtractR <- function(note, drug_names, window_length, unit, max_dist = 0,
     rc_window <- substr(note_lc, start = sp - flag_window, stop = sp + flag_window)
 
     rc <- sapply(dosechange_dict$expr, function(fw){
-      flag <- regexpr(pattern = paste0(fw, "\\b"), text = rc_window)
+      flag <- regexpr(pattern = paste0(fw, "\\b"), text = rc_window, perl = TRUE)
       flag
     })
 
