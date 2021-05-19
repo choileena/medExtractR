@@ -1,0 +1,41 @@
+---- Medications Known to be Prescribed for or Used by the Patient
+(with dose, route, and frequency):
+alprazolam 0.25 mg one orally three times a day
+cilostazol 100 mg twice daily before meals for until discontinued
+clopidogrel 75 mg orally daily
+digoxin 0.125 mg one orally daily
+EC Aspirin 81 mg one orally daily
+furosemide 40 mg orally daily
+hydrocodone-acetaminophen 1 tablet orally every 4 hours as needed for pain
+Lortab 5/325 mg one orally every 4 hours as needed
+magnesium oxide one orally twice daily
+metoprolol tartrate 25 mg one orally twice daily
+mvi one orally daily
+potassium chloride 10 meq one orally twice daily
+pred 2.5 mg orally every other day alternate with 5 mg every other day
+Protonix 40 mg one orally daily
+sennosides-docusate sodium 1 tablet orally twice daily as needed for constipation
+simethicone 80 mg orally three times daily, as needed for gas
+simvastatin 40 mg one orally daily
+spironolactone 25 mg one orally daily
+Zofran one orally as needed
+
+---- Known Adverse and Allergic Drug Reactions (if none, enter NKA):
+codeine phosphate
+Cholesterol Medication
+oxaprozin (numbness all over)
+
+---- General Information:
+PCP: **NAME[ZZZ YYY]
+Cardiolgy: Dr. **NAME[XXX WWW]
+
+---- Coded Problems:
+Coronary arteriosclerosis
+Aortic valve stenosis
+aortic valve replacement
+Peripheral vascular disease
+Hyperparathyroidism
+Osteoporosis
+Osteoarthritis
+Atrial fibrillation
+Complete atrioventricular block

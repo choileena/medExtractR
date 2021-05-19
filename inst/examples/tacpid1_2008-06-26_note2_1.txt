@@ -1,0 +1,21 @@
+ ---- Known Significant medical Diagnoses and Conditions:
+Lower back pain
+---- Known Significant Operative and Invasive Procedures:
+none
+---- Known Adverse and Allergic Drug Reactions (if none, enter NKA):
+Procrit (blisters)
+---- Medications Known to be Prescribed for or Used by the Patient
+(with dose, route, and frequency):
+Prednisone Oral Tablet 5 mg 1 capsule by mouth daily
+CellCept Oral Capsule 250 mg 3 capsules by mouth twice a day
+Prevacid Oral Capsule, Delayed Release(E.C.) 30 mg 1 capsule by mouth daily
+Lipitor Oral Tablet 40 mg 1 tablet by mouth daily
+Avapro Oral Tablet 150 mg 1 tablet by mouth daily
+Prograf Oral Capsule 1 mg 3 capsules by mouth twice a day - 14 hr level
+Avapro Oral Tablet 300 mg 1 tablet by mouth daily
+---- Preventive Care Interventions (optional):
+---- Social History:
+---- General Information:
+---- Immunizations:
+---- Inpt:
+---- Nutr:

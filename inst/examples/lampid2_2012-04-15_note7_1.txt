@@ -1,0 +1,7 @@
+---- Medications Known to be Prescribed for or Used by the Patient
+(with dose, route, and frequency):
+lamotrigine 150 mg tablet (white tab)(Lamictal) 1 tablet by mouth twice a day
+lorazepam 1 mg tablet 1 1/2 tablets at 6am; 1 tablet at 10:30am; 1 1/2 tablets at 2:30pm; 1 tablet at 6:30pm; and, 1 1/2 at 10:30pm [total dose = 6.5 mg per day]
+loratadine 10 mg po evening
+Vitamin C 500mg tablet by mout once daily
+levetiracetam 500 mg tablet (yellow tab)(Keppra) 4 tablets by mouth every morning then 3.5 tablets by mouth every evening

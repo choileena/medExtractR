@@ -1,0 +1,63 @@
+**INSTITUTION **INSTITUTION **NAME[XXX]-**NAME[WWW], **NAME[BBB] 
+Nephrology Clinic Visit MR# **ID-NUM 
+ Case# <HR>
+Date of services: **DATE[Jun 26 2007] 10:48
+Clinic Visit Note 
+Medical Nutrition Therapy for CKD 
+Start time 08:14 
+Referred by Dr. **NAME[VVV UUU] for Medical Nutrition Therapy, including
+counseling and education for the purpose of managing complications related to
+diabetes and renal transplant.
+Age: **AGE[in 40s] year 
+Problem list: 
+- Lower back pain
+- Type I DM since age **AGE[birth-12]
+- ESRD on PD **DATE[Feb 15]-6/06
+- s/p simultaneous pancreas-kidney transplant **DATE[Sep 2005]
+- GERD
+Medications: 
+- Prednisone Oral Tablet 5 mg 1 capsule by mouth daily
+- CellCept Oral Capsule 250 mg 3 capsules by mouth twice a day
+- Prevacid Oral Capsule, Delayed Release(E.C.) 30 mg 1 capsule by mouth daily
+- Lipitor Oral Tablet 40 mg 1 tablet by mouth daily
+- Avapro Oral Tablet 150 mg 1 tablet by mouth daily
+- Prograf Oral Capsule 1 mg 3 capsules by mouth twice a day
+Labs: 
++----------------------------------------------------------------------------+
+| Date                    | Na  | K   | Cl  | CO2 | BUN | Creat | Gluc | Ca  |
+|-------------------------+-----+-----+-----+-----+-----+-------+------+-----|
+| **DATE[Jun 26 08] 10:36 | 135 | 4.5 | 109 | 19  | 18  | 1.01  | 89   | 9.5 |
++----------------------------------------------------------------------------+
+
++-----------------------------------------------------+
+| Date                    | TProt | Alb | SGPT | SGOT |
+|-------------------------+-------+-----+------+------|
+| **DATE[Jun 26 08] 10:36 | 7.5   | 3.8 | 21   | 21   |
++-----------------------------------------------------+
+
++--------------------------------+
+| Date                    | Phos |
+|-------------------------+------|
+| **DATE[Jun 26 08] 10:36 | 3.5  |
++--------------------------------+
+
+Vital Signs: 
+164/76 mm Hg 
+280 lb (**DATE[Jun 26 08])
+195 lb at transplant; 3 yrs ago
+Functional status: uses a walker for ambulation, but today is in a motorized
+wheelchair. 
+Support systems: accompanied by husband and her **AGE[birth-12] yo
+daughter. Pt's father lives with her family.
+Significant financial strain per pt. and husband.
+Instructional Strategies:Verbalization. Problem solving. 
+Patient receptivity to education: Pt. and husband had multiple excuses for
+every suggestions provided. Pt could not answer simple questions regarding food consumed or purchased without asking her husband for the answer and neither were forthcoming with answers.
+Challenges to self-management: Limited finances, lack of interest in changing
+habits, and poor understanding of budget shopping and food preparation methods.
+Plans for reassessment and follow-up: continue prograf 3mg bid - last dose at 8:30pm. no plans for nutritional follow-up until pt. ready to make changes. 
+Stop Time 9:16 <HR>Written and Electronically Signed By: **[NAME XXX].
+ **NAME[ZZZ YYY] 
+ Renal Dietitian &
+ CKD Education Coordinator
+ **PHONE 

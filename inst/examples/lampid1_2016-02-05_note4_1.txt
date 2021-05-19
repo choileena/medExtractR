@@ -1,0 +1,20 @@
+**INSTITUTION **INSTITUTION **NAME[AAA, BBB M] **INSTITUTION Note MR# **ID-NUM Case#
+
+------------------------------------------------------------------------------------------------------------------------
+
+Date of services: Friday, **DATE[Feb 05 2016] 10:12 Clinic: Epilepsy Primary Care Provider: **NAME[AAA, BBB M]  Referring Physician: Attending Physician: Name:**NAME[AAA, BBB M] Age:**AGE[in 30s] year-old Gender:  Male Date of Last Visit: **DATE[Oct 28 2015]
+
+Interval History: Mr **NAME[AAA] is a **AGE[in 40s] year old man came in for follow up for his seizure. Since the last visit, he continues to have seizures, about three days a week he will have seizures. and in some days he has more than one seizure in the same day. In the last visit the plan was to increase Lyrica to 100 mg BID and continue Lamictal 300 mg BID.
+MEDICATIONS: 
+- Lamotrigine 200mg 1.5tabs twice daily 
+- Lyrica 100 mg capsule 1 capsule by mouth twice a day as needed 
+- Lamotrigine XR 100 mg tablet,extended release 3 tablets by mouth every morning and 2 tablets by mouth every evening
+ALLERGIES: 
+- penicillin (rash)
+EXAMINATION: Vital Signs: B/P: 120/68 Temp: . Heart Rate: 55 (**DATE[Jan 18 15]) Resp: . Weight (lbs): 160.20 lb Height: 72.1 in General Examination: Constitutional: Pt is very pleasant, well nourished, well developed. Coordination examination: Rapid alternating movements are performed at good rate and rhythm. Finger to nose test performed normally and bilaterally. Gait examination: Patient has normal gait with normal arm swing.
+IMPRESSION: Drug-resistant epilepsy with likely bitemporal independent epileptogenic foci. He is interested in having surgery. His MRI and PET scan were normal. 
+PLAN: 
+-We will present him in the epilepsy surgery conference and will consider invasive surgery work up. If he is not surgical candidate we will consider VNS 
+- We will increase Lyrica to 100 mg TID.
+- We will check Lamictal level, CMP. 
+- Follow up in 2 months.
