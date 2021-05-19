@@ -8,16 +8,15 @@
 #' @param p_start Start position of phrase within original text.
 #' @param p_stop End position of phrase within original text.
 #' @param unit Unit of measurement for medication strength, e.g. \sQuote{mg}.
-#' @param freq_fun Function used to extract frequency.
+#' @param frequency_fun Function used to extract frequency.
 #' @param intaketime_fun Function used to extract intaketime.
 #' @param duration_fun Function used to extract duration
 #' @param route_fun Function used to extract route
 #' @param strength_sep Delimiter for contiguous medication strengths.
 #' @param \dots Parameter settings used in extracting frequency and intake time,
-#' including additional arguments to \code{freq_fun} and
-#' \code{intaketime_fun}. Use \code{freq_dict} to identify custom frequency
-#' dictionaries and \code{intaketime_dict } to identify custom intake time
-#' dictionaries.
+#' including additional arguments to the \code{<entity>_fun} arguments. Use \code{frequency_dict},
+#' \code{intaketime_dict}, \code{duration_dict}, and \code{route_dict} to identify
+#' custom frequency, intake time, duration, and route dictionaries, respectively.
 #'
 #' @details Various medication dosing entities are extracted within this function
 #' including the following:
@@ -32,14 +31,20 @@
 #'   \dQuote{once daily} or \sQuote{2x/day}.\cr
 #' \emph{intaketime}: The time period of the day during which a dose is taken,
 #'   e.g. \sQuote{morning}, \sQuote{lunch}, \sQuote{in the pm}.\cr
+#' \emph{duration}: How long a patient is on a drug regimen, e.g. \sQuote{2 weeks},
+#'   \sQuote{mid-April}, \sQuote{another 3 days}.\cr
+#' \emph{route}: The administration route of the drug, e.g., \sQuote{by mouth},
+#'   \sQuote{IV}, \sQuote{topical}\cr
 #'
 #' Strength, dose amount, and dose strength are primarily numeric quantities, and are
 #' identified using a combination of regular expressions and rule-based
-#' approaches. Frequency and intake time, on the other hand, use dictionaries
+#' approaches. Frequency, intake time, route, and duration, on the other hand, use dictionaries
 #' for identification.
 #'
-#' By default and when \code{freq_fun} and/or \code{intaketime_fun} are \code{NULL}, the
-#' \code{\link{extract_generic}} function will be used for these entities.
+#' By default and when an argument \code{<entity>_fun} is \code{NULL}, the
+#' \code{\link{extract_generic}} function will be used for that entity. This function
+#' can also inherit user-defined entity dictionaries, supplied as arguments to
+#' \code{medExtractR} or \code{medExtractR_tapering}.
 #'
 #' The \code{stength_sep} argument is \code{NULL} by default, but can be used to
 #' identify shorthand for morning and evening doses. For example, consider the
@@ -53,10 +58,10 @@
 #' \tabular{rr}{
 #'  entity   \tab  expr\cr
 #'  IntakeTime  \tab  <NA>\cr
-#'    Strength  \tab   <NA>\cr
-#'     DoseAmt   \tab  <NA>\cr
-#'   Frequency \tab  bid;19:22\cr
-#'        DoseStrength  \tab  200mg;13:18
+#'  Strength  \tab   <NA>\cr
+#'  DoseAmt   \tab  <NA>\cr
+#'  Frequency \tab  bid;19:22\cr
+#'  DoseStrength  \tab  200mg;13:18
 #' }
 #'
 
@@ -68,9 +73,9 @@
 #' extract_entities(note, 1, nchar(note), "mg")
 #' # A user-defined dictionary can be used instead of the default
 #' my_dictionary <- data.frame(c("daily", "twice daily"))
-#' extract_entities(note, 1, 53, "mg", freq_dict = my_dictionary)
+#' extract_entities(note, 1, 53, "mg", frequency_dict = my_dictionary)
 
-extract_entities <- function(phrase, p_start, p_stop, unit, freq_fun = NULL,
+extract_entities <- function(phrase, p_start, p_stop, unit, frequency_fun = NULL,
                              intaketime_fun = NULL, duration_fun = NULL, route_fun = NULL,
                              strength_sep = NULL, ...){
   p_start <- p_start-1
@@ -378,16 +383,16 @@ extract_entities <- function(phrase, p_start, p_stop, unit, freq_fun = NULL,
   ### FREQ ####
 
   addl <- list(...)
-  if(is.null(freq_fun) || as.character(substitute(freq_fun)) == "extract_generic") {
-    dict <- addl[['freq_dict']]
+  if(is.null(frequency_fun) || as.character(substitute(frequency_fun)) == "extract_generic") {
+    dict <- addl[['frequency_dict']]
     if(is.null(dict)) {
       e <- new.env()
-      data("freq_vals", package = 'medExtractR', envir = e)
-      dict <- get("freq_vals", envir = e)
+      data("frequency_vals", package = 'medExtractR', envir = e)
+      dict <- get("frequency_vals", envir = e)
     }
     df <- extract_generic(phrase, dict)
   } else {
-    df <- freq_fun(phrase, ...)
+    df <- frequency_fun(phrase, ...)
   }
 
   freq <- medExtractR:::entity_metadata(phrase, p_start, df)

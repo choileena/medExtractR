@@ -1,0 +1,70 @@
+================================================== PKPDnote[3] patient003_2005-09-02_noteID311_1_RCV.csv
+
+
+**INSTITUTION **INSTITUTION **NAME[AAA, BBB CCC] **INSTITUTION Visit MR# **ID-NUM Case#
+
+------------------------------------------------------------------------------------------------------------------------
+
+Date of services: **DATE[Sep 02 2005] 11:11 Clinic: Transplant Nephrology Problem List: HTN x 20 yrs Nonobstructive CAD as per
+card cath **DATE[Jul 08 2004], EF 50% CKD Stage 5 not yet on HD (Renal sono **DATE[Oct 2003] shows b/l increased echgogenicity and rt
+kidney 5.3 cm, lt kidney 7.2 cm) Chronic epigastric pain- w/u EGD shows no ulcer, MR angiogrma shows no mesenteric
+artery stenosis AAA- infrarenal 3.6 cm as per CT scan **DATE[Nov 2003] COPD s/p CRTx **DATE[Jul 22 05] induced with thymo/solumedrol,
+maintained on FK/MMF/steroid avoidance CMV **NAME[M+/M]+ Reason for visit: follow up kidney transplant Interval history: Pt
+doing well s/p KTx. Cr at last visit 0.9. Prograf at 5 mg bid, cellcept 500 mg 2 tabs bid. Had stent removed last
+Thursday by Dr. **NAME[ZZZ YYY]. Heartburn taking Pepcid BID, better, but still bothers him at night. Was on nexium before and
+did well. BP running 100-150's/60-90's. High in the mornings. No cp/sob, occasional dizziness when bp low. Takes only
+one Metoprolol 25 qhs. No f/c, n/v, abd pain, dysuria, eating well, weight stable. No diarrhea. MEDS: - (with dose,
+route, and frequency): - metoprolol 25 mg po 1 tabs daily - promethazine 25 mg po prn - Prograf 5mg po bid - FAMOTIDINE
+20MG PO bid - CELLCEPT 500MG PO 2 TABS BID - BACTRIM PO DAILY - VALCYTE 450MG 2 TABS PO DAILY - OsCal **NAME[M] 500mg po
+bid(**DATE[Aug 23 05]) - Fosamax 35mg po q week(**DATE[Aug 23 05]) ROS: as per HPI, otherwise negative PHYSICAL EXAMINATION: VITALS:
+
++---------------------------------------------------+
+| Date           | Pulse | BP     | Temper | Weight |
+|----------------+-------+--------+--------+--------|
+| **DATE[Sep 02 05] 10:36 | 68    | 140/74 | 98.3   | 108    |
+|----------------+-------+--------+--------+--------|
+| **DATE[Aug 19 05] 11:03 | 59    | 112/68 | 98.0   | 109    |
++---------------------------------------------------+
+
+GENERAL: pleasant thin male, NAD HEENT: PERRL, EOMI, sclera anicteric, no oral thrush NECK: supple, no JVD or carotid
+bruits, no thyromegaly RESPIRATORY: clear bilaterally CARDIOVASCULAR: RRR without murmur or rub ABD: soft, **INITIALS, +BS,
+incision **NAME[M/M/M] EXTREMITIES: no edema NEUROLOGIC: no tremor SKIN: no abnormal lesions LABS
+
++-------------------------------------------------------------------+
+| Date           | Na  | K   | Cl  | CO2 | BUN | Creat | Gluc | Ca  |
+|----------------+-----+-----+-----+-----+-----+-------+------+-----|
+| **DATE[Aug 19 05] 13:44 | 139 | 5.3 | 107 | 25  | 9   | 0.9   | 77   | 9.5 |
++-------------------------------------------------------------------+
+
++--------------------------------------------------+
+| Date           | SGOT | SGPT | Alb | TBil | AlkP |
+|----------------+------+------+-----+------+------|
+| **DATE[Aug 19 05] 13:44 | 23   | 37   | 4.0 | 0.3  | 256  |
++--------------------------------------------------+
+
++-----------------------+
+| Date           | Phos |
+|----------------+------|
+| **DATE[Aug 19 05] 13:44 | 3.8  |
++-----------------------+
+
++--------------------------------------------+
+| Date           | WBC | Hgb  | PCV | Plt-Ct |
+|----------------+-----+------+-----+--------|
+| **DATE[Aug 19 05] 13:44 | 5.5 | 11.2 | 36  | 240    |
++--------------------------------------------+
+
+IMPRESSION: **AGE[in 50s] y/o WM with h/o HTN, nonobstructive CAD, stable infrarenal AAA, COPD and CKD Stage 5 s/pCRT (4 ag mm,
+pra=0, CMV recipient positive kidney) s/p thymoglobulin induction now on steroid avoidance regimen. PLAN: 1. s/p KIDNEY
+TRANSPLANT: excellent allograft function, uop with baseline creatinine 0.8. Check CMP today. Lytes, volume status
+acceptable. Stent removed. 2. IMMUNOSUPPRESSION: Continue current dose of prograf and cellcept. Check prograf trough
+level. 3. ID MANAGEMENT: continue bactrim and valcyte. Check urine culture, CMV antigenemia. 4. HTN: Metoprolol may be
+wearing off in AM. Will consider starting ACE/ARB 2 months post tx. BP low at home especially as the day progresses. He
+will continue to ID***his BP's several times per day. Maintain current regimen. 5. METABOLIC COMPLICATIONS: Dexa
+indicates osteopenia. Continue fosamax and oscal. check Ca/Mg/PO4. 6. GI. GERD. May swithc pepcid for Nexium 40 mg po
+qd. 6. RTC 2 weeks
+
+------------------------------------------------------------------------------------------------------------------------
+
+Written and Electronically Signed By: **[NAME XXX].
+

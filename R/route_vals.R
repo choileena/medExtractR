@@ -1,12 +1,14 @@
 #' Keywords Specifying Route
 #'
-#' A dictionary mapping route expressions to standardized expressions
-#' The form of each duration is given as a regular expression.
+#' A dictionary mapping route expressions to standardized forms, specifying the
+#' way in which a medication is administered. Example expressions include "oral",
+#' "topical", "IV", and "intravenous".
 #'
-#' @format A data frame with the following variables
+#' @format A data frame with route expressions (exact and/or regular expressions)
 #' \describe{
 #'   \item{expr}{A character vector, expressions to consider as route}
-#'   \item{value}{A character vector, standardized route expression}
+#'   \item{value}{A standardized version of the raw expression. For example,
+#'   "orally" and "by mouth" both have the standardized form "orally"}
 #' }
 #'
 #' @keywords datasets

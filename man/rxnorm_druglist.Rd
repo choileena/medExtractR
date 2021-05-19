@@ -5,7 +5,7 @@
 \alias{rxnorm_druglist}
 \title{List of Medications}
 \format{
-A vector with 59,333 character strings.
+A vector with character strings for competing drug names.
 }
 \usage{
 rxnorm_druglist
@@ -15,16 +15,13 @@ A dictionary that contains a vector of medication names, primarily derived from 
 }
 \details{
 RxNorm is provided by the U.S. National Library of Medicine. This dictionary
-uses the January 7, 2019 RxNorm files directly downloaded from
+uses the February 1, 2021 RxNorm files directly downloaded from
 \href{https://www.nlm.nih.gov/research/umls/rxnorm/docs/rxnormfiles.html}{https://www.nlm.nih.gov/research/umls/rxnorm/docs/rxnormfiles.html}.
 
 This list contains ingredient and brand names, cleaned to remove expressions likely
-to be ambiguous (e.g., 'today' or 'date'). It has also been supplemented with abbreviations
-for various medications in a manually curated list from Vanderbilt University's Synthetic Derivative.
-
-This product uses publicly available data courtesy of the U.S. National Library of Medicine (NLM), National
-Institutes of Health, Department of Health and Human Services; NLM is not responsible for the product and
-does not endorse or recommend this or any other product.
+to be ambiguous (e.g., 'today' or 'date'). This product uses publicly available data courtesy of the U.S.
+National Library of Medicine (NLM), National Institutes of Health, Department of Health and Human
+Services; NLM is not responsible for the product and does not endorse or recommend this or any other product.
 }
 \examples{
 data(rxnorm_druglist)

@@ -1,10 +1,13 @@
 #' Keywords/Symbols Specifying Transition
 #'
-#' A dictionary with words and symbols used for transitions between segments of a tapering schedule.
+#' A dictionary with time keyword expressions representing a break between consecutive
+#' doses within a tapering regimen. This dictionary includes the expressions "then" and
+#' "followed by", as well as the punctuation ",(?!\\\\s?then)" or ";(?!\\\\s?then)" (i.e., a
+#' comma or semicolon not followed by the word "then").
 #'
-#' @format A vector with XX observations on the following variables.
+#' @format A data frame with transition expressions (exact and/or regular expressions)
 #' \describe{
-#'   \item{expr}{A character vector, expressions to consider as transition}
+#'   \item{expr}{A character vector, expressions to consider as transitions}
 #' }
 #'
 #' @keywords datasets

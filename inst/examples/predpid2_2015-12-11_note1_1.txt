@@ -1,0 +1,24 @@
+Clinic Summary - Gastroenterology
+
+Appointment with **NAME[ZZZ YYY] on **DATE[Dec 11 2015] 13:45
+Gastroenterology Practice
+
+Reason for Visit:
+Return Patient
+
+Health Problems (today or in the past):
+Crohn's disease
+Depression
+Constipation
+Vitamin D deficiency
+Aneurysm
+
+Medications:
+clonazepam 1 mg PO QHS
+Cymbalta 60 mg capsule, Take 1 capsule by mouth once daily
+Flintstones Complete 1 tablet by mouth once daily
+Bayer Aspirin 325 mg tablet, Take 1 tablet by mouth once daily
+prednisone 5 mg tablet Take 20mg every morning for 14 days then decrease by 5 mg every 7 days until done.
+
+Allergies:
+HYDROCODONE (VOMITING)

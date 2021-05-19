@@ -1,0 +1,52 @@
+
+                                               Clinic Summary - Neurology
+
+Appointment with **NAME[ZZZ, YYY XXX] on **DATE[Feb 05 2016] 12:30
+Neurology Practice
+**STREET-ADDRESS
+**PLACE Research Bldg
+**PLACE, TN, **ZIP-CODE
+**PHONE
+
+Vital Signs:
+[**DATE[Feb 05 2016] 12:35]: Pulse: 94 bpm; BP: 128/91 mm Hg; O2Sat: 98 %
+
+Health Problems (today or in the past):
+Epilepsy
+Neck pain
+Headache [migrainous]
+
+Medications:
+lyrica 100mg prn twice daily
+ltg 200 mg (1.5) daily
+ltg xr 100 mg 3 in am, 2 in pm
+
+Allergies:
+penicillin (rash)
+
+Clinical Instructions/Patient Education/Decision Aids:
+Labs today
+
+Significant Procedures:
+2006: NECK SURGERY
+
+Tobacco usage:
+Patient has smoked in the past 12 months: Yes
+Patient has smoked: Yes (Patient has smoked more than 100 cigarettes-5 packs)
+Currently smokes: Heavy smoker (smokes more than 10 cigarettes or 1/2 pack per day or equivalent amount of pipe or cigar
+tobacco)
+
+Functional Status:
+- Serious difficulty concentrating, remembering, or making decisions.
+- Serious difficulty walking or climbing stairs.
+- Difficulty doing errands alone.
+
+Plan and Assessment:
+Patient will continue taking Lamotrigine XR 300-200
+
+Electronically Signed By: **[NAME XXX].
+
+------------------------------------------------------------------------------------------------------------------------
+
+Health Care Team:
+- **NAME[CCC, XXX DDD] - Primary Care Physician

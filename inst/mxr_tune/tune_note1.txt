@@ -1,0 +1,66 @@
+================================================== PKPDnote[1] patient001_2008-02-08_noteID111_1_RCV.csv
+
+
+**INSTITUTION **INSTITUTION **NAME[AAA, BBB] **INSTITUTION Visit MR# **ID-NUM Case#
+
+------------------------------------------------------------------------------------------------------------------------
+
+Date of services: Friday, **DATE[Feb 08 2008] 14:43 Clinic: Nephrology Identifying information: **AGE[in 40s] year old male Reason for
+visit: **AGE[in 40s] yo man with ESRD due to anti GBM disease s/p deceased donor renal transplant on **DATE[Oct 11 07]. Deceased donor (ECD)
+, 2 Ag MM, 0 PRA, induction with camapth/steroids Interval history: c/o right ear issues: fullness, pain, headache, and
+difficulty hearing. Under the care of ENT--told he had infection / fluid in ear, is on abx, put on higher dose of
+steroid and taper. Still will have f/u and they are considering placement of "tubes". He feels he is improving somewhat
+with the higher dose of steroids. Can "hear more" and is able to clear fullness sensation intermittently. Otherwise,
+making good amount of urine, no dysuria, no gross hematuria. Eating weill--in fact increased recently. No diarrhea, no
+GI symptoms. Home BP:140-170/90's MEDS: - Prograf 1 mg Cap 3 capsules by mouth twice a day LAST DOSE 10PM LAST NIGHT -
+Nifedipine SR 60 mg Tab 1 tablet by mouth twice a day (incr. **DATE[Nov 23 07]) - Valtrex (Valacyclovir) 1000 mg daily -
+Clonidine 0.2 mg Tab (Catapres) 1 tablet by mouth three times a day (increased **DATE[Nov 26 07]) - Lamictal (Lamotrigine) 200mg
+po twice daily - Amitriptyline (Elavil) 10 mg po twice daily - Hydrocodone-Acetaminophen 7.5 mg-500 mg Tab 1 tablet by
+mouth every 4 hours as needed for pain - Omeprazole (Prilosec) 20 mg PO daily - MVI 1 tablet by mouth daily -
+Cyclobenzaprine 10 mg Tab (Flexeril) 1 tablet by mouth twice a day - Furosemide 40 mg Tab (Lasix) 1 tablet by mouth
+daily - Os Cal D 500mg orally twice a day (**DATE[Dec 12 07]) - Prednisone 10 mg Tab 1 tablet by mouth daily(start **DATE[Jan 07 08]) -
+Zithromax Z-Pak 250 mg Tab 1 tablet by mouth daily for five days ROS: as per HPI, otherwise negative PHYSICAL
+EXAMINATION: VITALS:
+
++----------------------------------------------------+
+| Date           | Pulse | BP      | Temper | Weight |
+|----------------+-------+---------+--------+--------|
+| **DATE[Feb 08 08] 13:32 | 111   | 179/110 | 98.6   | 173.50 |
+|----------------+-------+---------+--------+--------|
+| **DATE[Jan 04 08] 12:34 | 90    | 121/77  | 97.6   | 173.31 |
++----------------------------------------------------+
+
+Repeat BP: 160/88 GENERAL: sitting on table, NAD HEENT: mucosa moist, no thrush NECK: supple, no JVD or bruits
+CARDIOVASCULAR: RRR, 1/6 murmur LUNGS: clear to auscultation bilaterally ABDOMEN: soft, NT over allograft, +BS
+EXTREMITIES: no edema bilaterally NEURO: + hand tremor bilaterally SKIN: no rash or abnormal lesions LABS
+
++-------------------------------------------------------------------+
+| Date           | Na  | K   | Cl  | CO2 | BUN | Creat | Gluc | Ca  |
+|----------------+-----+-----+-----+-----+-----+-------+------+-----|
+| **DATE[Jan 04 08] 13:30 | 140 | 4.5 | 107 | 24  | 32  | 1.89  | 109  | 9.7 |
++-------------------------------------------------------------------+
+
++--------------------------------------------+
+| Date           | WBC | Hgb  | PCV | Plt-Ct |
+|----------------+-----+------+-----+--------|
+| **DATE[Jan 04 08] 13:30 | 1.7 | 10.9 | 35  | 201    |
++--------------------------------------------+
+
++-----------------------------------------------+
+| Date           | Chol | Trigs | HDL-C | LDL-C |
+|----------------+------+-------+-------+-------|
+| **DATE[Dec 11 07] 12:45 | 171  | 111   | 48    | 101   |
++-----------------------------------------------+
+
+Prograf: 3.5 ng/mL (**DATE[Jan 04 08]) Impression/Plan: 1. s/p KIDNEY TRANSPLANT: f/u on BMP to ensure allograft function stable.
+2. IMMUNOSUPPRESSION: continue porgraf 3mg bid. Will hold myfortic due to low WBC count. Underwent steroid avoidance at
+time of transplant. Check levels as has tremor. 3. ID MANAGEMENT: d/c valcyte but continue with valtrex. Continue
+bactrim one month. f/u on urine culture. 4. HTN: BP not controlled. Steroids and eating changes possible contributors:
+Increase nifedipine to 90mg bid. 5. Hyperlipidemia: nonfasting reasonable. 6. ROD: continue os-cal + D 500mg bid for
+osteopenia noted on DEXA. 7. HM: UTD on flu shot. 8. Patient questions whether he should have abx pre eustachian tubes:
+Have told patient to contact us on whether he is to get tubes--will not necessarily need abx first. RTC 4 weeks. Patient
+seen and plan formulated with Dr. **NAME[ZZZ].
+
+------------------------------------------------------------------------------------------------------------------------
+
+Written and Electronically Signed By: **[NAME XXX].

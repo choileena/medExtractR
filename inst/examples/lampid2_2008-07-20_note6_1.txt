@@ -1,0 +1,29 @@
+**INSTITUTION **INSTITUTION **NAME[AAA, BBB CCC] Daily progress note MR# **ID-NUM Case# **ID-NUM
+
+------------------------------------------------------------------------------------------------------------------------
+
+Date of services: Friday, **DATE[Jul 20 2000] 12:50 **INSTITUTION day #7. **AGE[in 30s] years old with intractable epilepsy who
+presented in status epilepticus s/p VNS and corpus callosotomy, currently on 4 AED. Subjective: VNS was reprogrammed to
+lowest settings yesterday. No acute events overnight. No movements while asleep. Awake and alert early this AM. PE:
+General: in bed; well appearing; no obvious distress; Neuro MS: arouses to noxious stimuli LANGUAGE/SPEECH: patient nonverbal CNs: PERRL; face symmetric MOTOR: arms
+twitching while awake; normal tone; moves all four extremities to noxious stimuli  SENSORY: moves all four extremities to noxious stimuli COORDINATION: unable to assess GAIT: unable to assess
+Medications: - enoxaparin for dvt prophylaxis 40 mg subcut 1st stat qday 10 - lorazepam inj: ativan 2 mg iv prn -
+topiramate: topamax 200 mg po 1st stat tid - agitation sedation score misc rass target as of **DATE[Jul 15 07] 08:44 : 0 alert
+and calm - pregabalin: lyrica 75 mg po q12h - levetiracetam: keppra 1750 mg po q12h - lamotrigine: lamictal 150 mg po
+q12h - lorazepam: ativan 2 mg po q4h Labs: None today
+
+
+Imaging: EEG (**DATE[Jul 18 2007]): Clinical Interpretation: This abnormal EEG is consistent with a symptomatic generalized
+epilepsy (modified by corpus callosotomy) or multifocal partial epilepsy. Repeat EEG with video to focus on the
+movements in question might be useful. No ictal discharges were seen. Assessment: Ms. **NAME[AAA] is a **AGE[in 30s] year old female who presented to the Vanderbilt ER in status epilepticus. EEG was
+consistent with a symptomatic generalized epilepsy; will do video EEG if she starts having movements again. However,
+treatment team does not feel her extremity movements represent seizure activity since they cease when she is asleep.
+Therefore, it is more likely a reaction to her meds; will continue to taper off the Lyrica step-wise and watch for
+response. VNS reprogrammed yesterday. Dr. **NAME[ZZZ] updated with changes. Plan : 1. Continue Lyrica 75mg po BID (for now)
+2. Increase Lamictal to 200mg po BID 3. Continue Topamax 200mg po TID and Keppra 1750mg po BID 4. Decrease Ativan to 2mg
+q4h and switch from IV to po 5. Txf to floor today 6. Continue Lovenox for DVT prophylaxis The patient was discussed
+with Dr. **NAME[YYY], with whom this plan was jointly developed.
+
+------------------------------------------------------------------------------------------------------------------------
+
+Written by: Best, **NAME[XXX], M.D.

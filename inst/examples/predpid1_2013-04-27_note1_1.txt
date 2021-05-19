@@ -1,0 +1,30 @@
+**INSTITUTION Clinic visit note for Pediatric GI
+
+--------------------------------------------------------------------------------------------------
+
+Date of services: **DATE[Apr 27 2013] 11:03
+Age: **AGE[in teens]
+Consultation requested by: **NAME[ZZZ YYY]
+
+PCP:  **NAME[ZZZ YYY]
+
+Medications:
+- Vitamin D3 2000 IU 2 tabs once a day
+- Fish Oil 1 tab in AM
+- mercaptopurine 50 mg tablet (Also Known As Purinethol) 1.5 tablets by mouth
+daily
+- multivitamin by mouth 1 time a day [with Iron]
+- Lialda 1.2 gram tablet,delayed release 2 tablets by mouth twice a day
+- prednisone 10 mg tablet 4 tablets by mouth daily for 2 weeks then 3 tablets
+by mouth daily for 1 week then 2 tablets by mouth daily for 1 week then 1.5
+tablets by mouth daily for 1 week then 1 tablet by mouth daily for 1 week then
+0.5 tablet by mouth daily for 1 week
+- omeprazole 20 mg capsule,delayed release (Also Known As Prilosec) 1 capsule
+by mouth daily
+
+Allergies:
+- Wheat (GI Disturbances)
+
+Type of Visit: Follow up visit
+
+Reason for Visit: ulcerative colitis

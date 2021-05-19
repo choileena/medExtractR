@@ -7,37 +7,34 @@
 #' @param drug_names Vector of drug names to locate.
 #' @param max_dist Numeric - edit distance to use when searching for \code{drug_names}.
 #' @param drug_list Vector of known drugs that may end search window. By default calls
-#' \code{\link{rxnorm_druglist}}.
-#' @param lastdose Logical - whether or not last dose time entity should be
-#' extracted.
-#' \code{window_length} should be extended when identifying last dose time.
+#' \code{\link{rxnorm_druglist}}. Can be supplemented with expressions in \code{\link{addl_expr}}.
+#' @param lastdose Logical - whether or not last dose time entity should be extracted.
 #' @param unit Strength unit to look for (e.g., \sQuote{mg}).
 #' @param strength_sep Delimiter for contiguous medication strengths (e.g., \sQuote{-} for \dQuote{LTG 200-300}).
-#' @param \dots Parameter settings used in extracting frequency and intake time. Potentially useful
-#' parameters include \code{freq_dict} and \code{intaketime_dict} (see \code{\dots} argument in
-#' \code{\link{extract_entities_tapering}}) to specify frequency or intake time dictionaries, as well as
-#' \sQuote{freq_fun} and \sQuote{intaketime_fun} for user-specified extraction functions. See
-#' \code{\link{extract_entities_tapering}} documentation for details.
+#' @param \dots Parameter settings used in dictionary-based entities. For each dictionary-based
+#' entity, the user can supply the optional arguments \code{<entity>_fun} and \code{<entity>_dict}
+#' to provide custom extraction functions and dictionaries, respectively. See \code{\link{extract_entities_tapering}}
+#' documentation for details.
 #'
 #' @details This function uses a combination of regular expressions, rule-based
-#' approaches, and dictionaries to identify various drug entities of interest.
+#' approaches, and dictionaries to identify various drug entities of interest, with a
+#' particular focus on drugs administered with a tapering schedule.
 #' Specific medications to be found are specified with \code{drug_names}, which
 #' is not case-sensitive or space-sensitive (e.g., \sQuote{lamotrigine XR} is treated
 #' the same as \sQuote{lamotrigineXR}). Entities to be extracted include drug name, strength,
-#' dose amount, dose strength, frequency, intake time, and time of last dose. See
+#' dose amount, dose strength, frequency, intake time, route, duration, dose schedule,
+#' time keyword, preposition, transition, dispense amount, refill, and time of last dose. See
 #' \code{\link{extract_entities_tapering}} and \code{\link{extract_lastdose}} for more details.
 #'
 #' When searching for medication names of interest, fuzzy matching may be used.
 #' The \code{max_dist} argument determines the maximum edit distance allowed for
-#' such matches. If using fuzzy matching, any drug name with less than 5
-#' characters will only allow an edit distance of 1, regardless of the value of
-#' \code{max_dist}.
-#'
-#' The \code{stength_sep} argument is \code{NULL} by default, but can be used to
-#' identify shorthand for morning and evening doses. For example, consider the
-#' phrase \sQuote{Lamotrigine 300-200} (meaning 300 mg in the morning and 200 mg
-#' in the evening). The argument \code{strength_sep = '-'} identifies
-#' the full expression \emph{300-200} as \emph{dose strength} in this phrase.
+#' such matches. If using fuzzy matching, any drug name with less than 7 character
+#' will force an exact match, regardless of the value of \code{max_dist}. The tapering
+#' extension to medExtractR does not use the \code{window_length} argument, since tapering
+#' schedules can be much longer than a static regimens. Instead, \code{medExtractR_tapering}
+#' dynamically generates the search window based on competing drug names or phrases, and the
+#' distance between consecutive entities. The \code{stength_sep} argument is \code{NULL} by
+#' default, and operates in the same manner as it does in \code{medExtractR}.
 #'
 #' By default, the \code{drug_list} argument is \dQuote{rxnorm} which calls \code{data(rxnorm_druglist)}.
 #' A custom drug list in the form of a character string can be supplied instead, or can be appended
@@ -74,9 +71,8 @@
 
 medExtractR_tapering <- function(note, drug_names,
                                  unit, max_dist = 0,
-                                 drug_list = "rxnorm", lastdose = FALSE, #lastdose_window_ext = 1.5,
-                                 strength_sep = NULL,
-                                 ...) {
+                                 drug_list = "rxnorm", lastdose = FALSE,
+                                 strength_sep = NULL, ...) {
 
   def.saf <- getOption('stringsAsFactors')
   on.exit(options(stringsAsFactors = def.saf))

@@ -6,9 +6,9 @@
 #'
 #' @param phrase Text to search.
 #' @param p_start Start position of phrase within original text.
-#' @param p_stop End position of phrase within original text.
+#' @param d_stop End position of drug name within original text.
 #' @param unit Unit of measurement for medication strength, e.g. \sQuote{mg}.
-#' @param freq_fun Function used to extract frequency.
+#' @param frequency_fun Function used to extract frequency.
 #' @param intaketime_fun Function used to extract intaketime.
 #' @param duration_fun Function used to extract duration
 #' @param route_fun Function used to extract route
@@ -19,10 +19,11 @@
 #' @param dosechange_fun Function used to extract dosechange
 #' @param strength_sep Delimiter for contiguous medication strengths.
 #' @param \dots Parameter settings used in extracting frequency and intake time,
-#' including additional arguments to \code{freq_fun} and
-#' \code{intaketime_fun}. Use \code{freq_dict} to identify custom frequency
+#' including additional arguments to \code{frequency_fun} and
+#' \code{intaketime_fun}. Use \code{frequency_dict} to identify custom frequency
 #' dictionaries and \code{intaketime_dict } to identify custom intake time
-#' dictionaries. (Similar for all other entities with a corresponding "*_fun" argument)
+#' dictionaries. Similarly, for all other entities with a corresponding \code{<entity>_fun},
+#' a custom dictionary can be supplied with the argument \code{<entity>_dict} .
 #'
 #' @details Various medication dosing entities are extracted within this function
 #' including the following:
@@ -30,27 +31,46 @@
 #' \emph{strength}: The strength of an individual unit (i.e. tablet, capsule) of
 #'   the drug.\cr
 #' \emph{dose amount}: The number of tablets, capsules, etc taken with each dose.\cr
-#' \emph{dose}: The total strength given intake. This quantity would be
+#' \emph{dose strength}: The total strength given intake. This quantity would be
 #'   equivalent to strength x dose amount, and appears similar to strength when
 #'   dose amount is absent.\cr
 #' \emph{frequency}: The number of times per day a dose is taken, e.g.
 #'   \dQuote{once daily} or \sQuote{2x/day}.\cr
 #' \emph{intaketime}: The time period of the day during which a dose is taken,
 #'   e.g. \sQuote{morning}, \sQuote{lunch}, \sQuote{in the pm}.\cr
+#' \emph{duration}: How long a patient is on a drug regimen, e.g. \sQuote{2 weeks},
+#'   \sQuote{mid-April}, \sQuote{another 3 days}.\cr
+#' \emph{route}: The administration route of the drug, e.g., \sQuote{by mouth},
+#'   \sQuote{IV}, \sQuote{topical}\cr
+#' \emph{dose change}: Whether the dosage of the drug was changed, e.g.,
+#'   \sQuote{increase}, \sQuote{adjust}, \sQuote{reduce}.
+#' \emph{dose schedule}: Indicators of special dosing regimens, such as tapering
+#'   schedules, alternating doses, or stopping keywords, e.g., \sQuote{weaning},
+#'   \sQuote{even days} or \sQuote{odd_days}, \sQuote{discontinue}.
+#' \emph{time keyword}: Whether the dosing regimen is a past dose, current dose,
+#'   or future dose, e.g., \sQuote{currently}, \sQuote{remain}, \sQuote{yesterday}.
+#' \emph{transition}: Words or symbols that link consecutive doses of a tapering
+#'   regimen, e.g. \sQuote{then}, \sQuote{followed by}, or a comma \sQuote{,}.
+#' \emph{preposition}: Prepositions that occur immediately next to another
+#'   identified entity, e.g. \sQuote{to}, \sQuote{until}, \sQuote{for}.
+#' \emph{dispense amount}: The number of pills prescribed to the patient.
+#' \emph{refill}: The number of refills allowed for the patient's prescription.
 #'
-#' Strength, dose amount, and dose are primarily numeric quantities, and are
-#' identified using a combination of regular expressions and rule-based
-#' approaches. Frequency and intake time, on the other hand, use dictionaries
-#' for identification.
+#' Strength, dose amount, dose strength, dispense amount, and refill are primarily numeric
+#' quantities, and are identified using a combination of regular expressions and rule-based
+#' approaches. All other entities use dictionaries for identification. For more information
+#' about the default dictionary for a specific entity, view the documentation file for the
+#' object \code{<entity>_vals}.
 #'
-#' By default and when \code{freq_fun} and/or \code{intaketime_fun} are \code{NULL}, the
-#' \code{\link{extract_generic}} function will be used for these entities.
+#' By default and when an argument \code{<entity>_fun} is \code{NULL}, the
+#' \code{\link{extract_generic}} function will be used for that entity. This function
+#' can also inherit user-defined entity dictionaries, supplied as arguments to
+#' \code{medExtractR} or \code{medExtractR_tapering}.
 #'
-#' The \code{stength_sep} argument is \code{NULL} by default, but can be used to
-#' identify shorthand for morning and evening doses. For example, consider the
-#' phrase \dQuote{Lamotrigine 300-200} (meaning 300 mg in the morning and 200 mg
-#' in the evening). The argument \code{strength_sep = '-'} identifies
-#' the full expression \emph{300-200} as \emph{dose} in this phrase.
+#' Note that \code{extract_entities_tapering} has the argument \code{d_stop}. This differs
+#' from \code{extract_entities}, which uses the end position of the full search window. This
+#' is a consequence of \code{medExtractR} using a fixed search window length and \code{medExtractR_tapering}
+#' dynamically constructing a search window.
 #'
 #' @return data.frame with entities information. At least one row per entity is returned,
 #' using \code{NA} when no expression was found for a given entity.\cr
@@ -58,20 +78,24 @@
 #' \tabular{rr}{
 #'  entity   \tab  expr\cr
 #'  IntakeTime  \tab  <NA>\cr
-#'    Strength  \tab   <NA>\cr
-#'     DoseAmt   \tab  <NA>\cr
-#'   Frequency \tab  bid;19:22\cr
-#'        DoseStrength  \tab  200mg;13:18
+#'  Strength  \tab   <NA>\cr
+#'  DoseAmt   \tab  <NA>\cr
+#'  Frequency \tab  bid;19:22\cr
+#'  DoseStrength  \tab  200mg;13:18\cr
+#'  Preposition \tab for;23:26\cr
+#'  Duration \tab 14 days;27:34
 #' }
-#'
-
 #'
 #' @export
 #'
 #' @examples
-#'
+#' note <- "prednisone 20mg daily tapering to 5mg daily over 2 weeks"
+#' extract_entities_tapering(note, 1, 11, "mg")
+#' # A user-defined dictionary can be used instead of the default
+#' my_dictionary <- data.frame(c("daily", "twice daily"))
+#' extract_entities(note, 1, 11, "mg", frequency_dict = my_dictionary)
 
-extract_entities_tapering <- function(phrase, p_start, d_stop, unit, freq_fun = NULL,
+extract_entities_tapering <- function(phrase, p_start, d_stop, unit, frequency_fun = NULL,
                                       intaketime_fun = NULL,
                                       duration_fun = NULL,
                                       route_fun = NULL,
@@ -582,16 +606,16 @@ extract_entities_tapering <- function(phrase, p_start, d_stop, unit, freq_fun = 
   ### FREQ ####
 
   addl <- list(...)
-  if(is.null(freq_fun) || as.character(substitute(freq_fun)) == "extract_generic") {
-    dict <- addl[['freq_dict']]
+  if(is.null(frequency_fun) || as.character(substitute(frequency_fun)) == "extract_generic") {
+    dict <- addl[['frequency_dict']]
     if(is.null(dict)) {
       e <- new.env()
-      data("freq_vals", package = 'medExtractR', envir = e)
-      dict <- get("freq_vals", envir = e)
+      data("frequency_vals", package = 'medExtractR', envir = e)
+      dict <- get("frequency_vals", envir = e)
     }
     df <- extract_generic(phrase, dict)
   } else {
-    df <- freq_fun(phrase, ...)
+    df <- frequency_fun(phrase, ...)
   }
 
   freq <- medExtractR:::entity_metadata(phrase, p_start, df)
@@ -1103,6 +1127,8 @@ extract_entities_tapering <- function(phrase, p_start, d_stop, unit, freq_fun = 
                         "expr" = rep(NA, 5)))
     }
   }
+
+  res <- res[,c("entity", "expr")]
 
   return(res)
 }

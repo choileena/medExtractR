@@ -1,0 +1,48 @@
+**INSTITUTION **INSTITUTION **NAME[XXX]-**NAME[WWW], **NAME[BBB] 
+Nephrology **INSTITUTION Visit MR# **ID-NUM 
+ Case# <HR>
+Date of services: Tuesday, **DATE[Dec 16 2008] 13:43
+Clinic: Renal Transplant
+Identifying information: **AGE[in 40s] year old female 
+Reason for visit: Follow up SPK - **DATE[Oct 04 05] 
+Interval history: Pt continues to have persistent headaches. Has not been checking BP at home as cuff is broken. Appetite good without GI complaints.  Good uop, no pain over graft. Back pain persists requiring motorized wheelchair.
+MEDS: 
+- Prednisone Oral Tablet 5 mg 1 capsule by mouth daily
+- CellCept Oral Capsule 250 mg 3 capsules by mouth twice a day
+- Prevacid 30 mg Cap 1 capsule by mouth twice a day
+- Tacrolimus Oral Capsule (also known as Prograf) 1 mg 3 capsules by mouth twice a day
+- Nifedipine SR 60 mg Tab 1 tablet by mouth twice a day
+- Simvastatin 20 mg Tab (Zocor) 1 tablet by mouth every evening at bedtime
+ROS: as per HPI, otherwise negative 
+PHYSICAL EXAMINATION: 
+VITALS: 
++-------------------------------------------------------------+
+| Date                    | Pulse | BP      | Temper | Weight |
+|-------------------------+-------+---------+--------+--------|
+| **DATE[Nov 15 08] 10:56 | 82    | 225/101 | 98.4   | 267    |
+|-------------------------+-------+---------+--------+--------|
+| **DATE[Sep 16 08] 10:29 | 80    | 194/89  | 98.2   | 261.60 |
++-------------------------------------------------------------+
+
+BP on my check 180/100
+GENERAL: patient is well appearing; well nourished in NAD 
+HEENT: normocephalic, sclerae anicteric, no oral thrush, attempted optho funduscopic exam failed - multiple eye surgeries in past 
+NECK: supple,no thyromegaly, no JVD or carotid bruits 
+CARDIOVASCULAR: RRR without rub
+LUNGS: clear to auscultation, bilaterally without wheezes or rales 
+ABDOMEN: obese, soft without allograft tenderness, midline incision **NAME[M/M/M], + BS
+EXTREMITIES: warm with trace edema 
+NEURO: no tremor 
+SKIN: no rash or abnormal lesions 
+LYMPHATICS: no cervical, supraclavicular, or axillary lymphadenopathy 
+
+Impression/Plan: 
+1. Status post SPK transplant: f/u on BMP, amylase/lipase.
+2. Immunosuppression: decrease Prograf to 2mg bid. Check Prograf trough (last
+dose 10:30 pm) 
+3. Infectious disease: **INITIALS 
+4. Hypertension: most likely cause of headaches. Have increased nifedipine to 60mg bid. Advised to get cuff and start monitoring. Call me in one week with readings.
+5. Hyperlipidemia: unable to afford lipitor. Have replaced with zocor 20mg
+daily.
+6. Headaches: MRI unrevealing, may be secondary to uncontrolled hypertension/FK.
+RTC 3 mos.<HR>Written and Electronically Signed By: **[NAME XXX]. **NAME[ZZZ YYY M] , M.D.

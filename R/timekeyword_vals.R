@@ -1,8 +1,10 @@
 #' Keywords Specifying Time Keyword
 #'
-#' A dictionary with words for indicating a time keyword, i.e. whether the dose is a past, current, or future dose
+#' A dictionary with time keyword expressions representing whether the dosing regimen is
+#' past, current, or future. Example expressions include "currently", "remain","not taking",
+#' "yesterday", and "past".
 #'
-#' @format A vector with XX observations on the following variables.
+#' @format A data frame with time keyword expressions (exact and/or regular expressions)
 #' \describe{
 #'   \item{expr}{A character vector, expressions to consider as time keyword}
 #' }

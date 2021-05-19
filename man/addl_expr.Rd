@@ -15,8 +15,8 @@ A data frame with the following variables
 addl_expr
 }
 \description{
-A dictionary mapping route expressions to standardized expressions
-The form of each duration is given as a regular expression.
+A dictionary with additional expressions that can be used to supplement the \code{drug_list}
+argument of \code{medExtractR} and \code{medExtractR_tapering}.
 }
 \examples{
 data(addl_expr)

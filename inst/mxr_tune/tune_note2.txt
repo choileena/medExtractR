@@ -1,0 +1,68 @@
+================================================== PKPDnote[2] patient002_2006-09-04_noteID211_1_TCV.csv
+
+
+Vandebilt university **INSTITUTION **NAME[AAA, BBB] West clinic Visit Note MR# **ID-NUM Division of Kidney and Pancreas
+Transplantation Case#
+
+------------------------------------------------------------------------------------------------------------------------
+
+Date of services: Wednesday, **DATE[Sep 04 2006] 10:28 CC/Reason for visit: This is a **AGE[in 50s] year old female with a h/o second LURD
+renal transplant **DATE[Feb 2006]. Pt is s/p 1st renal transplant over 18 years ago- Pt underwent HD for 1 year in between her
+first and second renal transplant. Pt presents for follow-up clinic eval. today from **DATE[Jun 20 06]. Hospitalizations since
+last visit: no Immunomeds: Prograf 2 mg po qd Prednisone 7.5mg po qd Last dose of Prograf was 10PM **DATE[Sep 03 06]. Pt is off Valcyte and Bactrim. All Medications: - prednisone 7.5 mg by mouth daily - zocor 20mg by
+mouth daily - metamucil daily by mouth-PRN - ultracet 2tabs by mouth 4x/day as needed - PROGRAF 1MG 2TABS by mouth TWICE DAILY - CELEXA 40MG by mouth DAILY - LOPERAMIDE 2MG by mouth AS NEEDED - nexium 40mg by mouth daily - EVISTA 60MG by
+mouth DAILY - fosamax 70mg po weekly - oscal d 500mg by mouth 2x/day - micardis 80mg by mouth daily - Nadolol 10mg mouth
+daily(**DATE[Jul 11 06]) - Percocet 5mg by mouth q6h PRN(**DATE[Jul 11 06]) - CVS **PLACE **PHONE I have reviewed the medication
+list in the electronic medical record and confirmed its contents. ALLERGIES: - pcn - apresoloine - floxin - norvasc -
+IVP Dye - Cellcept causes diarrhea (**DATE[Feb 12 06]) PAST MEDICAL HISTORY: - HTN - Blood transfusions - Kidney Disease PAST
+SURGICAL HISTORY: - **NAME[M & M] 1970 - Planter wart removal 1971 - Left knee ligament repair 1979 - Breat cyst removal 1973 -
+Kidney transplant **DATE[Jul 86] - Anastomosis reversal **DATE[Oct 86] - left total knee replacement **DATE[Jan 88] - Triple arthrodosis sun-taler
+joint **DATE[Jan 93] - cataract sx **DATE[Jun 97] - Tubaligation 1999 - Total knee revision 2000 - laser sx to right eye 2001 - Graft
+placement 2003 - Left archilles repair 2004 - stent removal: **DATE[Feb 20 06] HEALTH MAINTENANCE: - pcp: **NAME[ZZZ XXXX] - Flu
+Vaccine **DATE[Jun 20 06] HPI: Pt is a **AGE[in 50s] yo female with a PMHx significant for second renal transplant (LURD; 6/06) who presents
+for follow-up clinic evaluation. Pt sID***that she has been doing well with her current immunosupression regimen
+(Prograf and Prednisone) and has not had a significant problem with diarhea s/p stopping Myfortic. Pt denies fevers,
+chills, nausea, vomitting, CP, SOB, dysuria, hematuria, tremors, cough, and abdominal pain. utional: no wt loss/gain, no
+fever, no chills, no night sweats, no fatigue. HEENT: no sore throat, no vision problems, no hearing problems, no teeth
+or gum problems. Respiratory: no shortness of breath, no cough, no sputum. Cardiovascular: no chest pain, no
+palpitations. GI: no abd pain, no nausea, no vomiting, no diarrhea, no constipation, no blood in stool. MS: no aches, no
+joint pain, no rash, no gout. GU: no increased or decreased urine volume, no dysuria, no hematuria, Breast: no lumps, no
+nipple discharge, Neurologic: no numbness, no tingling, no seizures. Hematologic/Lymphatic: no bruising. Psychiatric: no
+insomnia, no depression. Endocrine: Good glucose control. no heat or cold intolerance. Physical Exam: VITALS: P: 82 bpm
+BP: 116/64 mm Hg RR: 18 (**DATE[Feb 05 06]) Temp: 97.7 deg F Wt: 211.05 lb General: HEENT: Pupils equal, reactive to light, EOMS
+full, no icterus. Gum hyperplasia: absent Neck: Supple, no thyromegaly, no bruits, no JVD. Respiratory: Resonant to
+percussion, vessicular breath sounds, adventitial sounds absent. Cardiovascular: Rate regular, PMI , heart tones normal,
+no murmur, no rubs, no lifts or heaves. Breast: normal Abdomen: Soft, nontender, no rebound, no masses, no ascites,
+normal active bowel sounds. Pelvis/Genital: Graft: Nontender. Left iliac fossa (new transplant; 1st transplant located
+in the right iliac fossae). Bruit: No bruit. Lymphatics: Not enlarged. Musculoskeletal/Extremities: No effusion. Skin:
+No rash. Neurologic: Cranial nerves II-XII intact, motor 5/5 throughout, sensory intact, deep tendon reflexes normal.
+Data:
+
++--------------------------------------+
+| Date           | WBC  | PCV | Plt-Ct |
+|----------------+------+-----+--------|
+| **DATE[Jun 20 06] 11:35 | 13.2 | 43  | 186    |
++--------------------------------------+
+
++-------------------------------------------------------------+
+| Date           | Na  | K   | Cl  | CO2 | BUN | Creat | Gluc |
+|----------------+-----+-----+-----+-----+-----+-------+------|
+| **DATE[Jun 20 06] 11:35 | 141 | 4.7 | 104 | 24  | 29  | 1.5   | 84   |
++-------------------------------------------------------------+
+
++-----------------------------------------------+
+| Date           | Chol | Trigs | HDL-C | LDL-C |
+|----------------+------+-------+-------+-------|
+| **DATE[Jun 20 06] 11:35 | 193  | 234   | 57    | 89    |
++-----------------------------------------------+
+
+. Impression: **AGE[in 50s] yo female **AGE[birth-12]. Status post LURD kidney transplant 6/06 2. Immunosuppression Plan: 1. Renal: Check CMP,
+Phos, Mg2+. Creatinine and GFR have been stable. 2. Immunosuppression: Check FK506 level. Continue Prednisone 7.5mg po
+q24hrs. 3. Lytes: K+= 4.7. 4. CV: BP controlled on Micardis. + Statin. Check Lipid panel and LFTs. Diet counseling for
+mildly elevated TGs. 5. ID Proph: Pt completed 6 months of Bactrim and Valcyte. Check CMV antiginemia. 6. Heme: Hct
+stable. 7. Acid/Base: HCO3=24, stable. RTC: 2 months. Total visit time: Of that time, minutes spent in discussion with
+patient. Pt seen and discussed with the attending, Dr. **NAME[YYY].
+
+------------------------------------------------------------------------------------------------------------------------
+
+Written by: **NAME[XXX, WWW M], M.D. ***THIS IS A PERMANENT CHART DOCUMENT***DO NOT REMOVE***
