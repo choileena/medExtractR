@@ -7,6 +7,7 @@
 #' @param drug_names Vector of drug names to locate.
 #' @param window_length Length (in number of characters) of window after drug
 #' in which to look.
+#' @param unit Strength unit to look for (e.g., \sQuote{mg}).
 #' @param max_dist Numeric - edit distance to use when searching for \code{drug_names}.
 #' @param drug_list Vector of known drugs that may end search window. By default calls
 #' \code{\link{rxnorm_druglist}}.
@@ -14,23 +15,23 @@
 #' extracted.
 #' @param lastdose_window_ext Numeric - multiplicative factor by which
 #' \code{window_length} should be extended when identifying last dose time.
-#' @param unit Strength unit to look for (e.g., \sQuote{mg}).
 #' @param strength_sep Delimiter for contiguous medication strengths (e.g., \sQuote{-} for \dQuote{LTG 200-300}).
 #' @param flag_window How far around drug (in number of characters) to look for
 #' dose change keyword - default fixed to 30.
 #' @param dosechange_dict List of keywords used to determine if a dose change entity is present.
-#' @param \dots Parameter settings used in extracting frequency and intake time. Potentially useful
-#' parameters include \code{freq_dict} and \code{intaketime_dict} (see \code{\dots} argument in
-#' \code{\link{extract_entities}}) to specify frequency or intake time dictionaries, as well as
-#' \sQuote{freq_fun} and \sQuote{intaketime_fun} for user-specified extraction functions. See
-#' \code{\link{extract_entities}} documentation for details.
+#' @param \dots Parameter settings used in extracting frequency, intake time, route, and duration. Potentially useful
+#' parameters include \code{freq_dict}, \code{intaketime_dict}, \code{route_dict}, and \code{duration_dict}
+#' (see \code{\dots} argument in \code{\link{extract_entities}}) to specify frequency or intake time
+#' dictionaries, as well as \sQuote{freq_fun}, \sQuote{intaketime_fun}, \sQuote{route_fun}, and
+#' \sQuote{duration_fun} for user-specified extraction functions. See \code{\link{extract_entities}}
+#' documentation for details.
 #'
 #' @details This function uses a combination of regular expressions, rule-based
 #' approaches, and dictionaries to identify various drug entities of interest.
 #' Specific medications to be found are specified with \code{drug_names}, which
 #' is not case-sensitive or space-sensitive (e.g., \sQuote{lamotrigine XR} is treated
 #' the same as \sQuote{lamotrigineXR}). Entities to be extracted include drug name, strength,
-#' dose amount, dose, frequency, intake time, and time of last dose. See
+#' dose amount, dose, frequency, intake time, route, duration, and time of last dose. See
 #' \code{\link{extract_entities}} and \code{\link{extract_lastdose}} for more details.
 #'
 #' When searching for medication names of interest, fuzzy matching may be used.
@@ -82,8 +83,8 @@
 #' \donttest{
 #' note1 <- "Progrf Oral Capsule 1 mg 3 capsules by mouth twice a day - last
 #' dose at 10pm"
-#' note2 <- "Currently on lamotrigine 150-200, but will increase to lamotrigine 200mg bid"
 #' medExtractR(note1, c("prograf", "tacrolimus"), 60, "mg", 2, lastdose=TRUE)
+#' note2 <- "Currently on lamotrigine 150-200, but will increase to lamotrigine 200mg bid"
 #' medExtractR(note2, c("lamotrigine", "ltg"), 130, "mg", 1, strength_sep = "-")
 #' }
 

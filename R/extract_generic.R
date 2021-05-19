@@ -9,7 +9,9 @@
 #'
 #' @details \code{extract_generic} is used to extract entities that are
 #' identified with an associated dictionary of phrases or regular expressions,
-#' such as frequency or intake time in \code{\link{medExtractR}}. This function
+#' such as dose change, frequency, intake time, route, or duration in
+#' \code{\link{medExtractR}} and \code{\link{medExtractR_tapering}}, as well as
+#' dose schedule,  in \code{\link{medExtractR_tapering}}. This function
 #' is called within \code{\link{extract_entities}}.
 #'
 #' @return A numeric matrix with position and expression length.

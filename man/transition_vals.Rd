@@ -5,16 +5,19 @@
 \alias{transition_vals}
 \title{Keywords/Symbols Specifying Transition}
 \format{
-A vector with XX observations on the following variables.
+A data frame with transition expressions (exact and/or regular expressions)
 \describe{
-  \item{expr}{A character vector, expressions to consider as transition}
+  \item{expr}{A character vector, expressions to consider as transitions}
 }
 }
 \usage{
 transition_vals
 }
 \description{
-A dictionary with words and symbols used for transitions between segments of a tapering schedule.
+A dictionary with time keyword expressions representing a break between consecutive
+doses within a tapering regimen. This dictionary includes the expressions "then" and
+"followed by", as well as the punctuation ",(?!\\\\s?then)" or ";(?!\\\\s?then)" (i.e., a
+comma or semicolon not followed by the word "then").
 }
 \examples{
 data(transition_vals)

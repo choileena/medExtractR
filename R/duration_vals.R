@@ -1,13 +1,13 @@
 #' Keywords Specifying Duration
 #'
-#' A dictionary mapping duration expressions to numeric values representing
-#' the corresponding number of doses per day. The form of each duration is
+#' A dictionary with phrases indicating how long the patient should take a particular
+#' dose of the drug. Examples of duration expressions include "2 weeks", "14 days",
+#' "another 3 days", "through mid-April", or a specific date. The form of each duration is
 #' given as a regular expression.
 #'
-#' @format A data frame with XX observations on the following variables.
+#' @format A data frame with duration expressions (exact and/or regular expressions)
 #' \describe{
 #'   \item{expr}{A character vector, expressions to consider as duration}
-#'   \item{value}{A numeric vector, numeric value of duration}?
 #' }
 #'
 #' @keywords datasets
