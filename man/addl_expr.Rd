@@ -5,7 +5,7 @@
 \alias{addl_expr}
 \title{Additional expressions for \code{drug_list}}
 \format{
-A data frame with 162 observations of the following variables
+A data frame with the following variables
 \describe{
   \item{expr}{A character vector, additional optional expressions for the \code{drug_list} argument}
   \item{type}{A character vector, what category the expression belongs to (e.g., symptom, lab name, medication abbreviation, or drug class)}
