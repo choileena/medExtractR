@@ -18,20 +18,23 @@
 #' @export
 #'
 #' @examples
-#' data(freq_vals)
-#' extract_generic("take two every day", freq_vals)
+#' data(frequency_vals)
+#' extract_generic("take two every day", frequency_vals)
 #' extract_generic("take two every morning",
 #'                   data.frame(c("morning", "every morning")))
 
-extract_generic <- function (phrase, dict){
-  df <- do.call(rbind, lapply(dict[, 1], function(r1) {
-    r2 <- if (grepl("\\?|\\w|\\}", substr(r1, nchar(r1), nchar(r1))) &
-              !grepl("\\\\", substr(r1, nchar(r1)-1, nchar(r1)-1))) {
-      paste0(r1, "\\b")
-    }else{
-      r1
-    }
-    expr <- gregexpr(r2, phrase, ignore.case = TRUE, perl = TRUE)[[1]]
+extract_generic <- function (phrase, dict) {
+  # faster to call `tolower` than ignore.case
+  # only consider first string
+  phrase <- tolower(phrase[1])
+  x <- tolower(dict[,1])
+  nc <- nchar(x)
+  s1 <- substr(x, nc, nc)
+  s2 <- substr(x, nc-1, nc-1)
+  addEdge <- grepl("\\?|\\w|\\}", s1) & !grepl("\\\\", s2)
+  x[addEdge] <- paste0(x[addEdge], "\\b")
+  df <- do.call(rbind, lapply(x, function(r1) {
+    expr <- gregexpr(r1, phrase, perl = TRUE)[[1]]
     expr_len <- attributes(expr)$match.length
     cbind(expr, expr_len)
   }))

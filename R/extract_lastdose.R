@@ -8,7 +8,7 @@
 #' @param phrase Text to search.
 #' @param p_start Start position of phrase in larger text.
 #' @param d_start Start position of drug name in larger text.
-#' @param d_stop Start position of drug name in larger text.
+#' @param d_stop End position of drug name in larger text.
 #' @param time_exp Vector of regular expressions to identify time expressions.
 #'
 #' @details This function identifies the time at which the last dose of a drug of interest was taken.
@@ -44,7 +44,7 @@ extract_lastdose <- function(phrase, p_start, d_start, d_stop,
 
   # Actual expression of time
   raw_time <- sapply(time_exp, function(t){
-    tms <- unlist(str_extract_all(phrase, t))
+    tms <- unlist(stringr::str_extract_all(phrase, t))
     if(length(tms) == 0) tms <- "no match"
 
     # Only allow closest mention for each time expression type

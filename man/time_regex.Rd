@@ -26,7 +26,7 @@ time_regex
 }
 \description{
 A vector of regular expressions to identify different forms of time
-expressions for last dose time. This are the default values used in \code{link{extract_lastdose}}.
+expressions for last dose time. These are the default values used in \code{link{extract_lastdose}}.
 }
 \details{
 Certain expressions which might be considered ambiguous are excluded from

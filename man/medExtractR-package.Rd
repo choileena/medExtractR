@@ -23,5 +23,5 @@ Hannah Weeks \email{hannah.l.weeks@vanderbilt.edu},\cr
 Cole Beck \email{cole.beck@vumc.org},\cr
 Leena Choi \email{leena.choi@vumc.org}
 
-Maintainer: Hannah Weeks \email{hannah.l.weeks@vanderbilt.edu}
+Maintainer: Leena Choi \email{leena.choi@vumc.org}
 }

@@ -81,11 +81,6 @@ publicly available data courtesy of the U.S. National Library of Medicine (NLM),
 Institutes of Health, Department of Health and Human Services; NLM is not responsible for the product and
 does not endorse or recommend this or any other product. See \code{rxnorm_druglist} documentation for details.
 }
-\examples{
-\donttest{
-
-}
-}
 \references{
 Nelson SJ, Zeng K, Kilbourne J, Powell T, Moore R. Normalized names for clinical drugs: RxNorm at 6 years.
 J Am Med Inform Assoc. 2011 Jul-Aug;18(4)441-8. doi: 10.1136/amiajnl-2011-000116. Epub 2011 Apr 21.

@@ -10,9 +10,10 @@
 #' Cole Beck \email{cole.beck@@vumc.org},\cr
 #' Leena Choi \email{leena.choi@@vumc.org}
 #'
-#' Maintainer: Hannah Weeks \email{hannah.l.weeks@@vanderbilt.edu}
+#' Maintainer: Leena Choi \email{leena.choi@@vumc.org}
 #'
 #' @importFrom stringr str_extract str_extract_all str_replace_all
+#' @importFrom stringi stri_locate_all_regex
 #' @importFrom utils aregexec data
 #'
 #' @examples
