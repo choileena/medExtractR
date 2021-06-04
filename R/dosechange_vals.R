@@ -5,9 +5,9 @@
 #' reduce, or switch. In the following example of clinical text, the word
 #' \sQuote{increase} represents a dose change keyword: \dQuote{Increase prograf to 5mg bid.}
 #'
-#' @format A data frame with dose change expressions (exact and/or regular expressions)
+#' @format A data frame with dose change expressions (exact and/or regular expressions).
 #' \describe{
-#'   \item{expr}{A character vector, expressions to consider as dose change}
+#'   \item{expr}{A character vector, expressions to consider as dose change.}
 #' }
 #'
 #' @keywords datasets

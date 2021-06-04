@@ -5,9 +5,9 @@
 \alias{preposition_vals}
 \title{Keywords Specifying Preposition}
 \format{
-A data frame with preposition expressions (exact and/or regular expressions)
+A data frame with preposition expressions (exact and/or regular expressions).
 \describe{
-  \item{expr}{A character vector, expressions to consider as preposition}
+  \item{expr}{A character vector, expressions to consider as preposition.}
 }
 }
 \usage{

@@ -5,9 +5,9 @@
 \alias{intaketime_vals}
 \title{Keywords Specifying Intake Time}
 \format{
-A data frame with intake time expressions (exact and/or regular expressions)
+A data frame with intake time expressions (exact and/or regular expressions).
 \describe{
-  \item{expr}{A character vector, expressions to consider as intake time}
+  \item{expr}{A character vector, expressions to consider as intake time.}
 }
 }
 \usage{
@@ -16,7 +16,7 @@ intaketime_vals
 \description{
 A dictionary with intake time expressions representing the approximate time of
 day when a dose should be taken. Example expressions include "in the morning",
-"with lunch", "daily", and "three times a day". The form of each intake time is
+"with lunch", "at bedtime", and "qpm". The form of each intake time is
 given as a regular expression.
 }
 \examples{

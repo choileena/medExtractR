@@ -5,9 +5,9 @@
 \alias{timekeyword_vals}
 \title{Keywords Specifying Time Keyword}
 \format{
-A data frame with time keyword expressions (exact and/or regular expressions)
+A data frame with time keyword expressions (exact and/or regular expressions).
 \describe{
-  \item{expr}{A character vector, expressions to consider as time keyword}
+  \item{expr}{A character vector, expressions to consider as time keyword.}
 }
 }
 \usage{

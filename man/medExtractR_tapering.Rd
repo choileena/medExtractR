@@ -2,7 +2,7 @@
 % Please edit documentation in R/medExtractR_tapering.R
 \name{medExtractR_tapering}
 \alias{medExtractR_tapering}
-\title{Extract Medication Entities From Clinical Note - Extension for Tapering applications}
+\title{Extract Medication Entities From Clinical Note - Extension of \code{\link{medExtractR}} for Tapering applications}
 \usage{
 medExtractR_tapering(
   note,
@@ -27,17 +27,44 @@ medExtractR_tapering(
 \item{drug_list}{Vector of known drugs that may end search window. By default calls
 \code{\link{rxnorm_druglist}}. Can be supplemented with expressions in \code{\link{addl_expr}}.}
 
-\item{lastdose}{Logical - whether or not last dose time entity should be extracted.}
+\item{lastdose}{Logical - whether or not last dose time entity should be extracted. See \sQuote{Details}
+section below for more information.}
 
 \item{strength_sep}{Delimiter for contiguous medication strengths (e.g., \sQuote{-} for \dQuote{LTG 200-300}).}
 
 \item{\dots}{Parameter settings used in dictionary-based entities. For each dictionary-based
 entity, the user can supply the optional arguments \code{<entity>_fun} and \code{<entity>_dict}
-to provide custom extraction functions and dictionaries, respectively. See \code{\link{extract_entities_tapering}}
-documentation for details.}
+to provide custom extraction functions and dictionaries, respectively. If no additional arguments are provided,
+\code{medExtractR_tapering} will use \code{\link{extract_generic}} and the default dictionary for each entity.
+See \code{\link{extract_entities_tapering}} documentation for details.}
 }
 \value{
-data.frame with entity information\cr
+data.frame with entity information. If no dosing
+information for the drug of interest is found, the following output will be returned: \cr
+\tabular{rrr}{
+entity    \tab  expr   \tab    pos\cr
+NA \tab  NA \tab  NA \cr
+}
+\cr
+The \dQuote{entity} column of the output contains the formatted label for that entity, according to
+the following mapping:
+drug name: \dQuote{DrugName}\cr
+strength: \dQuote{Strength}\cr
+dose amount: \dQuote{DoseAmt}\cr
+dose strength: \dQuote{DoseStrength}\cr
+frequency: \dQuote{Frequency}\cr
+intake time: \dQuote{IntakeTime}\cr
+duration: \dQuote{Duration}\cr
+route: \dQuote{Route}\cr
+dose change: \dQuote{DoseChange}\cr
+dose schedule: \dQuote{DoseScheule}\cr
+time keyword: \dQuote{TimeKeyword}\cr
+transition: \dQuote{Transition}\cr
+preposition: \dQuote{Preposition}\cr
+dispense amount: \dQuote{DispenseAmt}\cr
+refill: \dQuote{Refill}\cr
+time of last dose: \dQuote{LastDose}\cr
+\cr
 Sample output:\cr
 \tabular{rrr}{
 entity    \tab  expr   \tab    pos\cr
@@ -61,17 +88,21 @@ Specific medications to be found are specified with \code{drug_names}, which
 is not case-sensitive or space-sensitive (e.g., \sQuote{lamotrigine XR} is treated
 the same as \sQuote{lamotrigineXR}). Entities to be extracted include drug name, strength,
 dose amount, dose strength, frequency, intake time, route, duration, dose schedule,
-time keyword, preposition, transition, dispense amount, refill, and time of last dose. See
+time keyword, preposition, transition, dispense amount, refill, and time of last dose.
+While it is still an optional entity in \code{medExtractR_tapering}, if \code{lastdose=TRUE}
+then \code{medExtractR_tapering} will search for time of last dose in the same search window used for all
+other entities. As a result, there is no need for the \code{lastdose_window_ext} argument. See
 \code{\link{extract_entities_tapering}} and \code{\link{extract_lastdose}} for more details.
 
 When searching for medication names of interest, fuzzy matching may be used.
 The \code{max_dist} argument determines the maximum edit distance allowed for
-such matches. If using fuzzy matching, any drug name with less than 7 character
-will force an exact match, regardless of the value of \code{max_dist}. The tapering
-extension to medExtractR does not use the \code{window_length} argument, since tapering
-schedules can be much longer than a static regimens. Instead, \code{medExtractR_tapering}
-dynamically generates the search window based on competing drug names or phrases, and the
-distance between consecutive entities. The \code{stength_sep} argument is \code{NULL} by
+such matches. If using fuzzy matching, any drug name with less than 7 characters
+will force an exact match, regardless of the value of \code{max_dist}. The default value of 7 was
+selected based on a set of training notes for the drug prednisone, and differs slightly from the default
+values of 5 for \code{\link{medExtractR}}. The tapering extension does not use the \code{window_length} argument
+to define the search window, since tapering schedules can be much longer than a static regimens.
+Instead, \code{medExtractR_tapering} dynamically generates the search window based on competing drug names or
+phrases, and the distance between consecutive entities. The \code{stength_sep} argument is \code{NULL} by
 default, and operates in the same manner as it does in \code{medExtractR}.
 
 By default, the \code{drug_list} argument is \dQuote{rxnorm} which calls \code{data(rxnorm_druglist)}.

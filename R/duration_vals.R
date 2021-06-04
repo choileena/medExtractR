@@ -5,9 +5,9 @@
 #' "another 3 days", "through mid-April", or a specific date. The form of each duration is
 #' given as a regular expression.
 #'
-#' @format A data frame with duration expressions (exact and/or regular expressions)
+#' @format A data frame with duration expressions (exact and/or regular expressions).
 #' \describe{
-#'   \item{expr}{A character vector, expressions to consider as duration}
+#'   \item{expr}{A character vector, expressions to consider as duration.}
 #' }
 #'
 #' @keywords datasets

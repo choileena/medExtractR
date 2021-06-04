@@ -5,9 +5,9 @@
 \alias{dosechange_vals}
 \title{Keywords Specifying Dose Change}
 \format{
-A data frame with dose change expressions (exact and/or regular expressions)
+A data frame with dose change expressions (exact and/or regular expressions).
 \describe{
-  \item{expr}{A character vector, expressions to consider as dose change}
+  \item{expr}{A character vector, expressions to consider as dose change.}
 }
 }
 \usage{

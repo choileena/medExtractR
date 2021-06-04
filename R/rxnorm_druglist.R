@@ -7,8 +7,8 @@
 #' uses the February 1, 2021 RxNorm files directly downloaded from
 #' \href{https://www.nlm.nih.gov/research/umls/rxnorm/docs/rxnormfiles.html}{https://www.nlm.nih.gov/research/umls/rxnorm/docs/rxnormfiles.html}.
 #'
-#' This list contains ingredient and brand names, cleaned to remove expressions likely
-#' to be ambiguous (e.g., 'today' or 'date'). This product uses publicly available data courtesy of the U.S.
+#' This list contains ingredient and brand names, cleaned to remove expressions that likely
+#' are ambiguous (e.g., \sQuote{today} or \sQuote{date}). This product uses publicly available data courtesy of the U.S.
 #' National Library of Medicine (NLM), National Institutes of Health, Department of Health and Human
 #' Services; NLM is not responsible for the product and does not endorse or recommend this or any other product.
 #'

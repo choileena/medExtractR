@@ -2,16 +2,17 @@
 #'
 #' This function searches a phrase for medication dosing entities of interest. It
 #' is called within \code{\link{medExtractR}} and generally not intended for use outside
-#' that function.
+#' that function. The \code{phrase} argument containing text to search corresponds to an
+#' individual mention of the drug of interest.
 #'
 #' @param phrase Text to search.
 #' @param p_start Start position of phrase within original text.
 #' @param p_stop End position of phrase within original text.
 #' @param unit Unit of measurement for medication strength, e.g. \sQuote{mg}.
 #' @param frequency_fun Function used to extract frequency.
-#' @param intaketime_fun Function used to extract intaketime.
-#' @param duration_fun Function used to extract duration
-#' @param route_fun Function used to extract route
+#' @param intaketime_fun Function used to extract intake time.
+#' @param duration_fun Function used to extract duration.
+#' @param route_fun Function used to extract route.
 #' @param strength_sep Delimiter for contiguous medication strengths.
 #' @param \dots Parameter settings used in extracting frequency and intake time,
 #' including additional arguments to the \code{<entity>_fun} arguments. Use \code{frequency_dict},
@@ -21,45 +22,58 @@
 #' @details Various medication dosing entities are extracted within this function
 #' including the following:
 #'
-#' \emph{strength}: The strength of an individual unit (i.e. tablet, capsule) of
-#'   the drug.\cr
-#' \emph{dose amount}: The number of tablets, capsules, etc taken with each dose.\cr
-#' \emph{dose strength}: The total strength given intake. This quantity would be
+#' \emph{strength}: The amount of drug in a given dosage form (i.e., tablet, capsule).\cr
+#' \emph{dose amount}: The number of tablets, capsules, etc. taken at a given intake time.\cr
+#' \emph{dose strength}: The total amount of drug given intake. This quantity would be
 #'   equivalent to strength x dose amount, and appears similar to strength when
 #'   dose amount is absent.\cr
-#' \emph{frequency}: The number of times per day a dose is taken, e.g.
+#' \emph{frequency}: The number of times per day a dose is taken, e.g.,
 #'   \dQuote{once daily} or \sQuote{2x/day}.\cr
 #' \emph{intaketime}: The time period of the day during which a dose is taken,
-#'   e.g. \sQuote{morning}, \sQuote{lunch}, \sQuote{in the pm}.\cr
-#' \emph{duration}: How long a patient is on a drug regimen, e.g. \sQuote{2 weeks},
+#'   e.g., \sQuote{morning}, \sQuote{lunch}, \sQuote{in the pm}.\cr
+#' \emph{duration}: How long a patient is on a drug regimen, e.g., \sQuote{2 weeks},
 #'   \sQuote{mid-April}, \sQuote{another 3 days}.\cr
 #' \emph{route}: The administration route of the drug, e.g., \sQuote{by mouth},
-#'   \sQuote{IV}, \sQuote{topical}\cr
+#'   \sQuote{IV}, \sQuote{topical}.\cr
 #'
-#' Strength, dose amount, and dose strength are primarily numeric quantities, and are
-#' identified using a combination of regular expressions and rule-based
-#' approaches. Frequency, intake time, route, and duration, on the other hand, use dictionaries
-#' for identification.
+#' Note that extraction of the entities drug name, dose change, and time of last dose are not
+#' handled by the \code{extract_entities} function. Those entities are extracted separately
+#' and appended to the \code{extract_entities} output within the main \code{medExtractR} function.
+#' Strength, dose amount, and dose strength are primarily numeric quantities, and are identified
+#' using a combination of regular expressions and rule-based approaches. Frequency, intake time,
+#' route, and duration, on the other hand, use dictionaries for identification.
 #'
 #' By default and when an argument \code{<entity>_fun} is \code{NULL}, the
-#' \code{\link{extract_generic}} function will be used for that entity. This function
-#' can also inherit user-defined entity dictionaries, supplied as arguments to
-#' \code{medExtractR} or \code{medExtractR_tapering}.
+#' \code{\link{extract_generic}} function will be used to extract that entity. This function
+#' can also inherit user-defined entity dictionaries, supplied as arguments \code{<entity>_dict}
+#' to \code{\link{medExtractR}} or \code{\link{medExtractR_tapering}} (see documentation files for main function(s) for details).
 #'
 #' The \code{stength_sep} argument is \code{NULL} by default, but can be used to
 #' identify shorthand for morning and evening doses. For example, consider the
 #' phrase \dQuote{Lamotrigine 300-200} (meaning 300 mg in the morning and 200 mg
 #' in the evening). The argument \code{strength_sep = '-'} identifies
-#' the full expression \emph{300-200} as \emph{dose} in this phrase.
+#' the full expression \emph{300-200} as \emph{dose strength} in this phrase.
 #'
 #' @return data.frame with entities information. At least one row per entity is returned,
 #' using \code{NA} when no expression was found for a given entity.\cr
+#' The \dQuote{entity} column of the output contains the formatted label for that entity, according to
+#' the following mapping:
+#' strength: \dQuote{Strength}\cr
+#' dose amount: \dQuote{DoseAmt}\cr
+#' dose strength: \dQuote{DoseStrength}\cr
+#' frequency: \dQuote{Frequency}\cr
+#' intake time: \dQuote{IntakeTime}\cr
+#' duration: \dQuote{Duration}\cr
+#' route: \dQuote{Route}\cr
+#' \cr
 #' Sample output for the phrase \dQuote{Lamotrigine 200mg bid} would look like:\cr
 #' \tabular{rr}{
 #'  entity   \tab  expr\cr
 #'  IntakeTime  \tab  <NA>\cr
 #'  Strength  \tab   <NA>\cr
 #'  DoseAmt   \tab  <NA>\cr
+#'  Route   \tab  <NA>\cr
+#'  Duration   \tab  <NA>\cr
 #'  Frequency \tab  bid;19:22\cr
 #'  DoseStrength  \tab  200mg;13:18
 #' }

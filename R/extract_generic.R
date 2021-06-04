@@ -1,7 +1,8 @@
 #' Extract Generic Entities From Phrase
 #'
 #' This function searches a phrase for the position and length
-#' of expressions specified in a dictionary.
+#' of expressions specified in a dictionary. This is called within other main functions of
+#' the package and generally not intended for use on its own.
 #'
 #' @param phrase Text to search.
 #' @param dict data.frame, the first column should contain expressions to find.
@@ -11,7 +12,7 @@
 #' identified with an associated dictionary of phrases or regular expressions,
 #' such as dose change, frequency, intake time, route, or duration in
 #' \code{\link{medExtractR}} and \code{\link{medExtractR_tapering}}, as well as
-#' dose schedule,  in \code{\link{medExtractR_tapering}}. This function
+#' dose schedule, time keyword, transition, and preposition in \code{\link{medExtractR_tapering}}. This function
 #' is called within \code{\link{extract_entities}}.
 #'
 #' @return A numeric matrix with position and expression length.
@@ -19,9 +20,9 @@
 #'
 #' @examples
 #' data(frequency_vals)
-#' extract_generic("take two every day", frequency_vals)
+#' extract_generic("take two every day", dict = frequency_vals)
 #' extract_generic("take two every morning",
-#'                   data.frame(c("morning", "every morning")))
+#'                   dict = data.frame(c("morning", "every morning")))
 
 extract_generic <- function (phrase, dict) {
   # faster to call `tolower` than ignore.case
