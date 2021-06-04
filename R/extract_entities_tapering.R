@@ -7,7 +7,7 @@
 #' @param phrase Text to search.
 #' @param p_start Start position of phrase within original text.
 #' @param d_stop End position of drug name within original text.
-#' @param unit Unit of measurement for medication strength, e.g. \sQuote{mg}.
+#' @param unit Unit of measurement for medication strength, e.g., \sQuote{mg}.
 #' @param frequency_fun Function used to extract frequency.
 #' @param intaketime_fun Function used to extract intake time.
 #' @param duration_fun Function used to extract duration.
