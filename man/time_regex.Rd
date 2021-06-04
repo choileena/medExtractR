@@ -13,10 +13,10 @@ A vector with 5 regular expressions for the following categories.
     13:00-23:59.}
   \item{qualifier_after}{Am/pm indication is implicit through a qualifying
     term like \sQuote{last night} or \sQuote{this morning}. The qualifier
-    occurs after the time, e.g. \sQuote{10 last night.}}
+    occurs after the time, e.g., \sQuote{10 last night.}}
   \item{qualifier_before}{Am/pm indication is implicit through a qualifying
     term like \sQuote{last night} or \sQuote{this morning}. The qualifier
-    occurs before the time, e.g. \sQuote{last night at 10.}}
+    occurs before the time, e.g., \sQuote{last night at 10.}}
   \item{duration}{Time (in hours) between the last dose and most recent lab
     value}
 }

@@ -29,7 +29,7 @@ extract_entities_tapering(
 
 \item{d_stop}{End position of drug name within original text.}
 
-\item{unit}{Unit of measurement for medication strength, e.g. \sQuote{mg}.}
+\item{unit}{Unit of measurement for medication strength, e.g., \sQuote{mg}.}
 
 \item{frequency_fun}{Function used to extract frequency.}
 
@@ -62,7 +62,7 @@ a custom dictionary can be supplied with the argument \code{<entity>_dict}.}
 data.frame with entities information. At least one row per entity is returned,
 using \code{NA} when no expression was found for a given entity.\cr
 The \dQuote{entity} column of the output contains the formatted label for that entity, according to
-the following mapping:
+the following mapping.\cr
 strength: \dQuote{Strength}\cr
 dose amount: \dQuote{DoseAmt}\cr
 dose strength: \dQuote{DoseStrength}\cr

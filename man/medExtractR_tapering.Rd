@@ -18,7 +18,7 @@ medExtractR_tapering(
 \arguments{
 \item{note}{Text to search.}
 
-\item{drug_names}{Vector of drug names to locate.}
+\item{drug_names}{Vector of drug names of interest to locate.}
 
 \item{unit}{Strength unit to look for (e.g., \sQuote{mg}).}
 
@@ -46,7 +46,7 @@ entity    \tab  expr   \tab    pos\cr
 NA \tab  NA \tab  NA
 }
 The \dQuote{entity} column of the output contains the formatted label for that entity, according to
-the following mapping:
+the following mapping.\cr
 drug name: \dQuote{DrugName}\cr
 strength: \dQuote{Strength}\cr
 dose amount: \dQuote{DoseAmt}\cr
