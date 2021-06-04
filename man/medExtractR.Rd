@@ -60,9 +60,8 @@ data.frame with entity information. Only extractions from found entities are ret
 information for the drug of interest is found, the following output will be returned: \cr
 \tabular{rrr}{
 entity    \tab  expr   \tab    pos\cr
-NA \tab  NA \tab  NA \cr
+NA \tab  NA \tab  NA
 }
-\cr
 #' The \dQuote{entity} column of the output contains the formatted label for that entity, according to
 the following mapping:
 drug name: \dQuote{DrugName}\cr
@@ -75,7 +74,6 @@ duration: \dQuote{Duration}\cr
 route: \dQuote{Route}\cr
 dose change: \dQuote{DoseChange}\cr
 time of last dose: \dQuote{LastDose}\cr
-\cr
 Sample output:\cr
 \tabular{rrr}{
 entity    \tab  expr   \tab    pos\cr
@@ -85,7 +83,7 @@ Strength  \tab  2 mg   \tab    86:90\cr
 DoseAmt   \tab  1     \tab     91:92\cr
 Route   \tab  by mouth     \tab     100:108\cr
 Frequency \tab  bid    \tab    109:112\cr
-LastDose  \tab  2100    \tab   129:133\cr
+LastDose  \tab  2100    \tab   129:133
 }
 }
 \description{

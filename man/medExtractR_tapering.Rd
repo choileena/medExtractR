@@ -43,9 +43,8 @@ data.frame with entity information. If no dosing
 information for the drug of interest is found, the following output will be returned: \cr
 \tabular{rrr}{
 entity    \tab  expr   \tab    pos\cr
-NA \tab  NA \tab  NA \cr
+NA \tab  NA \tab  NA
 }
-\cr
 The \dQuote{entity} column of the output contains the formatted label for that entity, according to
 the following mapping:
 drug name: \dQuote{DrugName}\cr
@@ -64,7 +63,6 @@ preposition: \dQuote{Preposition}\cr
 dispense amount: \dQuote{DispenseAmt}\cr
 refill: \dQuote{Refill}\cr
 time of last dose: \dQuote{LastDose}\cr
-\cr
 Sample output:\cr
 \tabular{rrr}{
 entity    \tab  expr   \tab    pos\cr
@@ -73,7 +71,7 @@ DrugName   \tab Prograf \tab   78:85\cr
 Strength  \tab  2 mg   \tab    86:90\cr
 DoseAmt   \tab  1     \tab     91:92\cr
 Frequency \tab  bid    \tab    101:104\cr
-LastDose  \tab  2100    \tab   121:125\cr
+LastDose  \tab  2100    \tab   121:125
 }
 }
 \description{

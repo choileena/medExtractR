@@ -65,7 +65,6 @@
 #' intake time: \dQuote{IntakeTime}\cr
 #' duration: \dQuote{Duration}\cr
 #' route: \dQuote{Route}\cr
-#' \cr
 #' Sample output for the phrase \dQuote{Lamotrigine 200mg bid} would look like:\cr
 #' \tabular{rr}{
 #'  entity   \tab  expr\cr
