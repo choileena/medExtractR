@@ -52,7 +52,7 @@ EXTREMITIES: no edema bilaterally NEURO: + hand tremor bilaterally SKIN: no rash
 | **DATE[Dec 11 07] 12:45 | 171  | 111   | 48    | 101   |
 +-----------------------------------------------+
 
-Prograf: 3.5 ng/mL (**DATE[Jan 04 08]) Impression/Plan: 1. s/p KIDNEY TRANSPLANT: f/u on BMP to ensure allograft function stable.
+Impression/Plan: 1. s/p KIDNEY TRANSPLANT: f/u on BMP to ensure allograft function stable.
 2. IMMUNOSUPPRESSION: continue porgraf 3mg bid. Will hold myfortic due to low WBC count. Underwent steroid avoidance at
 time of transplant. Check levels as has tremor. 3. ID MANAGEMENT: d/c valcyte but continue with valtrex. Continue
 bactrim one month. f/u on urine culture. 4. HTN: BP not controlled. Steroids and eating changes possible contributors:

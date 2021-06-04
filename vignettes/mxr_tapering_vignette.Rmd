@@ -6,7 +6,7 @@ output: pdf_document
 
 <!--
 %\VignetteEngine{knitr::rmarkdown}
-%\VignetteIndexEntry{1. EHR Vignette for Extract-Med and Pro-Med-NLP}
+%\VignetteIndexEntry{2. medExtractR Vignette for tapering extension of medExtractR function}
 %\VignetteEncoding{UTF-8}
 -->
 
@@ -60,9 +60,7 @@ breaktable <- function(df, brks) {
 
 ## Introduction
 
-The `medExtractR` package uses a natural language processing (NLP) system called *medExtractR*.$^{1}$ This system is a medication extraction system that uses regular expressions and rule-based approaches to identify key dosing information including drug name, strength, dose amount, frequency or intake time, dose change, and last dose time.In this vignette, we introduce the `medExtractR_tapering` function, an extension on the basic `medExtractR` function.
-
-Tapering schedules are much more complex and require more entities in order to build longitudinal dose data. 
+The `medExtractR` package uses a natural language processing (NLP) system called *medExtractR*.$^{1}$ This system is a medication extraction system that uses regular expressions and rule-based approaches to identify key dosing information including drug name, strength, dose amount, frequency or intake time, dose change, and last dose time. In this vignette, we introduce the `medExtractR_tapering` function, an extension on the basic `medExtractR` function. The goal of this function is to extract more information for drugs following a tapering schedule. Some drugs (e.g., steroids, antidepressants) require weaning schedules to be gradually stopped in order to avoid adverse side effects or withdrawal symptoms. Tapering schedules are much more complex and require more entities in order to build longitudinal dose data. 
 <!-- Post-processing features exist in the `EHR`$^{2}$ R package which convert the `medExtractR_tapering` output into longitudinal dose diaries, making it usable for PK/PD analyses.  -->
 
 ```{r, echo=FALSE,message=FALSE}
@@ -73,7 +71,7 @@ library(stringr)
 
 ## Tapering extension to `medExtractR`  
 
-Similar to `medExtractR`'s `extract_entities` subfunction, the tapering extension has its own corresponding subfunction called `extract_entities_tapering`. In addition to the entities identified by the basic `medExtractR`  function, the tapering extension can also identify: dispense amount, number of refills, dose schedule (keywords indicating a particular dose schedule pattern, such as "taper", "wean", "dose pack", or "discontinue"), time keyword (indicating whether a dose is past, current, or future), transition (words or symbols linking consecutive doses in a tapering schedule), and preposition (prepositions adjacent to other entities, used in some contexts to preserve or infer meaning). 
+Similar to `medExtractR`'s `extract_entities` subfunction, the tapering extension has its own corresponding subfunction called `extract_entities_tapering`. In addition to the entities identified by the basic `medExtractR`  function, the tapering extension can also identify: dispense amount (entity name in output: "DispenseAmt"); number of refills ("Refill"); keywords indicating a particular dose schedule pattern, such as "taper", "wean", "dose pack", or "discontinue" ("DoseSchedule"); keywords indicating whether a dose is past, current, or future ("TimeKeyword"); words or symbols linking consecutive doses in a tapering schedule ("Transition"); and prepositions adjacent to other entities ("Preposition"), used in some contexts to preserve or infer meaning. 
 
 
 ```{r mxr_taper}
@@ -89,14 +87,15 @@ pred_fn <- c(
 # execute medExtractR_tapering
 pred_mxr <- do.call(rbind, lapply(pred_fn, function(filename){
   pred_note <- paste(scan(filename, '', sep = '\n', quiet = TRUE), collapse = '\n')
-  cbind("filename" = filename,
+  fn <- sub(".+/", "", filename)
+  cbind("filename" = fn,
         medExtractR_tapering(note = pred_note,
                              drug_names = c("prednisone", "pred"),
                              unit = "mg"))
 }))
 ```
 
-This extended function was created to handle three common patterns of dosing found in notes for patients being treated with medications that commonly use a tapering schedule to gradually increase or decrease the patient's dose. The drug prednisone is an example of one such medication, and de-identified notes for patients being treated with prednisone were used during `medExtractR_tapering` development (described in a later section). We call these additional dosing patterns "taper I", "taper II", and "alternating" schedules. In the subsections below, we explain the structure of each of these schedules and present an example of `medExtractR_tapering` being applied to each.
+This extended function was created to handle three common patterns of dosing found in notes for patients being treated with medications that commonly use a tapering schedule to gradually decrease the patient's dose. The drug prednisone is an example of one such medication, and de-identified notes for patients being treated with prednisone were used during `medExtractR_tapering` development (described in a later section). We call these additional dosing patterns "taper I", "taper II", and "alternating" schedules. In the subsections below, we explain the structure of each of these schedules and present an example of `medExtractR_tapering` being applied to each.
 
 *Taper I*
 
@@ -104,11 +103,11 @@ Taper I schedules are tapering regimens in which consecutive doses are explicitl
 
 - "prednisone 10 mg tablet 4 tablets by mouth daily for 2 weeks then 3 tablets by mouth daily for 1 week then 2 tablets by mouth daily for 1 week then 1.5 tablets by mouth daily for 1 week then 1 tablet by mouth daily for 1 week then 0.5 tablet by mouth daily for 1 week"  
 
-- "will increase prednisone to 15mg once a day for 5-7 days, then taper (10mg to 5mg to off) over 2 weeks"
+- "will increase prednisone to 15m g once a day for 5-7 days, then taper (10 mg to 5 mg to off) over 2 weeks"
 
 - "prednisone 5 mg daily for 7 days and 2.5 mg daily for another 3 days"  
 
-In a taper I schedule, at least some dose information is available for two or more segments of a weaning schedule. In the first example above, the strength of an individual tablet is provided up front, and each segment of the taper schedule just provides the number of tablets to take. This represents an ideal case where a clear duration is available for each segment. In the second example, the durations associated with each segment are less clear. MedExtractR only identifies the information exactly as it's written in a note, but a post-processing function could determine how to assign daily dosages given this information (e.g., 15mg for 6 days, 10mg for 7 days, 5mg for 7 days, 0mg). 
+In a taper I schedule, at least some dose information is available for two or more segments of a weaning schedule. In the first example above, the strength of an individual tablet is provided up front, and each segment of the taper schedule just provides the number of tablets to take. This represents an ideal case where a clear duration is available for each segment. In the second example, the durations associated with each segment are less clear. MedExtractR only identifies the information exactly as it's written in a note, but a post-processing function could determine how to assign daily dosages given this information (e.g., 15 mg for 6 days, 10 mg for 7 days, 5 mg for 7 days, 0 mg). 
 <!-- The `EHR` package provides a pipeline for converting raw medExtractR output of tapering schedules to a daily dose diary. -->
 
 ```{r}
@@ -118,7 +117,7 @@ subset(pred_mxr, filename == pred_fn[1])
 
 *Taper II*
 
-Taper II schedules are tapering regimens in which a repetitive dosing change is written more concisely. Typically, this is written in the form of *"<initial dose> change by <incremental dose> at <interval>"*. As an example, consider the phrase *"Take prednisone 5mg tablet 4 tabs daily for one week, then decrease by 5mg every week then stop"* In this excerpt, the patient's initial dose is 20mg per day for a duration of one week. From the second part of the phrase, we can infer that after the first week, the patient's dosage will be 15mg daily for the second week, 10mg daily for the third week, 5mg daily for the fourth week, and then 0mg after that. 
+Taper II schedules are tapering regimens in which a repetitive dosing change is written more concisely. Typically, this is written in the form of *"<initial dose> change by <incremental dose> at <interval>"*. As an example, consider the phrase *"Take prednisone 5mg tablet 4 tabs daily for one week, then decrease by 5mg every week then stop"* In this excerpt, the patient's initial dose is 20 mg per day for a duration of one week. From the second part of the phrase, we can infer that after the first week, the patient's dosage will be 15 mg daily for the second week, 10 mg daily for the third week, 5 mg daily for the fourth week, and then 0 mg (off) after that. 
 <!-- As part of the post-processing performed by the `EHR` package, some strength/dose strength expressions get reclassified as "dose increment," reflecting a recurring change within a tapering schedule  -->
 
 
@@ -141,7 +140,7 @@ subset(pred_mxr, filename == pred_fn[3])
 
 ### `medExtractR_tapering` development
 
-The tapering extension to medExtractR was developed on a set of 162 training notes from Vanderbilt University's de-identified EHR system, the Synthetic Derivative (SD). As a first step, we developed annotation guidelines as a way to rigorously define the definition of each new entity (or changes to any existing entity, if applicable). Two reviewers would then independently annotate each note, and a third party group would help resolve any discrepancies. The annotation guidelines were then updated, and annotations revised, based on this process.
+The tapering extension to medExtractR was developed on a set of 162 training notes from Vanderbilt University's de-identified EHR system, the Synthetic Derivative (SD). As a first step, we developed annotation guidelines as a way to rigorously define the definition of each new entity (or changes to any existing entity, if applicable). Two reviewers would then independently annotate each note, and a third party group would help resolve any discrepancies. The annotation guidelines were then updated, and annotations were revised, based on this process.
 
 This set of training notes was also used to generate the default entity dictionaries included within the `medExtractR` package. The annotations, which serve as the gold standard for what information should be extracted, were used as the starting point for all dictionaries. Those expressions were then removed (e.g., mispelled words) or generalized using regular expressions (e.g. changing a "2 days" duration to "\\d{1,2} days", where \\d represents any one or two digit number). Examples of some expressions in the new entity dictionaries are provided below: 
 
@@ -340,7 +339,7 @@ DoseSchedule         done 924:928
 
 ## References  
 
-1. Weeks HL, Beck C, McNeer E, Williams ML, Bejan CA, Denny JC, Choi L. medExtractR: A targeted, customizable approach to medication extraction from electronic health records. Journal of the American Medical Informatics Association. 2020 Jan 16.  
+1. Weeks HL, Beck C, McNeer E, Williams ML, Bejan CA, Denny JC, Choi L. medExtractR: A targeted, customizable approach to medication extraction from electronic health records. Journal of the American Medical Informatics Association. 2020 Mar;27(3):407-18. doi: 10.1093/jamia/ocz207.
 
 2. Choi L, Beck C, Weeks HL, and McNeer E (2020). EHR: Electronic Health Record (EHR) Data
   Processing and Analysis Tool. R package version 0.3-1. https://CRAN.R-project.org/package=EHR

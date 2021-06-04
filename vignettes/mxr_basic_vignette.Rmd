@@ -6,9 +6,10 @@ output: pdf_document
 
 <!--
 %\VignetteEngine{knitr::rmarkdown}
-%\VignetteIndexEntry{1. medExtractR}
+%\VignetteIndexEntry{1. medExtractR Vignette for basic medExtractR function}
 %\VignetteEncoding{UTF-8}
 -->
+
 
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -61,7 +62,7 @@ breaktable <- function(df, brks) {
 
 The `medExtractR` package uses a natural language processing (NLP) system called *medExtractR*.$^{1}$ This system is a medication extraction system that uses regular expressions and rule-based approaches to identify key dosing information including drug name, strength, dose amount, frequency or intake time, dose change, and last dose time. Function arguments can be specified to allow the user to tailor the `medExtractR` system to the particular drug or dataset of interest, improving the quality of extracted information.
 
-The `medExtractR` system forms the basis of the *Extract-Med* module in Choi, et al.'s$^{2}$ pipeline approach for performing pharmacokinetic/pharmacodynamic (PK/PD) analyses using electronic health records (EHRs). This approach and corresponding R package, `EHR`$^{3}$, convert raw output from `medExtractR` into a format that is usable for PK/PD analyses. Since `medExtractR` is integral to the *Extract-Med* module in `EHR`, parts of this vignette are taken and adapted from the `EHR` package vignette.
+The `medExtractR` system forms the basis of the *Extract-Med* module in Choi, *et al.*'s$^{2}$ pipeline approach for performing pharmacokinetic/pharmacodynamic (PK/PD) analyses using electronic health records (EHRs). This approach and corresponding R package, `EHR`,$^{3}$ convert raw output from `medExtractR` into a format that is usable for PK/PD analyses. Since `medExtractR` is integral to the *Extract-Med* module in `EHR`, parts of this vignette are taken and adapted from the `EHR` package vignette.
 
 ```{r, echo=FALSE,message=FALSE}
 ## Temporary sourcing files until I updated the R package - these files contain the updated medExtractR functions
@@ -71,9 +72,9 @@ library(stringr)
 
 ## Basic `medExtractR`  
 
-The function `medExtractR` is primarily responsible for identifying and creating search windows for all mentions of the drug of interest within a note. This function then calls the `extract_entities` subfunction, which identifies and extracts entities within the search window. The entities that can be identified with the basic version of `medExtractR` include: drug name, strength, dose amount, dose strength (i.e., dose given intake), frequency, intake time, dose change (keywords indicating an increase or decrease in dose), route of administration, duration (how long the patient is on that dosage), and time of last dose. In order to run medExtractR, certain function arguments must be specified, including:  
+The function `medExtractR` is primarily responsible for identifying and creating search windows for all mentions of the drug of interest within a note. This function then calls the `extract_entities` subfunction, which identifies and extracts entities within the search window. The entities that can be identified with the basic version of `medExtractR` include: drug name (entity name in output: "DrugName"), strength ("Strength"), dose amount ("DoseAmt"), dose given intake ("DoseStrength"), frequency ("Frequency"), intake time ("IntakeTime"), keywords indicating an increase or decrease in dose ("DoseChange"), route of administration ("Route"), duration of dosing regimen ("Duration"), and time of last dose ("LastDose"). In order to run `medExtractR`, certain function arguments must be specified, including:  
 
-- `note`: A character string containing the note on which you want to run medExtractR.  
+- `note`: A character string containing the note on which you want to run `medExtractR`.  
 - `drug_names`: Names of the drugs for which we want to extract medication dosing information. This can include any way in which the drug name might be represented in the clinical note, such as generic name (e.g., `"lamotrigine"`), brand name (e.g., `"Lamictal"`), or an abbreviation (e.g., `"LTG"`).  
 - `unit`: The unit of the drug(s) listed in `drug_names`, for example `"mg"`.  
 - `window_length`: Length of the search window around each found drug name in which to search for dosing information. There is no default for this argument, requiring the user to carefully consider its value through tuning (see tuning section below).  
@@ -81,8 +82,8 @@ The function `medExtractR` is primarily responsible for identifying and creating
 
   - The default value is '0', or exact spelling matches to `drug_names`. A value of 0 is always used for drug names with less than 5 characters regardless of the value set by `max_dist`. 
   - A value of 1 would capture mistakes such as a single missing or extra letter, e.g., "tacrlimus" or "tacroolimus" instead of "tacrolimus"  
-  - A value of 2 would capture these mistakes or a single transposition, e.g. "tcarolimus" instead of "tacrolimus"  
-  - Higher values (3 or above) would capture increasingly more severe mistakes, though setting the value too high can cause similar words to be mistaken as the drug name. 
+  - A value of 2 would capture these mistakes or a single transposition, e.g., "tcarolimus" instead of "tacrolimus"  
+  - Higher values (3 or above) would capture increasingly more severe mistakes, though setting the value too high can cause similar words to be mistaken as the drug name, likely increasing the false positive rate. 
 
 Generally, the function call to `medExtractR` is  
 
@@ -92,15 +93,15 @@ medExtractR(note, drug_names, unit, window_length, max_dist, ...)
 ```
 
 
-where `...` refers to additional arguments to *medExtractR*. Examples of additional arguments include:
+where `...` refers to additional arguments to `medExtractR`. Examples of additional arguments include:
 
 - `drug_list`, a list of other drug names (besides the drug names of interest). This list is used to shorten the search window in which `medExtractR` looks for dosing entities by truncating at the nearest mentions of a competing drug name. By default, this calls `rxnorm_druglist`, a partially cleaned and processed list of brand name and ingredient drug names in the RxNorm database.$^{4}$ This list could also incorporate other competing information besides drug names, such as drug abbreviations, symptoms, procedures, or names of laboratory measurements.
 
-- `strength_sep`, where users can specify special characters to separate doses administered at different times of day. For example, consider the drug name *"lamotrigine"* and the phrase *"Patient is on lamotrigine 200-300"*, indicating that the patient takes 200 mg of the drug in the morning and 300 mg in the evening. Setting `strength_sep = c('-')` would allow `medExtractR` to identify the expression *200-300* as "Dose" (i.e., dose given intake) since they are separated by the special character "-". The default value is `NULL`.  
+- `strength_sep`, where users can specify special characters to separate doses administered at different times of day. For example, consider the drug name *"lamotrigine"* and the phrase *"Patient is on lamotrigine 200-300"*, indicating that the patient takes 200 mg of the drug in the morning and 300 mg in the evening. Setting `strength_sep = c('-')` would allow `medExtractR` to identify the expression *200-300* as "DoseStrength" (i.e., dose given intake) since they are separated by the special character "-". The default value is `NULL`.  
 
 - `lastdose`, a logical input specifying whether or not the last dose time entity should be extracted. Default value is `FALSE`.
 
-- `<entity>_dict` and `<entity>_fun`, where `<entity>` is a dictionary-based entity (e.g., frequency, intake time, route, duration). These optional arguments allow for user-customized dictionaries and extraction functions. Default dictionaries are provided within medExtractR, as is a default extraction function (`extract_generic`).
+- `<entity>_dict` and `<entity>_fun`, where `<entity>` is a dictionary-based entity (e.g., frequency, intake time, route, duration). These optional arguments allow for user-customized dictionaries and extraction functions. Default dictionaries are provided within `medExtractR`, as is a default extraction function (`extract_generic`).
 
 As mentioned above, some arguments to `medExtractR` should be specified through a tuning process. In a later section, we briefly describe the process by which a user could tune the `medExtractR` system using a validated gold standard dataset.
 
@@ -122,7 +123,8 @@ tac_fn <- list(
 # execute medExtractR
 tac_mxr <- do.call(rbind, lapply(tac_fn, function(filename){
   tac_note <- paste(scan(filename, '', sep = '\n', quiet = TRUE), collapse = '\n')
-  cbind("filename" = filename,
+  fn <- sub(".+/", "", filename)
+  cbind("filename" = fn,
         medExtractR(note = tac_note,
              drug_names = c("tacrolimus", "prograf", "tac", "tacro", "fk", "fk506"),
              unit = "mg",
@@ -142,7 +144,8 @@ lam_fn <- c(
 # execute medExtractR
 lam_mxr <- do.call(rbind, lapply(lam_fn, function(filename){
   lam_note <- paste(scan(filename, '', sep = '\n', quiet = TRUE), collapse = '\n')
-  cbind("filename" = filename,
+  fn <- sub(".+/", "", filename)
+  cbind("filename" = fn,
         medExtractR(note = lam_note,
               drug_names = c("lamotrigine", "lamotrigine XR", 
                             "lamictal", "lamictal XR", 
@@ -171,7 +174,7 @@ message("lamotrigine `medExtractR` output:\n")
 lam_mxr
 ```
 
-For the tacrolimus output, we chose to also extract the last dose time entity by specifying `lastdose=TRUE`. The last dose time entity is extracted as raw character expressions from the clinical note, and must first be converted to a standardized datetime format. The `EHR` package provides for parsing and standardizing raw `medExtractR` last dose times when laboratory measurements are available with its `processLastDose` function.
+For the tacrolimus output, we chose to also extract the last dose time entity by specifying `lastdose=TRUE`. The last dose time entity is extracted as raw character expressions from the clinical note, and must first be converted to a standardized datetime format. The `EHR`$^{3}$ package provides for parsing and standardizing raw `medExtractR` last dose times when laboratory measurements are available with its `processLastDose` function.
 
 
 
@@ -179,12 +182,12 @@ For the tacrolimus output, we chose to also extract the last dose time entity by
 
 In a previous section, we mentioned that parameters within the `medExtractR` should be tuned in order to ensure higher quality of extracted drug information. This section provides recommendations for how to implement this tuning procedure. 
 
-In order to tune medExtractR, we recommend selecting a small set of tuning notes, from which the parameter values can be selected. Below, we describe this process with a set of three notes (note that these notes were chosen for the purpose of demonstration, and we recommend using tuning sets of at least 10 notes).
+In order to tune `medExtractR`, we recommend selecting a small set of tuning notes, from which the parameter values can be selected. Below, we describe this process with a set of three notes (note that these notes were chosen for the purpose of demonstration, and we recommend using tuning sets of at least 10 notes).
 
 Once a set of tuning notes has been curated, they must be manually annotated by reviewers to identify the information that should be extracted. This process produces a gold standard set of annotations, which identify the correct drug information of interest. This includes entities like the drug name, strength, and frequency. For example, in the phrase  
 $$\text{Patient is taking } \textbf{lamotrigine} \text{ } \textit{300 mg} \text{ in the } \underline{\text{morning}} \text{ and } \textit{200 mg} \text{ in the }\underline{\text{evening}}$$
 
-bolded, italicized, and underlined phrases represent annotated drug names, dose (i.e., dose given intake), and intake times, respectively. These annotations are stored as a dataset.  
+bolded, italicized, and underlined phrases represent annotated drug names, dose strength (i.e., dose given intake), and intake times, respectively. These annotations are stored as a dataset.  
 
 First, we read in the annotation files for three example tuning notes, which can be generated using an annotation tool, such as the Brat Rapid Annotation Tool (BRAT) software.$^{5}$ By default, the output file from BRAT is tab delimited with 3 columns: an annotation identifier, a column with labeling information in the format "label startPosition stopPosition", and the annotation itself, as shown in the example below:
 
@@ -250,7 +253,8 @@ for(i in 1:nrow(tune_pick)){
   
   mxr_tune[[i]] <- do.call(rbind, lapply(note_filenames, function(filename){
     tune_note <- paste(scan(filename, '', sep = '\n', quiet = TRUE), collapse = '\n')
-    cbind("filename" = filename,
+    fn <- sub(".+/", "", filename)
+    cbind("filename" = fn,
           medExtractR(note = tune_note,
                       drug_names = c("tacrolimus", "prograf", "tac", "tacro", "fk", "fk506"),
                       unit = "mg",
@@ -306,19 +310,19 @@ ggplot(tune_pick) + geom_point(aes(max_edit_distance, window_length, size = F1))
 ```
 
 
-The plot shows that the highest F1 achieved was 1, and occurred for three different combinations of parameter values: a maximum edit distance of 2 and a window length of 60, 90, or 120 characters. The relatively small number of unique F1 values is likely the result of only using 3 tuning notes. In this case, we would typically err on the side of allowing a larger search window and decide to use a maximum edit distance of 2 and a window length of 120 characters. In a real-world tuning scenario and with a larger tuning set, we would also want to test longer window lengths since the best case scenario occurred at the longest window length we used.
+The plot shows that the highest F1 achieved was 1, and occurred for three different combinations of parameter values: a maximum edit distance of 2 and a window length of 60, 90, or 120 characters. The relatively small number of unique F1 values is likely the result of only using 3 tuning notes. In this case, we would typically err on the side of allowing a larger search window and decide to use a maximum edit distance of 2 and a window length of 120 characters. In a real-world tuning scenario and with a larger tuning set, we would also want to test longer window lengths since the best case scenario occurred at the longest window length we used. Additional information for the tuning process of `medExtractR` can be found in Weeks, *et al.*$^{1}$
 
 
 ## References  
 
-1. Weeks HL, Beck C, McNeer E, Williams ML, Bejan CA, Denny JC, Choi L. medExtractR: A targeted, customizable approach to medication extraction from electronic health records. Journal of the American Medical Informatics Association. 2020 Jan 16.  
+1. Weeks HL, Beck C, McNeer E, Williams ML, Bejan CA, Denny JC, Choi L. medExtractR: A targeted, customizable approach to medication extraction from electronic health records. Journal of the American Medical Informatics Association. 2020 Mar;27(3):407-18. doi: 10.1093/jamia/ocz207.
 
-2. Choi L, Beck C, McNeer E, Weeks HL, Williams ML, James NT, Niu X, Abou-Khalil BW, Birdwell KA, Roden DM, Stein CM. Development of a System for Post-marketing Population Pharmacokinetic and Pharmacodynamic Studies using Real-World Data from Electronic Health Records. Clinical Pharmacology & Therapeutics. 2020 Jan 20.  
+2. Choi L, Beck C, McNeer E, Weeks HL, Williams ML, James NT, Niu X, Abou-Khalil BW, Birdwell KA, Roden DM, Stein CM. Development of a System for Post-marketing Population Pharmacokinetic and Pharmacodynamic Studies using Real-World Data from Electronic Health Records. Clinical Pharmacology & Therapeutics. 2020 Apr;107(4):934-43. doi: 10.1002/cpt.1787.  
 
 3. Choi L, Beck C, Weeks HL, and McNeer E (2020). EHR: Electronic Health Record (EHR) Data
   Processing and Analysis Tool. R package version 0.3-1. https://CRAN.R-project.org/package=EHR
   
-4. Nelson SJ, Zeng K, Kilbourne J, Powell T, Moore R. Normalized names for clinical drugs: RxNorm at 6 years. J Am Med Inform Assoc. 2011 Jul-Aug;18(4)441-8. doi: 10.1136/amiajnl-2011-000116. Epub 2011 Apr 21. PubMed PMID: 21515544; PubMed Central PMCID: PMC3128404.
+4. Nelson SJ, Zeng K, Kilbourne J, Powell T, Moore R. Normalized names for clinical drugs: RxNorm at 6 years. Journal of the American Medical Informatics Association. 2011 Jul-Aug;18(4)441-8. doi: 10.1136/amiajnl-2011-000116. Epub 2011 Apr 21. PubMed PMID: 21515544; PubMed Central PMCID: PMC3128404.
   
 5. Stenetorp P, Pyysalo S, Topić G, Ohta T, Ananiadou S, Tsujii JI. BRAT: a web-based tool for NLP-assisted text annotation. InProceedings of the Demonstrations at the 13th Conference of the European Chapter of the Association for Computational Linguistics 2012 Apr 23 (pp. 102-107). Association for Computational Linguistics.
 
