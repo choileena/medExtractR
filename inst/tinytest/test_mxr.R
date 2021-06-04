@@ -54,3 +54,6 @@ expect_true(is.na(medExtractR(t1, 'advil', 100, "mg", drug_list = dl)))
 # medExtractR(t1, 'metformin', 100, "mg", 2)
 ## why is doseamt missing?
 # medExtractR_tapering(t1, 'zincoderm', "mg") # 5 times
+
+t2 <- paste(scan('testnote2.txt', '', sep = '\n', quiet = TRUE), collapse = '\n')
+expect_equal(as.numeric(sub(':.*', '', medExtractR(t2, c('lamotrigine','lamictal'), 100, "mg", 1)[,'pos'])), c(253,266,275,282,286))
