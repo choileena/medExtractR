@@ -103,7 +103,7 @@ Taper I schedules are tapering regimens in which consecutive doses are explicitl
 
 - "prednisone 10 mg tablet 4 tablets by mouth daily for 2 weeks then 3 tablets by mouth daily for 1 week then 2 tablets by mouth daily for 1 week then 1.5 tablets by mouth daily for 1 week then 1 tablet by mouth daily for 1 week then 0.5 tablet by mouth daily for 1 week"  
 
-- "will increase prednisone to 15m g once a day for 5-7 days, then taper (10 mg to 5 mg to off) over 2 weeks"
+- "will increase prednisone to 15 mg once a day for 5-7 days, then taper (10 mg to 5 mg to off) over 2 weeks"
 
 - "prednisone 5 mg daily for 7 days and 2.5 mg daily for another 3 days"  
 
@@ -159,7 +159,7 @@ Before running `medExtractR_tapering`, we first pre-processed the notes by censo
 
 ### Details of `medExtractR_tapering` functionality
 
-The tapering extension of the `medExtractR` function is capable of extracting more entities associated with tapering schedules, and is thus more flexible than the basic version of `medExtractR`. The arguments between the basic and extended versions of `medExtractR` are the same with one major exception: `medExtractR_tapering` does *not* have an argument for `window_length`. This is because the length of the window in which all relevant entities are contained varies greatly depending on the type of dosing schedule (e.g., taper I, taper II, or alternating). Unlike the basic `medExtractR` function, which uses a fixed window length, `medExtractR_tapering` dynamically generates a search window. This is done by first allowing a very generous search window, and then truncating based on two criteria: 1. the presence of competing drug names or terms and 2. the distance between consecutive entities. The user can modify this search window process by adding or removing terms to the `drug_list` argument, for example including additional categories of competing terms to use for truncation (e.g., symptoms, procedure, or laboratory names).
+The tapering extension of the `medExtractR` function is capable of extracting more entities associated with tapering schedules, and is thus more flexible than the basic version of `medExtractR`. The arguments between the basic and extended versions of `medExtractR` are the same with one major exception: `medExtractR_tapering` does *not* have an argument for `window_length`. This is because the length of the window in which all relevant entities are contained varies greatly depending on the type of dosing schedule (e.g., taper I, taper II, or alternating). Unlike the basic `medExtractR` function, which uses a fixed window length, `medExtractR_tapering` dynamically generates a search window. This is done by first allowing a very generous search window, and then truncating based on two criteria: (1) the presence of competing drug names or terms; and (2) the distance between consecutive entities. The user can modify this search window process by adding or removing terms to the `drug_list` argument, for example including additional categories of competing terms to use for truncation (e.g., symptoms, procedure, or laboratory names).
 
 ```{r, eval = FALSE}
 note <- paste(scan(filename, '', sep = '\n', quiet = TRUE), collapse = '\n')
