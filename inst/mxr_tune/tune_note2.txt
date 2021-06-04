@@ -9,7 +9,7 @@ Transplantation Case#
 Date of services: Wednesday, **DATE[Sep 04 2006] 10:28 CC/Reason for visit: This is a **AGE[in 50s] year old female with a h/o second LURD
 renal transplant **DATE[Feb 2006]. Pt is s/p 1st renal transplant over 18 years ago- Pt underwent HD for 1 year in between her
 first and second renal transplant. Pt presents for follow-up clinic eval. today from **DATE[Jun 20 06]. Hospitalizations since
-last visit: no Immunomeds: Prograf 2 mg po qd Prednisone 7.5mg po qd Last dose of Prograf was 10PM **DATE[Sep 03 06]. Pt is off Valcyte and Bactrim. All Medications: - prednisone 7.5 mg by mouth daily - zocor 20mg by
+last visit: no Immunomeds: Prograf 2 mg po qd Prednisone 7.5mg po qd Last dose of Prograf was 10PM. Pt is off Valcyte and Bactrim. All Medications: - prednisone 7.5 mg by mouth daily - zocor 20mg by
 mouth daily - metamucil daily by mouth-PRN - ultracet 2tabs by mouth 4x/day as needed - PROGRAF 1MG 2TABS by mouth TWICE DAILY - CELEXA 40MG by mouth DAILY - LOPERAMIDE 2MG by mouth AS NEEDED - nexium 40mg by mouth daily - EVISTA 60MG by
 mouth DAILY - fosamax 70mg po weekly - oscal d 500mg by mouth 2x/day - micardis 80mg by mouth daily - Nadolol 10mg mouth
 daily(**DATE[Jul 11 06]) - Percocet 5mg by mouth q6h PRN(**DATE[Jul 11 06]) - CVS **PLACE **PHONE I have reviewed the medication
