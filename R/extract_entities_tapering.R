@@ -1,7 +1,7 @@
-#' Extract Medication Entities From Phrase - Extension for Tapering application
+#' Extract Medication Entities From Phrase - Extension of \code{\link{extract_entities}} for Tapering application
 #'
 #' This function searches a phrase for medication dosing entities of interest. It
-#' is called within \code{\link{medExtractR}} and generally not intended for use outside
+#' is called within \code{\link{medExtractR_tapering}} and generally not intended for use outside
 #' that function.
 #'
 #' @param phrase Text to search.
@@ -9,14 +9,14 @@
 #' @param d_stop End position of drug name within original text.
 #' @param unit Unit of measurement for medication strength, e.g. \sQuote{mg}.
 #' @param frequency_fun Function used to extract frequency.
-#' @param intaketime_fun Function used to extract intaketime.
-#' @param duration_fun Function used to extract duration
-#' @param route_fun Function used to extract route
-#' @param doseschedule_fun Function used to extract doseschedule
-#' @param preposition_fun Function used to extract preposition
-#' @param timekeyword_fun Function used to extract timekeyword
-#' @param transition_fun Function used to extract transition
-#' @param dosechange_fun Function used to extract dosechange
+#' @param intaketime_fun Function used to extract intake time.
+#' @param duration_fun Function used to extract duration.
+#' @param route_fun Function used to extract route.
+#' @param doseschedule_fun Function used to extract dose schedule.
+#' @param preposition_fun Function used to extract preposition.
+#' @param timekeyword_fun Function used to extract time keyword.
+#' @param transition_fun Function used to extract transition.
+#' @param dosechange_fun Function used to extract dose change.
 #' @param strength_sep Delimiter for contiguous medication strengths.
 #' @param \dots Parameter settings used in extracting frequency and intake time,
 #' including additional arguments to \code{frequency_fun} and
@@ -28,58 +28,85 @@
 #' @details Various medication dosing entities are extracted within this function
 #' including the following:
 #'
-#' \emph{strength}: The strength of an individual unit (i.e. tablet, capsule) of
-#'   the drug.\cr
-#' \emph{dose amount}: The number of tablets, capsules, etc taken with each dose.\cr
-#' \emph{dose strength}: The total strength given intake. This quantity would be
+#' \emph{strength}: The amount of drug in a given dosage form (i.e., tablet, capsule).\cr
+#' \emph{dose amount}: The number of tablets, capsules, etc. taken at a given intake time.\cr
+#' \emph{dose strength}: The total amount of drug given intake. This quantity would be
 #'   equivalent to strength x dose amount, and appears similar to strength when
 #'   dose amount is absent.\cr
-#' \emph{frequency}: The number of times per day a dose is taken, e.g.
+#' \emph{frequency}: The number of times per day a dose is taken, e.g.,
 #'   \dQuote{once daily} or \sQuote{2x/day}.\cr
 #' \emph{intaketime}: The time period of the day during which a dose is taken,
-#'   e.g. \sQuote{morning}, \sQuote{lunch}, \sQuote{in the pm}.\cr
-#' \emph{duration}: How long a patient is on a drug regimen, e.g. \sQuote{2 weeks},
+#'   e.g., \sQuote{morning}, \sQuote{lunch}, \sQuote{in the pm}.\cr
+#' \emph{duration}: How long a patient is on a drug regimen, e.g., \sQuote{2 weeks},
 #'   \sQuote{mid-April}, \sQuote{another 3 days}.\cr
 #' \emph{route}: The administration route of the drug, e.g., \sQuote{by mouth},
-#'   \sQuote{IV}, \sQuote{topical}\cr
+#'   \sQuote{IV}, \sQuote{topical}.\cr
 #' \emph{dose change}: Whether the dosage of the drug was changed, e.g.,
-#'   \sQuote{increase}, \sQuote{adjust}, \sQuote{reduce}.
-#' \emph{dose schedule}: Indicators of special dosing regimens, such as tapering
+#'   \sQuote{increase}, \sQuote{adjust}, \sQuote{reduce}.\cr
+#' \emph{dose schedule}: Keywords which represent special dosing regimens, such as tapering
 #'   schedules, alternating doses, or stopping keywords, e.g., \sQuote{weaning},
-#'   \sQuote{even days} or \sQuote{odd_days}, \sQuote{discontinue}.
+#'   \sQuote{even days} or \sQuote{odd_days}, \sQuote{discontinue}.\cr
 #' \emph{time keyword}: Whether the dosing regimen is a past dose, current dose,
-#'   or future dose, e.g., \sQuote{currently}, \sQuote{remain}, \sQuote{yesterday}.
+#'   or future dose, e.g., \sQuote{currently}, \sQuote{remain}, \sQuote{yesterday}.\cr
 #' \emph{transition}: Words or symbols that link consecutive doses of a tapering
-#'   regimen, e.g. \sQuote{then}, \sQuote{followed by}, or a comma \sQuote{,}.
+#'   regimen, e.g., \sQuote{then}, \sQuote{followed by}, or a comma \sQuote{,}.\cr
 #' \emph{preposition}: Prepositions that occur immediately next to another
-#'   identified entity, e.g. \sQuote{to}, \sQuote{until}, \sQuote{for}.
-#' \emph{dispense amount}: The number of pills prescribed to the patient.
-#' \emph{refill}: The number of refills allowed for the patient's prescription.
+#'   identified entity, e.g., \sQuote{to}, \sQuote{until}, \sQuote{for}.\cr
+#' \emph{dispense amount}: The number of pills prescribed to the patient.\cr
+#' \emph{refill}: The number of refills allowed for the patient's prescription.\cr
 #'
-#' Strength, dose amount, dose strength, dispense amount, and refill are primarily numeric
-#' quantities, and are identified using a combination of regular expressions and rule-based
-#' approaches. All other entities use dictionaries for identification. For more information
-#' about the default dictionary for a specific entity, view the documentation file for the
-#' object \code{<entity>_vals}.
+#' Similar to the basic implementation, drug name and and time of last dose are not
+#' handled by the \code{extract_entities_tapering} function. Those entities are extracted separately
+#' and appended to the \code{extract_entities_tapering} output within the main \code{\link{medExtractR_tapering}}
+#' function. In the tapering extension, however, dose change is treated the same as other dictionary-based
+#' entities and extracted within \code{extract_entities_tapering}. Strength, dose amount, dose strength, dispense amount,
+#' and refill are primarily numeric quantities, and are identified using a combination of
+#' regular expressions and rule-based approaches. All other entities use dictionaries for
+#' identification. For more information about the default dictionary for a specific entity,
+#' view the documentation file for the object \code{<entity>_vals}.
 #'
 #' By default and when an argument \code{<entity>_fun} is \code{NULL}, the
-#' \code{\link{extract_generic}} function will be used for that entity. This function
-#' can also inherit user-defined entity dictionaries, supplied as arguments to
-#' \code{medExtractR} or \code{medExtractR_tapering}.
+#' \code{\link{extract_generic}} function will be used to extract that entity. This function
+#' can also inherit user-defined entity dictionaries for each entity, supplied as arguments \code{<entity>_dict}
+#' to \code{\link{medExtractR}} or \code{\link{medExtractR_tapering}} (see documentation files for main function(s) for details).
 #'
 #' Note that \code{extract_entities_tapering} has the argument \code{d_stop}. This differs
-#' from \code{extract_entities}, which uses the end position of the full search window. This
-#' is a consequence of \code{medExtractR} using a fixed search window length and \code{medExtractR_tapering}
+#' from \code{\link{extract_entities}}, which uses the end position of the full search window. This
+#' is a consequence of \code{\link{medExtractR}} using a fixed search window length and \code{\link{medExtractR_tapering}}
 #' dynamically constructing a search window.
 #'
 #' @return data.frame with entities information. At least one row per entity is returned,
 #' using \code{NA} when no expression was found for a given entity.\cr
-#' Sample output for the phrase \dQuote{Lamotrigine 200mg bid} would look like:\cr
+#' The \dQuote{entity} column of the output contains the formatted label for that entity, according to
+#' the following mapping:
+#' strength: \dQuote{Strength}\cr
+#' dose amount: \dQuote{DoseAmt}\cr
+#' dose strength: \dQuote{DoseStrength}\cr
+#' frequency: \dQuote{Frequency}\cr
+#' intake time: \dQuote{IntakeTime}\cr
+#' duration: \dQuote{Duration}\cr
+#' route: \dQuote{Route}\cr
+#' dose change: \dQuote{DoseChange}\cr
+#' dose schedule: \dQuote{DoseScheule}\cr
+#' time keyword: \dQuote{TimeKeyword}\cr
+#' transition: \dQuote{Transition}\cr
+#' preposition: \dQuote{Preposition}\cr
+#' dispense amount: \dQuote{DispenseAmt}\cr
+#' refill: \dQuote{Refill}\cr
+#' \cr
+#' Sample output for the phrase \dQuote{Lamotrigine 200mg bid for 14 days} would look like:\cr
 #' \tabular{rr}{
 #'  entity   \tab  expr\cr
 #'  IntakeTime  \tab  <NA>\cr
 #'  Strength  \tab   <NA>\cr
 #'  DoseAmt   \tab  <NA>\cr
+#'  DoseChange   \tab  <NA>\cr
+#'  DoseSchedule   \tab  <NA>\cr
+#'  TimeKeyword   \tab  <NA>\cr
+#'  Transition   \tab  <NA>\cr
+#'  Preposition   \tab  <NA>\cr
+#'  DispenseAmt   \tab  <NA>\cr
+#'  Refill   \tab  <NA>\cr
 #'  Frequency \tab  bid;19:22\cr
 #'  DoseStrength  \tab  200mg;13:18\cr
 #'  Preposition \tab for;23:26\cr

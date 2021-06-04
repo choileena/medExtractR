@@ -5,9 +5,9 @@
 \alias{duration_vals}
 \title{Keywords Specifying Duration}
 \format{
-A data frame with duration expressions (exact and/or regular expressions)
+A data frame with duration expressions (exact and/or regular expressions).
 \describe{
-  \item{expr}{A character vector, expressions to consider as duration}
+  \item{expr}{A character vector, expressions to consider as duration.}
 }
 }
 \usage{

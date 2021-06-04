@@ -9,7 +9,7 @@ extract_lastdose(phrase, p_start, d_start, d_stop, time_exp = "default")
 \arguments{
 \item{phrase}{Text to search.}
 
-\item{p_start}{Start position of phrase in larger text.}
+\item{p_start}{Start position of phrase in the overall text (e.g., the full clinical note).}
 
 \item{d_start}{Start position of drug name in larger text.}
 
@@ -19,7 +19,8 @@ extract_lastdose(phrase, p_start, d_start, d_stop, time_exp = "default")
 }
 \value{
 data.frame with last dose time entity information. This output format is consistent with
-the output of \code{\link{extract_entities}} \cr
+the output of \code{\link{extract_entities}}, and the formatted label for the time of last dose entity
+is "LastDose." \cr
 Sample output for the phrase \dQuote{Last prograf at 5pm} would look like:\cr
 \tabular{rr}{
  entity    \tab    expr\cr

@@ -6,9 +6,9 @@
 #' than a letter or number) to appear on either side of the expression. Example
 #' expressions include "for", "to", "until", and "in".
 #'
-#' @format A data frame with preposition expressions (exact and/or regular expressions)
+#' @format A data frame with preposition expressions (exact and/or regular expressions).
 #' \describe{
-#'   \item{expr}{A character vector, expressions to consider as preposition}
+#'   \item{expr}{A character vector, expressions to consider as preposition.}
 #' }
 #'
 #' @keywords datasets

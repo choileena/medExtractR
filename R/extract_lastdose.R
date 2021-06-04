@@ -6,7 +6,7 @@
 #' that function.
 #'
 #' @param phrase Text to search.
-#' @param p_start Start position of phrase in larger text.
+#' @param p_start Start position of phrase in the overall text (e.g., the full clinical note).
 #' @param d_start Start position of drug name in larger text.
 #' @param d_stop End position of drug name in larger text.
 #' @param time_exp Vector of regular expressions to identify time expressions.
@@ -21,7 +21,8 @@
 #' expressions used in \code{\link{medExtractR}}.
 #'
 #' @return data.frame with last dose time entity information. This output format is consistent with
-#' the output of \code{\link{extract_entities}} \cr
+#' the output of \code{\link{extract_entities}}, and the formatted label for the time of last dose entity
+#' is "LastDose." \cr
 #' Sample output for the phrase \dQuote{Last prograf at 5pm} would look like:\cr
 #' \tabular{rr}{
 #'  entity    \tab    expr\cr

@@ -4,11 +4,11 @@
 #' way in which a medication is administered. Example expressions include "oral",
 #' "topical", "IV", and "intravenous".
 #'
-#' @format A data frame with route expressions (exact and/or regular expressions)
+#' @format A data frame with route expressions (exact and/or regular expressions).
 #' \describe{
-#'   \item{expr}{A character vector, expressions to consider as route}
+#'   \item{expr}{A character vector, expressions to consider as route.}
 #'   \item{value}{A standardized version of the raw expression. For example,
-#'   "orally" and "by mouth" both have the standardized form "orally"}
+#'   "orally" and "by mouth" both have the standardized form "orally".}
 #' }
 #'
 #' @keywords datasets
