@@ -302,7 +302,7 @@ medExtractR <- function(note, drug_names, window_length, unit, max_dist = 0,
   res <- lapply(seq_along(drug_window$window), function(i) {
     rdf <- extract_entities(phrase = drug_window$window[i], p_start = drug_window$drug_start[i],
                             p_stop = drug_window$drug_stop[i], unit = unit,
-                            strength_sep = strength_sep)#, ...)
+                            strength_sep = strength_sep, ...)
 
     rdf <- rdf[!is.na(rdf[,'expr']),]
 

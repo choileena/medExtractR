@@ -28,8 +28,8 @@ dose schedule,  in \code{\link{medExtractR_tapering}}. This function
 is called within \code{\link{extract_entities}}.
 }
 \examples{
-data(freq_vals)
-extract_generic("take two every day", freq_vals)
+data(frequency_vals)
+extract_generic("take two every day", frequency_vals)
 extract_generic("take two every morning",
                   data.frame(c("morning", "every morning")))
 }

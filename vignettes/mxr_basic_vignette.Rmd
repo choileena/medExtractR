@@ -6,10 +6,9 @@ output: pdf_document
 
 <!--
 %\VignetteEngine{knitr::rmarkdown}
-%\VignetteIndexEntry{1. EHR Vignette for Extract-Med and Pro-Med-NLP}
+%\VignetteIndexEntry{1. medExtractR}
 %\VignetteEncoding{UTF-8}
 -->
-
 
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(echo = TRUE)

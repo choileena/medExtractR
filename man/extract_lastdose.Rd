@@ -13,7 +13,7 @@ extract_lastdose(phrase, p_start, d_start, d_stop, time_exp = "default")
 
 \item{d_start}{Start position of drug name in larger text.}
 
-\item{d_stop}{Start position of drug name in larger text.}
+\item{d_stop}{End position of drug name in larger text.}
 
 \item{time_exp}{Vector of regular expressions to identify time expressions.}
 }

@@ -28,6 +28,7 @@
 #'
 #' When searching for medication names of interest, fuzzy matching may be used.
 #' The \code{max_dist} argument determines the maximum edit distance allowed for
+
 #' such matches. If using fuzzy matching, any drug name with less than 7 character
 #' will force an exact match, regardless of the value of \code{max_dist}. The tapering
 #' extension to medExtractR does not use the \code{window_length} argument, since tapering
@@ -62,11 +63,6 @@
 #' Nelson SJ, Zeng K, Kilbourne J, Powell T, Moore R. Normalized names for clinical drugs: RxNorm at 6 years.
 #' J Am Med Inform Assoc. 2011 Jul-Aug;18(4)441-8. doi: 10.1136/amiajnl-2011-000116. Epub 2011 Apr 21.
 #' PubMed PMID: 21515544; PubMed Central PMCID: PMC3128404.
-#'
-#' @examples
-#' \donttest{
-#'
-#' }
 
 
 medExtractR_tapering <- function(note, drug_names,
@@ -184,10 +180,11 @@ medExtractR_tapering <- function(note, drug_names,
     if(any(x>1)){
       ix <- names(x)[which(x>1)]
 
-      for(y in ix){
-        rm_row <- which(match_info$start_pos==y &
-                          ((match_info$start_pos + match_info$length) <
-                             max(subset(match_info, start_pos == y)$start_pos + subset(match_info, start_pos == y)$length)))
+      for(y in ix) {
+        pos_at_y <- match_info[,'start_pos'] == y
+        mi_end_pos <- match_info[,'start_pos'] + match_info[,'length']
+        max_end_pos <- max(mi_end_pos[pos_at_y])
+        rm_row <- which(pos_at_y & mi_end_pos < max_end_pos)
         match_info <- match_info[-rm_row,]
       }
 
@@ -196,9 +193,11 @@ medExtractR_tapering <- function(note, drug_names,
     if(any(x>1)){
       ix <- names(x)[which(x>1)]
 
-      for(y in ix){
-        rm_row <- which((match_info$start_pos + match_info$length)==y &
-                          match_info$start_pos > min(subset(match_info, start_pos + length == y)$start_pos))
+      for(y in ix) {
+        mi_end_pos <- match_info[,'start_pos'] + match_info[,'length']
+        pos_at_y <- mi_end_pos == y
+        min_start_pos <- min(match_info[pos_at_y,'start_pos'])
+        rm_row <- which(pos_at_y & match_info[,'start_pos'] > min_start_pos)
         match_info <- match_info[-rm_row,]
       }
 
@@ -286,35 +285,39 @@ medExtractR_tapering <- function(note, drug_names,
   drug_window <- drug_window[order(drug_window$drug_start),]
   drug_window <- unique(drug_window)
 
-
-
   # Extract dose entities
   res <- lapply(seq_along(drug_window$window), function(i) {
     rdf <- extract_entities_tapering(phrase = drug_window$window[i],
                                      p_start = drug_window$wndw_start[i],
                                      d_stop = drug_window$drug_stop[i], unit = unit,
-                                     strength_sep = strength_sep)#,...)
-
-
+                                     strength_sep = strength_sep, ...)
     rdf <- rdf[!is.na(rdf[,'expr']),]
 
     # Extract last dose time if desired
-    if(lastdose){
+    if(lastdose) {
       # Only include extension after window if the window was not cut short by another drug
-      phrase <- if(nchar(drug_window$window[i]) - nchar(drug_window$drug[i])-1 == window_length){
-        paste0(ld_wndw_ext[i,1], drug_window$window[i], ld_wndw_ext[i,2])
-      }else{
-        paste0(ld_wndw_ext[i,1], drug_window$window[i])
-      }
+      orig_window_size <- wndw_sp[i] == match_start[i] && wndw_ep[i] == match_stop[i]
+      phrase <- drug_window[i, 'window']
+      # does it ever make sense to extend the window?
+      # phrase <- substr(note, match_start[i], match_stop[i], USE.NAMES = FALSE)
       ld_rdf <- extract_lastdose(phrase,
-                                 p_start = max(1,drug_window$drug_start[i]-window_length*(lastdose_window_ext/2)),
-                                 d_start = drug_window$drug_start[i], d_stop = drug_window$drug_stop[i])
+                                 p_start = drug_window[i,'wndw_start'],
+                                 d_start = drug_window[i,'drug_start'],
+                                 d_stop = drug_window[i,'drug_stop']
+      )
 
-      if(!all(is.na(ld_rdf$expr))){
-        rdf <- if(nrow(rdf)==0){
-          ld_rdf
-        }else{
-          rbind.data.frame(rdf, ld_rdf)
+      if(!all(is.na(ld_rdf$expr))) {
+        # need to add pos|start|stop|rn
+        ld_pos <- gsub(".+;", "", ld_rdf[,'expr'])
+        ld_start <- as.numeric(gsub(":.+", "", ld_pos))
+        ld_stop <- as.numeric(gsub(".+:", "", ld_pos))
+        ld_rn <- seq(nrow(ld_rdf))
+        ld_rdf <- cbind(ld_rdf, pos = ld_pos, start = ld_start, stop = ld_stop, rn = ld_rn)
+
+        if(nrow(rdf) == 0) {
+          rdf <- ld_rdf
+        } else {
+          rdf <- rbind.data.frame(rdf, ld_rdf)
         }
       }
     }
@@ -324,50 +327,49 @@ medExtractR_tapering <- function(note, drug_names,
     ## Check for punctuation between drug name and preceding extracted entities. If yes, remove all preceding entities
     drg_diff <- drug_window$drug_start[i] - rdf$stop
     rix <- which.min(drg_diff[drg_diff > 0])
-    if(length(rix)>0){
+    if(length(rix) > 0) {
       # stop once first punctuation is hit
       break_punct <- FALSE
       # start by checking from the drug name
       # If there's a preposition right before the line break, shift to check before the preposition
       check_from <- drug_window$drug_start[i]
 
-      while(!break_punct){
+      while(!break_punct) {
         if(rix < 1){break}
 
         ent_b4_dn <- rdf[rix,]
         is_punct <- grepl(",|\\.|-|;|\\n", substr(note, ent_b4_dn$stop-1, check_from))
 
-
-        if(is_punct){
+        if(is_punct) {
           # ONLY do if is_punct and it's right after a preposition
           is_prep <- ent_b4_dn$entity == "Preposition"
           b4_dist <- check_from - ent_b4_dn$stop
           # This will be true if entity is preceded immediately by a preposition, in which case it will not shorten the search window
           prep_check <- is_prep & b4_dist < 3
-          if(prep_check){
+          if(prep_check) {
             check_from <- ent_b4_dn$stop - nchar(gsub(";.+", "", ent_b4_dn$expr))
             rix <- rix-1
-          }else{
-            if(nrow(rdf)==1){
+          } else {
+            nr_rdf <- nrow(rdf)
+            if(rix == nr_rdf) {
               rdf <- data.frame()
-            }else{
-              rdf <- rdf[(rix+1):nrow(rdf),]
+            } else {
+              rdf <- rdf[(rix+1):nr_rdf,]
             }
             break_punct <- TRUE
           }
-        }else{
-          rix <- rix-1
+        } else {
+          rix <- rix - 1
         }
       }
     }
 
     if(nrow(rdf)==0){return(NA)}
 
-
     ## Remove entities that might be related to other drug name
     if(!is.null(other_drugs_m)){
       # If before drug name, remove any entities that are immediately adjacent to each other after other drug name.
-      rdf_before <- subset(rdf, start < drug_window$drug_start[i])
+      rdf_before <- rdf[rdf[,'start'] < drug_window[i, 'drug_start'],]
       od_ix <- which(abs(drug_window$wndw_start[i] - other_drugs_m[,'end']) <= 2)
 
       if(length(od_ix) > 0 & nrow(rdf_before) > 0){
@@ -381,7 +383,7 @@ medExtractR_tapering <- function(note, drug_names,
             rm_other_drug <- rdf_before$stop[j]
           }else if(rdf_before$entity[max(j-1,1)] %in% c("Strength", "DoseAmt") & j != 1){
             # If entity is strength or doseamt, allow tablet variation to occur in between this and next entity
-            tab_phrase <- medExtractR:::replace_tab(substr(note, rdf_before$start[j-1], rdf_before$start[j]))
+            tab_phrase <- replace_tab(substr(note, rdf_before$start[j-1], rdf_before$start[j]))
             dist2next <- rdf_before$start[j]-rdf$stop[j-1]
             if(grepl("tabs", tab_phrase) & dist2next < 2*nchar("tablet")){
               rm_other_drug <- rdf_before$stop[j]
@@ -394,13 +396,11 @@ medExtractR_tapering <- function(note, drug_names,
           }
         }
         # Remove entities believed to belong to other drug
-        rdf_before <- subset(rdf_before, start >= rm_other_drug)
+        rdf_before <- rdf_before[rdf_before[,'start'] >= rm_other_drug,]
       }
 
-
-
       # If after drug name, use same rule
-      rdf_after <- subset(rdf, start > drug_window$drug_stop[i])
+      rdf_after <- rdf[rdf[,'start'] > drug_window[i, 'drug_stop'],]
       od_ix <- which(abs(other_drugs_m[,'start'] -
                            (drug_window$wndw_start[i] + nchar(drug_window$window[i]))) <= 2)
 
@@ -432,7 +432,7 @@ medExtractR_tapering <- function(note, drug_names,
         }
 
         # Remove entities believed to belong to other drug
-        rdf_after <- subset(rdf_after, start < rm_other_drug)
+        rdf_after <- rdf_after[rdf_after[,'start'] < rm_other_drug,]
       }
 
       if(nrow(rdf_before) > 0 & nrow(rdf_after) > 0){
@@ -511,7 +511,7 @@ medExtractR_tapering <- function(note, drug_names,
   # split expr into expr and entity position columns
   expr <- results[,'expr']
   results[,'expr'] <- sub(";\\d.+", "", expr)
-  results[,'pos'] <- str_extract(expr, "(?<=;)\\d.+")
+  results[,'pos'] <- stringr::str_extract(expr, "(?<=;)\\d.+")
   sp <- as.numeric(sub(":.+", "", results[,'pos']))
   results <- unique(results[order(sp),])
   row.names(results) <- NULL
@@ -550,8 +550,7 @@ medExtractR_tapering <- function(note, drug_names,
         pred_keep <- c(pred_keep, TRUE)
       }
     }
-    results <- subset(results, pred_keep)
-
+    results <- results[pred_keep,]
   }
 
   # Similar for transition, but also require dose-critical info nearby
@@ -597,8 +596,7 @@ medExtractR_tapering <- function(note, drug_names,
         trans_keep <- c(trans_keep, TRUE)
       }
     }
-    results <- subset(results, trans_keep)
-
+    results <- results[trans_keep,]
   }
 
   # Similar but slightly more relaxed for TimeKeyword
@@ -629,18 +627,17 @@ medExtractR_tapering <- function(note, drug_names,
         timekey_keep <- c(timekey_keep, TRUE)
       }
     }
-    results <- subset(results, timekey_keep)
-
+    results <- results[timekey_keep,]
   }
-
 
   # failsafe to stop while loop if needed - check again to make sure we don't end on a transition, preposition, or timekeyword
-  x<-0
-  while(results$entity[nrow(results)] %in% c("Transition", "Preposition")){
-    results <- results[-nrow(results),]
-    x<-x+1
-    if(x>20){break}
+  x <- 0
+  nr <- nrow(results)
+  while(results[nr, 'entity'] %in% c("Transition", "Preposition")) {
+    results <- results[-nr,]
+    nr <- nr - 1
+    x <- x + 1
+    if(x > 20) break
   }
-
-  return(results)
+  results
 }

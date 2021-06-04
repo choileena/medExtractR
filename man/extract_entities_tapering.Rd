@@ -56,7 +56,7 @@ including additional arguments to \code{frequency_fun} and
 \code{intaketime_fun}. Use \code{frequency_dict} to identify custom frequency
 dictionaries and \code{intaketime_dict } to identify custom intake time
 dictionaries. Similarly, for all other entities with a corresponding \code{<entity>_fun},
-a custom dictionary can be supplied with the argument \code{<entity>_dict} .}
+a custom dictionary can be supplied with the argument \code{<entity>_dict}.}
 }
 \value{
 data.frame with entities information. At least one row per entity is returned,

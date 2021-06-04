@@ -1,7 +1,7 @@
 #' Keywords Specifying Time Expressions
 #'
 #' A vector of regular expressions to identify different forms of time
-#' expressions for last dose time. This are the default values used in \code{link{extract_lastdose}}.
+#' expressions for last dose time. These are the default values used in \code{link{extract_lastdose}}.
 #'
 #' Certain expressions which might be considered ambiguous are excluded from
 #' the regular expressions presented here. For instance, expressions such as
