@@ -13,61 +13,12 @@ output: pdf_document
 
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-library(ggplot2)
-```
-
-```{r niceroutput, echo = FALSE}
-findbreaks <- function(x, char = '\\|', charlen = 75) {
-  if(length(x) > 1) {
-    out <- vapply(x, findbreaks, character(1), char, charlen, USE.NAMES = FALSE)
-    return(paste(out, collapse = '\n'))
-  }
-  cur <- x
-  nbuf <- ceiling(nchar(x) / charlen)
-  strings <- character(nbuf)
-  i <- 1
-  while(nchar(cur) > charlen) {
-    loc <- c(gregexpr(char, cur)[[1]])
-    b <- loc[max(which(loc < charlen))]
-    strings[i] <- substr(cur, 1, b)
-    cur <- substring(cur, b + 1)
-    i <- i + 1
-  }
-  strings[i] <- cur
-  paste(c(strings[1], paste0('     ', strings[-1])), collapse = '\n')
-}
-breaktable <- function(df, brks) {
-  if(class(df)[1] != 'data.frame') {
-    df <- as.data.frame(df)
-  }
-  if(max(brks) != ncol(df)) {
-    brks <- sort(c(brks, ncol(df)))
-  }
-  lb <- length(brks)
-  res <- vector('list', lb * 2 - 1)
-  pos <- 1
-  for(i in seq(lb)) {
-    curdf <- df[, seq(pos, brks[i]), drop = FALSE]
-    curout <- capture.output(print(curdf))
-    if(i > 1) curout <- paste0('     ', curout)
-    res[[(i - 1) * 2 + 1]] <- curout
-    if(i < lb) res[[i * 2]] <- ''
-    pos <- brks[i] + 1
-  }
-  paste(do.call(c, res), collapse = '\n')
-}
 ```
 
 ## Introduction
 
 The `medExtractR` package uses a natural language processing (NLP) system called *medExtractR*.$^{1}$ This system is a medication extraction system that uses regular expressions and rule-based approaches to identify key dosing information including drug name, strength, dose amount, frequency or intake time, dose change, and last dose time. In this vignette, we introduce the `medExtractR_tapering` function, an extension on the basic `medExtractR` function. The goal of this function is to extract more information for drugs following a tapering schedule. Some drugs (e.g., steroids, antidepressants) require weaning schedules to be gradually stopped in order to avoid adverse side effects or withdrawal symptoms. Tapering schedules are much more complex and require more entities in order to build longitudinal dose data. 
 <!-- Post-processing features exist in the `EHR`$^{2}$ R package which convert the `medExtractR_tapering` output into longitudinal dose diaries, making it usable for PK/PD analyses.  -->
-
-```{r, echo=FALSE,message=FALSE}
-library(stringr)
-```
-
-
 
 ## Tapering extension to `medExtractR`  
 

@@ -16,59 +16,11 @@ knitr::opts_chunk$set(echo = TRUE)
 library(ggplot2)
 ```
 
-```{r niceroutput, echo = FALSE}
-findbreaks <- function(x, char = '\\|', charlen = 75) {
-  if(length(x) > 1) {
-    out <- vapply(x, findbreaks, character(1), char, charlen, USE.NAMES = FALSE)
-    return(paste(out, collapse = '\n'))
-  }
-  cur <- x
-  nbuf <- ceiling(nchar(x) / charlen)
-  strings <- character(nbuf)
-  i <- 1
-  while(nchar(cur) > charlen) {
-    loc <- c(gregexpr(char, cur)[[1]])
-    b <- loc[max(which(loc < charlen))]
-    strings[i] <- substr(cur, 1, b)
-    cur <- substring(cur, b + 1)
-    i <- i + 1
-  }
-  strings[i] <- cur
-  paste(c(strings[1], paste0('     ', strings[-1])), collapse = '\n')
-}
-breaktable <- function(df, brks) {
-  if(class(df)[1] != 'data.frame') {
-    df <- as.data.frame(df)
-  }
-  if(max(brks) != ncol(df)) {
-    brks <- sort(c(brks, ncol(df)))
-  }
-  lb <- length(brks)
-  res <- vector('list', lb * 2 - 1)
-  pos <- 1
-  for(i in seq(lb)) {
-    curdf <- df[, seq(pos, brks[i]), drop = FALSE]
-    curout <- capture.output(print(curdf))
-    if(i > 1) curout <- paste0('     ', curout)
-    res[[(i - 1) * 2 + 1]] <- curout
-    if(i < lb) res[[i * 2]] <- ''
-    pos <- brks[i] + 1
-  }
-  paste(do.call(c, res), collapse = '\n')
-}
-```
-
 ## Introduction
 
 The `medExtractR` package uses a natural language processing (NLP) system called *medExtractR*.$^{1}$ This system is a medication extraction system that uses regular expressions and rule-based approaches to identify key dosing information including drug name, strength, dose amount, frequency or intake time, dose change, and last dose time. Function arguments can be specified to allow the user to tailor the `medExtractR` system to the particular drug or dataset of interest, improving the quality of extracted information.
 
 The `medExtractR` system forms the basis of the *Extract-Med* module in Choi *et al.*'s$^{2}$ pipeline approach for performing pharmacokinetic/pharmacodynamic (PK/PD) analyses using electronic health records (EHRs). This approach and corresponding R package, `EHR`,$^{3}$ convert raw output from `medExtractR` into a format that is usable for PK/PD analyses. Since `medExtractR` is integral to the *Extract-Med* module in `EHR`, parts of this vignette are taken and adapted from the `EHR` package vignette.
-
-```{r, echo=FALSE,message=FALSE}
-## Temporary sourcing files until I updated the R package - these files contain the updated medExtractR functions
-library(stringr)
-```
-
 
 ## Basic `medExtractR`  
 
@@ -297,9 +249,9 @@ prf <- function(df){
   return(f1)
 }
 
-tune_pick$F1 <- sapply(mxr_tune, function(x){
-  compare <- merge(x, tune_ann, 
-                   by = c("filename", "entity", "pos"), all = TRUE) %>% dplyr::arrange(as.numeric(gsub(":.+","",pos)))
+tune_pick$F1 <- sapply(mxr_tune, function(x) {
+  y <- merge(x, tune_ann, by = c("filename", "entity", "pos"), all = TRUE)
+  compare <- y[order(as.numeric(gsub(":.+", "", y[,'pos']))),]
   prf(compare)
 })
 ggplot(tune_pick) + geom_point(aes(max_edit_distance, window_length, size = F1)) + 
