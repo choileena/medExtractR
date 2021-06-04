@@ -112,7 +112,7 @@ In a taper I schedule, at least some dose information is available for two or mo
 
 ```{r}
 # Taper 1 schedule
-subset(pred_mxr, filename == pred_fn[1])
+subset(pred_mxr, filename == sub(".+/", "", pred_fn[1]))
 ```
 
 *Taper II*
@@ -123,7 +123,7 @@ Taper II schedules are tapering regimens in which a repetitive dosing change is 
 
 ```{r}
 # Taper 2 schedule
-subset(pred_mxr, filename == pred_fn[2])
+subset(pred_mxr, filename == sub(".+/", "", pred_fn[2]))
 ```
 
 *Alternating*  
@@ -133,7 +133,7 @@ Alternating schedules consist of a patient being on multiple doses (typically tw
 
 ```{r}
 # Alternating schedule
-subset(pred_mxr, filename == pred_fn[3])
+subset(pred_mxr, filename == sub(".+/", "", pred_fn[3]))
 ```
 
 **Note**: It is possible for a dosing regimen to be written in a mixture of these cases. For example, the phrase *"restart pred at 40 mg daily for 1 week, 30 mg daily for one week, 20 mg daily for one week and then drop by 5 mg per week after that"* starts as a taper I schedule, but ends as a taper II schedule. An individual segment of a taper I schedule could also involve an alternating dose, particularly taking a single dose every other day in weaning schedules.

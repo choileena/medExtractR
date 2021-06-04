@@ -2,8 +2,8 @@ T1	DrugName 789 796	Prograf
 T2	DoseStrength 797 801	2 mg
 T3	Route 802 804	po
 T4	Frequency 805 807	qd
-T5	DrugName 1067 1074	PROGRAF
-T6	Strength 1075 1078	1MG
-T7	DoseAmt 1079 1080	2
-T8	Route 1085 1093	by mouth
-T9	Frequency 1094 1105	TWICE DAILY
+T5	DrugName 1049 1056	PROGRAF
+T6	Strength 1057 1060	1MG
+T7	DoseAmt 1061 1062	2
+T8	Route 1067 1075	by mouth
+T9	Frequency 1076 1087	TWICE DAILY
