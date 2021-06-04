@@ -73,8 +73,8 @@
 #' entity    \tab  expr   \tab    pos\cr
 #' NA \tab  NA \tab  NA
 #' }
-#' #' The \dQuote{entity} column of the output contains the formatted label for that entity, according to
-#' the following mapping:
+#' The \dQuote{entity} column of the output contains the formatted label for that entity, according to
+#' the following mapping.\cr
 #' drug name: \dQuote{DrugName}\cr
 #' strength: \dQuote{Strength}\cr
 #' dose amount: \dQuote{DoseAmt}\cr
