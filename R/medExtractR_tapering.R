@@ -4,7 +4,7 @@
 #' expressions with start and stop positions.
 #'
 #' @param note Text to search.
-#' @param drug_names Vector of drug names to locate.
+#' @param drug_names Vector of drug names of interest to locate.
 #' @param max_dist Numeric - edit distance to use when searching for \code{drug_names}.
 #' @param drug_list Vector of known drugs that may end search window. By default calls
 #' \code{\link{rxnorm_druglist}}. Can be supplemented with expressions in \code{\link{addl_expr}}.
@@ -57,7 +57,7 @@
 #' NA \tab  NA \tab  NA
 #' }
 #' The \dQuote{entity} column of the output contains the formatted label for that entity, according to
-#' the following mapping:
+#' the following mapping.\cr
 #' drug name: \dQuote{DrugName}\cr
 #' strength: \dQuote{Strength}\cr
 #' dose amount: \dQuote{DoseAmt}\cr
