@@ -142,7 +142,7 @@ subset(pred_mxr, filename == pred_fn[3])
 
 The tapering extension to medExtractR was developed on a set of 162 training notes from Vanderbilt University's de-identified EHR system, the Synthetic Derivative (SD). As a first step, we developed annotation guidelines as a way to rigorously define the definition of each new entity (or changes to any existing entity, if applicable). Two reviewers would then independently annotate each note, and a third party group would help resolve any discrepancies. The annotation guidelines were then updated, and annotations were revised, based on this process.
 
-This set of training notes was also used to generate the default entity dictionaries included within the `medExtractR` package. The annotations, which serve as the gold standard for what information should be extracted, were used as the starting point for all dictionaries. Those expressions were then removed (e.g., mispelled words) or generalized using regular expressions (e.g. changing a "2 days" duration to "\\d{1,2} days", where \\d represents any one or two digit number). Examples of some expressions in the new entity dictionaries are provided below: 
+This set of training notes was also used to generate the default entity dictionaries included within the `medExtractR` package. The annotations, which serve as the gold standard for what information should be extracted, were used as the starting point for all dictionaries. Those expressions were then removed (e.g., mispelled words) or generalized using regular expressions (e.g., changing a "2 days" duration to "\\d{1,2} days", where \\d represents any one or two digit number). Examples of some expressions in the new entity dictionaries are provided below: 
 
 - Duration: much of the duration dictionary is written using regular expressions to account for various numbers being used. Examples of expressions that would be considered durations are: `2 weeks`, `next 3 days`, `1 week ago`, `weekly`, `day five`, and dates (for example, to capture expressions like *"Remain on prednisone 5mg daily until April 15"*).
 
@@ -154,19 +154,19 @@ This set of training notes was also used to generate the default entity dictiona
 
 - Preposition: `from`, `of`, `by`, `on`, `to`, `at`, etc. If a preposition is part of an expression for another entity (e.g., "by" in "by mouth"), then it is not extracted separately as a preposition.
 
-Before running `medExtractR_tapering`, we first pre-processed the notes by censoring any datetime expressions. The Duration entity can include date expressions, however it was common for the SD notes to have de-identified datetime expressions unrelated to dosing. Instead, these expressions typically reflected when the note was created, the time of the appointment, or when a prescription was faxed to the pharmacy. We also removed any notes that used an XML format, due to the structure of these notes being vastly different from the typical free-text clinical notes. XML, or "extensive markup language," is a slightly more structured data format that includes tags to describe pieces of text within the note. The presence of such tags especially interfered with rule-based entities. For example, a dose amount of 3 tablets may appear as `"<DOSE_AMOUNT>3</DOSE_AMOUNT><DOSE_UNIT>tablets</DOSE_UNIT>"`. The medExtractR system would typically consider a number followed by the word "tablets" to be a dose amount, but here the tag labels block these two expressions. Two XML-based notes were removed, resulting in 160 notes used for development.
+Before running `medExtractR_tapering`, we first pre-processed the notes by censoring any datetime expressions. The Duration entity can include date expressions, however it was common for the SD notes to have de-identified datetime expressions unrelated to dosing. Instead, these expressions typically reflected when the note was created, the time of the appointment, or when a prescription was faxed to the pharmacy. We also removed any notes that used an XML format, due to the structure of these notes being vastly different from the typical free-text clinical notes. XML, or "extensive markup language," is a slightly more structured data format that includes tags to describe pieces of text within the note. The presence of such tags especially interfered with rule-based entities. For example, a dose amount of 3 tablets may appear as `"<DOSE_AMOUNT>3</DOSE_AMOUNT><DOSE_UNIT>tablets</DOSE_UNIT>"`. The `medExtractR` system would typically consider a number followed by the word "tablets" to be a dose amount, but here the tag labels block these two expressions. Two XML-based notes were removed, resulting in 160 notes used for development.
 
 
 ### Details of `medExtractR_tapering` functionality
 
-The tapering extension of the `medExtractR` function is capable of extracting more entities associated with tapering schedules, and is thus more flexible than the basic version of medExtractR. The arguments between the basic and extended versions of medExtractR are the same with one major exception: `medExtractR_tapering` does *not* have an argument for `window_length`. This is because the length of the window in which all relevant entities are contained varies greatly depending on the type of dosing schedule (e.g. taper I, taper II, or alternating). 
+The tapering extension of the `medExtractR` function is capable of extracting more entities associated with tapering schedules, and is thus more flexible than the basic version of `medExtractR`. The arguments between the basic and extended versions of `medExtractR` are the same with one major exception: `medExtractR_tapering` does *not* have an argument for `window_length`. This is because the length of the window in which all relevant entities are contained varies greatly depending on the type of dosing schedule (e.g., taper I, taper II, or alternating). Unlike the basic `medExtractR` function, which uses a fixed window length, `medExtractR_tapering` dynamically generates a search window. This is done by first allowing a very generous search window, and then truncating based on two criteria: 1. the presence of competing drug names or terms and 2. the distance between consecutive entities. The user can modify this search window process by adding or removing terms to the `drug_list` argument, for example including additional categories of competing terms to use for truncation (e.g., symptoms, procedure, or laboratory names).
 
 ```{r, eval = FALSE}
 note <- paste(scan(filename, '', sep = '\n', quiet = TRUE), collapse = '\n')
 medExtractR_tapering(note, drug_names, unit, max_dist, ...)
 ```
 
-The remainder of this section outlines how `medExtractR_tapering` processes a note, from free-text input to a structured entity-level output. We'll use the following excerpt as our example input to help illustrate each step:
+The remainder of this section outlines how `medExtractR_tapering` processes a note, from free-text input to a structured entity-level output. We'll use the following excerpt as our example input to help illustrate how the output changes at each step.
 
 ```
 Chief complaint/Reason for Visit: 4mo follow up
@@ -194,7 +194,7 @@ every 7 days until done. Patient is on track with schedule.
 6 months. 
 ```
 
-*Step 1*: Initially, the search window is defined from the end of the previous drug mention (or the start of the note) up until the start of the next drug mention (or the end of the note). From there, `medExtractR_tapering` relies heavily upon expressions within the `drug_list` argument to further shorten the search window, truncating at the closest match on either side of the drug name of interest. The default `drug_list` is based on cleaned and formatted extractions from RxNorm$^{3}$ just like the basic version of medExtractR. This search window is what `medExtractR_tapering` provides to the `extract_entities_tapering` function for each drug mention.  
+*Step 1*: Initially, the search window is defined from the end of the previous drug mention (or the start of the note) up until the start of the next drug mention (or the end of the note). From there, `medExtractR_tapering` relies heavily upon expressions within the `drug_list` argument to further shorten the search window, truncating at the closest match on either side of the drug name of interest. The default `drug_list` is based on cleaned and formatted extractions from RxNorm$^{3}$ just like the basic version of `medExtractR`. This search window is what `medExtractR_tapering` provides to the `extract_entities_tapering` function for each drug mention.  
 
 Example: In our example note, there are two mentions of prednisone. For mention #1, the drug names "Lialda" (before) and "omeprazole" (after) serve as the boundaries of the search window. For mention #2, "Ethanol" (before) and "azathioprine" (after) are the boundaries. The search window for each mention would be:
 
@@ -217,9 +217,9 @@ Doing very well today w/o symptoms and good muscle strength on exam.
 
 Note that these are assuming `drug_list` incorporates only drug names, which is the default. If the user chose to augment this list with symptoms, procedures, or laboratory names, the starting point window for mention #2 could be shortened to just after "CBC" (complete blood count).
 
-*Step 2*: The `extract_entities_tapering` function extracts all entities found within the initial search window. Strength, dose amount, dose strength, dispense amount, and refill are rule-based entities; all others are primarily dictionary-based. In the basic version of `medExtractR`, if a strength-like expression (e.g., "10mg") appears in a search window with no dose amount, we would classify that as dose strength. However, in tapering schedules, it is common to have a mix of information within the same phrase, e.g., *"prednisone 10mg tablet 20mg (2 tabs) daily for 2 weeks then 10mg (1 tab) daily for 2 weeks"*. For this reason, medExtractR relies more on the context of each strength expression to determine whether it is a strength or a dose strength. For example, if the strength expression is followed by the word "tablet" (or capsule, pill, etc), we consider it to be "Strength" (i.e., of an individual pill).
+*Step 2*: The `extract_entities_tapering` function extracts all entities found within the initial search window. Strength, dose amount, dose strength, dispense amount, and refill are rule-based entities; all others are primarily dictionary-based. In the basic version of `medExtractR`, if a strength-like expression (e.g., "10 mg") appears in a search window with no dose amount, we would classify that as dose strength. However, in tapering schedules, it is common to have a mix of information within the same phrase, e.g., *"prednisone 10mg tablet 20mg (2 tabs) daily for 2 weeks then 10mg (1 tab) daily for 2 weeks"*. For this reason, `medExtractR` relies more on the context of each strength expression to determine whether it is a strength or a dose strength. For example, if the strength expression is followed by the word "tablet" (or capsule, pill, etc.), we consider it to be "Strength" (i.e., the amount of drug per dosage unit).
 
-Example: Below, we see that medExtractR initially extracts all entities it identifies within the search windows above. Note that for mention 1, "1.2 gram" is not extracted as a strength because for prednisone, we set `unit = "mg"`.
+Example: Below, we see that `medExtractR` initially extracts all entities it identifies within the search windows above. Note that for mention #1, "1.2 gram" is not extracted as a strength because for prednisone, we set `unit = "mg"`, and hence "gram" is not a relevant unit.
 
 ```
 MENTION 1:
@@ -263,13 +263,50 @@ DoseSchedule         done 924:928
 
 *Step 3*: After extracting all entities but before returning results, `extract_entities_tapering` attempts to remove entities that are not likely to be associated with the drug name of interest. This is done by considering the gap, in number of characters, between consecutive entities both before and after the drug mention (the transition, preposition, and time keyword entities are excluded from this procedure due to the high potential for false positives). If this gap exceeds 50 characters, we remove all extracted entities at and further from the drug mention. The value of 50 characters was selected based on gold standard annotations on a training set of notes. Finally, we remove any prepositions or transitions from the very start or very end of the extractions, as these are primarily linkage entities and would require information on either side.
 
+Example: There are no changes to mention #1 for this step. For mention #2, the first duration extraction of "per week" (`603:611`) has a gap of 207 characters until the next extraction of "Taper" (`818:823`). Since this exceeds the gap size of 50 characters, "per week" is removed as an unrelated entity.
 
 
-*Step 4*: With the results returned from `extract_entities_tapering`, `medExtractR_tapering` performs some additional processing to reduce false positives. First, we look for the first occurrence of punctuation before the drug name (for example, a period or line break), and remove all entities before that punctuation. The one exception is if the adjacent entity is a preposition, which indicates it may be linking the drug mention of interest to other dosing information (e.g., *"20mg of\\nprednisone"*, where "\\n" is a line break). If the search window was truncated due to another drug name, we check to see if any of the entities we extracted are immediately adjacent (within 2 characters) to the competing drug name. If so, we continue to remove immediately adjacent entities until a gap of more than two characters occur (ignoring any mentions of "tablet" next to dose amount or strength), at which point we no longer attribute those extractions to the competing drug name.  
+```
+MENTION 1:
+   entity        expr     pos
+ DrugName  prednisone 269:279
+ Strength         5mg 280:283
+  DoseAmt           2 284:285
+    Route    by mouth 294:302
+Frequency       daily 303:308
+
+
+MENTION 2:
+      entity         expr     pos
+DoseSchedule        Taper 818:823
+    DrugName   prednisone 824:834
+DoseStrength         10mg 836:840
+   Frequency        daily 841:846
+ Preposition          for 847:850
+    Duration       7 days 851:857
+  Transition         then 858:862
+DoseStrength          5mg 863:866
+   Frequency        daily 867:872
+ Preposition          for 873:876
+    Duration       7 days 877:883
+  Transition         then 884:888
+  DoseChange     decrease 889:897
+ Preposition           by 898:900
+DoseStrength          1mg 901:904
+    Duration every 7 days 905:917
+ Preposition        until 918:923
+DoseSchedule         done 924:928
+ Preposition           on 941:943
+ Preposition         with 950:954
+ TimeKeyword     Continue 970:978
+```
+
+
+*Step 4*: With the results returned from `extract_entities_tapering`, `medExtractR_tapering` performs some additional processing to reduce false positives. First, we look for the first occurrence of punctuation before the drug name (e.g., a period or line break), and remove all entities before that punctuation. For example, in the phrase *"...Patient was previously taking omeprazole 20mg per day. Currently on prednisone 10mg daily..."*, the information "20mg" and "per day" would initially be extracted, since the window wouldn't truncate until the end of the competing drug name "omeprazole." However, since there is a period between the two sentences, `medExtractR_tapering` would assume "20mg" and "per day" were not related to prednisone, and thus remove them from the results. The one exception is if the adjacent entity is a preposition, which indicates it may be linking the drug mention of interest to other dosing information (e.g., *"20mg of\\nprednisone"*, where "\\n" is a line break). If the search window was truncated due to another drug name, we check to see if any of the entities we extracted are immediately adjacent (within 2 characters) to the competing drug name. If so, we continue to remove immediately adjacent entities until a gap of more than two characters occur (ignoring any mentions of "tablet" next to dose amount or strength), at which point we no longer attribute those extractions to the competing drug name.  
 
 Example: For mention #1 in our example, when we look at excerpt of the note between prednisone and the closest preceding entity, we see "daily\\n- prednisone", where "\\n" is a line break. Since there is punctuation between these two entities (in this case, either \\n or - would be sufficient even without the other), we remove the extraction "daily" as well as all other extractions before it.
 
-For mention #2, the search window was shortened by the presence of the drug name "azathioprine", and medExtractR stores the position of this competing drug name (`979:991`). Since "Continue" was extracted immediately before the competing drug name (`970:978`), we remove it from our results. No other entities are removed since there's a gap between "Continue" and the next preceding entity ("with" at `950:954`).
+For mention #2, the search window was shortened by the presence of the drug name "azathioprine", and `medExtractR` stores the position of this competing drug name (`979:991`). Since "Continue" was extracted immediately before the competing drug name (`970:978`), we remove it from our results. No other entities are removed since there's a gap between "Continue" and the next preceding entity ("with" at `950:954`).
 
 ```
 MENTION 1:
@@ -305,9 +342,9 @@ DoseSchedule         done 924:928
  Preposition         with 950:954
 ```
 
-The preposition and transition entities also have some additional rules applied, due to how common the expressions in these dictionaries are (e.g., "of", "to", "then", ";" or ","). For both of these entities, the extraction must occur immediately adjacent to another extracted entity. Furthermore, for transition we require some sort of dose-relevant information to be extracted nearby (within 10 characters) on both sides. "Dose-relevant" entities include strength, dose amount, dose strength, frequency, intake time, duration, and dose schedule (for stopping keywords). Though less common, the same issue exists for the time keyword entity (common expressions include "was", "will", etc.). Rather than enforcing a character distance around time keyword extractions, we allow one word (of any length) to occur between time keyword and an adjacent entity. 
+The preposition and transition entities also have some additional rules applied, considering how common the expressions in these dictionaries are (e.g., "of", "to", "then", ";" or ","). For both of these entities, the extraction must occur immediately adjacent to another extracted entity. Furthermore, for transition we require some sort of dose-relevant information to be extracted nearby (within 10 characters) on both sides. "Dose-relevant" entities include strength, dose amount, dose strength, frequency, intake time, duration, and dose schedule (for stopping keywords). Though less common, the same issue exists for the time keyword entity (common expressions include "was", "will", etc.). Rather than enforcing a character distance around time keyword extractions, we allow one word (of any length) to occur between time keyword and an adjacent entity. 
 
-Example: There are no further changes to mention #1. For mention #2, the prepositions "on" (`941:943`) and "with" (`950:954`) meet two separate conditions for removal: first, they are not immediately adjacent to another extracted entity and second, they occur at the very end of the group and we don't allow the last entity to be a preposition or transition. `medExtractR_tapering` combines any output from each drug mention, so the final output is:
+Example: There are no further changes to mention #1. For mention #2, the prepositions "on" (`941:943`) and "with" (`950:954`) meet two separate conditions for removal; first, they are not immediately adjacent to another extracted entity and second, they occur at the very end of the group and we don't allow the last entity to be a preposition or transition. `medExtractR_tapering` combines any output from each drug mention, so the final output is:
 
 ```
       entity         expr     pos

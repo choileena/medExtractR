@@ -296,7 +296,6 @@ extract_entities <- function(phrase, p_start, p_stop, unit, frequency_fun = NULL
 
   ## BACK TO DOSEAMT ##
   ## Try to classify other numbers found among existing entities ##
-  #print(num_pos)
   if(length(remaining_numbers) > 0){
     # Find last position of any found entities
     ent_list <- list(freq, intaketime, strength, doseamt, dosestr)
