@@ -57,7 +57,7 @@
 #' @return data.frame with entities information. At least one row per entity is returned,
 #' using \code{NA} when no expression was found for a given entity.\cr
 #' The \dQuote{entity} column of the output contains the formatted label for that entity, according to
-#' the following mapping:
+#' the following mapping.\cr
 #' strength: \dQuote{Strength}\cr
 #' dose amount: \dQuote{DoseAmt}\cr
 #' dose strength: \dQuote{DoseStrength}\cr
