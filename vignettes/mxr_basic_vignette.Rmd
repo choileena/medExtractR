@@ -62,7 +62,7 @@ breaktable <- function(df, brks) {
 
 The `medExtractR` package uses a natural language processing (NLP) system called *medExtractR*.$^{1}$ This system is a medication extraction system that uses regular expressions and rule-based approaches to identify key dosing information including drug name, strength, dose amount, frequency or intake time, dose change, and last dose time. Function arguments can be specified to allow the user to tailor the `medExtractR` system to the particular drug or dataset of interest, improving the quality of extracted information.
 
-The `medExtractR` system forms the basis of the *Extract-Med* module in Choi, *et al.*'s$^{2}$ pipeline approach for performing pharmacokinetic/pharmacodynamic (PK/PD) analyses using electronic health records (EHRs). This approach and corresponding R package, `EHR`,$^{3}$ convert raw output from `medExtractR` into a format that is usable for PK/PD analyses. Since `medExtractR` is integral to the *Extract-Med* module in `EHR`, parts of this vignette are taken and adapted from the `EHR` package vignette.
+The `medExtractR` system forms the basis of the *Extract-Med* module in Choi *et al.*'s$^{2}$ pipeline approach for performing pharmacokinetic/pharmacodynamic (PK/PD) analyses using electronic health records (EHRs). This approach and corresponding R package, `EHR`,$^{3}$ convert raw output from `medExtractR` into a format that is usable for PK/PD analyses. Since `medExtractR` is integral to the *Extract-Med* module in `EHR`, parts of this vignette are taken and adapted from the `EHR` package vignette.
 
 ```{r, echo=FALSE,message=FALSE}
 ## Temporary sourcing files until I updated the R package - these files contain the updated medExtractR functions
