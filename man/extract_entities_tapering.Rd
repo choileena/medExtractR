@@ -77,7 +77,6 @@ transition: \dQuote{Transition}\cr
 preposition: \dQuote{Preposition}\cr
 dispense amount: \dQuote{DispenseAmt}\cr
 refill: \dQuote{Refill}\cr
-\cr
 Sample output for the phrase \dQuote{Lamotrigine 200mg bid for 14 days} would look like:\cr
 \tabular{rr}{
  entity   \tab  expr\cr
