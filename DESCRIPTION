@@ -1,6 +1,6 @@
 Package: medExtractR
-Version: 0.3
-Date: 2021-06-04
+Version: 0.4
+Date: 2021-10-13
 Title: Extraction of Medication Information from Clinical Text
 Authors@R:
     c(person("Leena", "Choi", role = c("aut", "cre"),

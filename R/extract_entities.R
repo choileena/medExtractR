@@ -93,6 +93,23 @@ extract_entities <- function(phrase, p_start, p_stop, unit, frequency_fun = NULL
   # censor date expressions
   phrase <- internal_censor_dates(phrase)
 
+  # generic extraction
+  xtra_args <- list(...)
+  ent_types <- sub('_dict', '', grep('_dict', names(xtra_args), value = TRUE))
+  oth_types <- setdiff(ent_types, c('duration','frequency','intaketime','route'))
+  oth_l <- length(oth_types)
+  oth_ent <- vector('list', oth_l)
+  if(oth_l) {
+    for(i in seq(oth_l)) {
+      ent_type <- oth_types[i]
+      oth_args <- list(phrase = phrase, type = ent_type, fun = NULL, ...)
+#       use_fun <- match(sprintf('%s_fun', ent_type), names(xtra_args))
+      df <- do.call(extract_type, oth_args)
+      my_ent <- entity_metadata(phrase, p_start, df)
+      oth_ent[[i]] <- data.frame(entity = ent_type, expr = my_ent)
+    }
+  }
+
   ### DURATION ####
   df <- extract_type(phrase, 'duration', duration_fun, ...)
   duration <- entity_metadata(phrase, p_start, df)
@@ -444,30 +461,22 @@ extract_entities <- function(phrase, p_start, p_stop, unit, frequency_fun = NULL
   ldur <- sum(!is.na(duration))
   lrt <- sum(!is.na(route))
 
-
   not_found <- entities[which(c(lf, lit, lstr, lda, lds, ldur, lrt) == 0)]
   found <- setdiff(entities, not_found)
 
-
-  res_nf <- if(length(not_found) > 0){
-    data.frame(entity = not_found, expr = rep(NA, length(not_found)))
+  res_f <- NULL
+  res_nf <- NULL
+  if(length(not_found) > 0) {
+    res_nf <- data.frame(entity = not_found, expr = NA_character_)
   }
-
-  res_f <- if(length(found) > 0){
-    found_res <- subset(ent_res, names(ent_res) %in% found)
-    do.call(rbind, lapply(seq(found_res), function(i){
-      fr <- found_res[[i]]
-
-      data.frame(entity = rep(found[i], length(fr)),
-                 expr = fr)
-    }))
+  if(length(found) > 0) {
+    found_res <- ent_res[names(ent_res) %in% found]
+    fr <- vector('list', length(found_res))
+    for(i in seq_along(found_res)) {
+      fr[[i]] <- data.frame(entity = found[i], expr = found_res[[i]])
+    }
+    # include other generic entities
+    res_f <- do.call(rbind, c(fr, oth_ent))
   }
-
-  if(is.null(res_nf)){
-    res <- res_f
-  }else{
-    res <- rbind.data.frame(res_nf, res_f)
-  }
-
-  return(res)
+  rbind.data.frame(res_nf, res_f)
 }

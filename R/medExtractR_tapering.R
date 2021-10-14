@@ -313,6 +313,9 @@ medExtractR_tapering <- function(note, drug_names,
   drug_window <- drug_window[order(drug_window$drug_start),]
   drug_window <- unique(drug_window)
 
+  # special expressions, used later
+  special_expr <- c("done", "off", "stop", "last", "completed", "complete", "discontinue", "discontinuing", "finished", "dosepack", "dose pack")
+
   # Extract dose entities
   res <- lapply(seq_along(drug_window$window), function(i) {
     rdf <- extract_entities_tapering(phrase = drug_window$window[i],
@@ -485,23 +488,17 @@ medExtractR_tapering <- function(note, drug_names,
       if(x>20 | nrow(rdf) == 0){break}
     }
 
-
-    rdf[nrow(rdf)+1,] <- c("DrugName", paste(drug_window$drug[i],
-                                             paste(drug_window$drug_start[i],
-                                                   drug_window$drug_start[i] + nchar(drug_window$drug[i]),
-                                                   sep = ":"),
-                                             sep = ";"),
-                           paste(drug_window$drug_start[i],
-                                 drug_window$drug_start[i] + nchar(drug_window$drug[i]),
-                                 sep = ":"),
-                           drug_window$drug_start[i], drug_window$drug_start[i] + nchar(drug_window$drug[i]), NA)
-
-
+    dwds_i <- drug_window$drug_start[i]
+    dwde_i <- dwds_i + nchar(drug_window$drug[i])
+    dwp_i <- paste(dwds_i, dwde_i, sep = ":")
+    rdf[nrow(rdf)+1,] <- c("DrugName", paste(drug_window$drug[i], dwp_i, sep = ";"), dwp_i, dwds_i, dwde_i, NA)
 
     # If same drug name appears twice in the window, make sure repeated instances of drug name are extracted
     addl_drugname <- gregexpr(paste0(drug_window$drug[i], "\\b"),
                               substr(drug_window$window[i], start = drug_window$drug_stop[i], stop = nchar(drug_window$window[i])),
                               ignore.case = TRUE)
+    ## I'm not sure this is even possible
+    # if so, it will fail because rdf has additional columns: entity|expr|pos|start|stop|rn
     if(sum(addl_drugname[[1]]) > 0){
       for(j in 1:length(addl_drugname[[1]])){
         bp <- drug_window$drug_stop[i] + addl_drugname[[1]][j]-1
@@ -513,26 +510,21 @@ medExtractR_tapering <- function(note, drug_names,
       }
     }
 
-
     # Second check to make sure key entities are present
-    if(!any(rdf$entity %in% c("DoseStrength", "Strength", "DoseAmt", "Duration"))){
-      if(!any(tolower(gsub(";.+", "", rdf$expr)) %in% c("done", "off", "stop", "last", "completed",
-                                                        "complete", "discontinue", "discontinuing",
-                                                        "finished", "dosepack", "dose pack"))){
+    if(!any(rdf$entity %in% c("DoseStrength", "Strength", "DoseAmt", "Duration"))) {
+      # if no key entity and no special expression, extraction failed
+      if(!any(tolower(gsub(";.+", "", rdf$expr)) %in% special_expr)) {
         return(NA)
-      }else{
-        return(rdf[,c("entity", "expr")])
       }
-    }else{
-      return(rdf[,c("entity", "expr")])
     }
-
-  })
+    rdf[,c("entity", "expr")]
+  }) # end of drug_window lapply -- which calls extract_entities_tapering
 
   res <- res[!is.na(res)]
 
-  if(length(res) == 0){return(data.frame("entity" = NA, "expr" = NA, "pos" = NA))}
-
+  if(length(res) == 0) {
+    return(data.frame(entity = NA_character_, expr = NA_character_, pos = NA_character_))
+  }
 
   results <- do.call(rbind, res)
 
@@ -555,107 +547,88 @@ medExtractR_tapering <- function(note, drug_names,
   }
 
   results <- results[!is.na(results$entity),]
+  # begin/end point : bp/ep
+  bp <- as.numeric(gsub(":.+", "", results$pos))
+  ep <- as.numeric(gsub(".+:", "", results$pos))
 
   # For preposition entity - only keep if it is adjacent to another extracted (non-preposition) entity
-  if(any(results$entity == "Preposition")){
-    res_temp <- results
-    res_temp$bp <- as.numeric(gsub(":.+", "", res_temp$pos))
-    res_temp$ep <- as.numeric(gsub(".+:", "", res_temp$pos))
-
-
-    pred_keep <- c()
-    for(i in 1:nrow(res_temp)){
-      if(res_temp$entity[i] == "Preposition"){
-        if(i == 1){
-          pred_keep <- c(pred_keep, ((res_temp$bp[i+1] - res_temp$ep[i]) %in% c(0,1)))
-        }else if(i == nrow(res_temp)){
-          pred_keep <- c(pred_keep, ((res_temp$bp[i] - res_temp$ep[i-1]) %in% c(0,1)))
-        }else{
-          pred_keep <- c(pred_keep, ((res_temp$bp[i] - res_temp$ep[i-1]) %in% c(0,1) |
-                                       (res_temp$bp[i+1] - res_temp$ep[i]) %in% c(0,1)))
+  if(any(results$entity == "Preposition")) {
+    pred_keep <- rep(TRUE, nrow(results))
+    for(i in seq_along(pred_keep)) {
+      if(results$entity[i] == "Preposition"){
+        if(i == 1) {
+          pk <- (bp[i+1] - ep[i]) %in% c(0,1)
+        } else if(i == nrow(results)) {
+          pk <- (bp[i] - ep[i-1]) %in% c(0,1)
+        } else {
+          pk <- (bp[i] - ep[i-1]) %in% c(0,1) | (bp[i+1] - ep[i]) %in% c(0,1)
         }
-      }else{
-        pred_keep <- c(pred_keep, TRUE)
+        pred_keep[i] <- pk
       }
     }
     results <- results[pred_keep,]
+    bp <- bp[pred_keep]
+    ep <- ep[pred_keep]
   }
 
+  normal_ent <- c("Strength", "DoseStrength", "DoseAmt", "Frequency", "Duration", "DoseSchedule")
+  other_ent <- c("Preposition", "TimeKeyword", "Refill", "IntakeTime", "DispenseAmt", "Route", "Keyword")
   # Similar for transition, but also require dose-critical info nearby
-  if(any(results$entity == "Transition")){
-    res_temp <- results
-    res_temp$bp <- as.numeric(gsub(":.+", "", res_temp$pos))
-    res_temp$ep <- as.numeric(gsub(".+:", "", res_temp$pos))
-
-
-    trans_keep <- c()
-    for(i in 1:nrow(res_temp)){
-      if(res_temp$entity[i] == "Transition"){
-        if(i == 1){
-          ent_chk <- any(res_temp$entity[i+1] %in% c("Strength", "DoseStrength", "DoseAmt",
-                                                     "Frequency", "Duration",
-                                                     "DoseSchedule"))
-          expr_chk <- any(res_temp$expr[i+1] %in% c("done", "off", "stop", "last", "completed",
-                                                    "complete", "discontinue", "discontinuing",
-                                                    "finished", "dosepack", "dose pack"))
-
-
-          ent_dist <- res_temp$bp[i+1] - res_temp$ep[i]
-
-          trans_keep <- c(trans_keep, ((ent_chk|expr_chk) & ent_dist <= 10))
-        }else if(i == nrow(res_temp)){
-          ent_chk <- any(res_temp$entity[i-1] %in% c("Strength", "DoseStrength", "DoseAmt",
-                                                     "Frequency", "Duration",
-                                                     "DoseSchedule"))
-          expr_chk <- any(res_temp$expr[i-1] %in% c("done", "off", "stop", "last", "completed",
-                                                    "complete", "discontinue", "discontinuing",
-                                                    "finished", "dosepack", "dose pack"))
-
-          ent_dist <- res_temp$bp[i] - res_temp$ep[i-1]
-          trans_keep <- c(trans_keep, ((ent_chk|expr_chk) & ent_dist <= 10))
-        }else{
-          ent_chk <- res_temp$entity[c(i-1,i+1)]
-          ent_dist <- c(res_temp$bp[i] - res_temp$ep[i-1], res_temp$bp[i+1] - res_temp$ep[i])
-          trans_keep <- c(trans_keep, all(!(ent_chk %in% c("Preposition", "TimeKeyword", "Refill", "IntakeTime",
-                                                           "DispenseAmt", "Route", "Keyword"))) &  # for stopping keywords
-                            all(ent_dist <= 10))
+  if(any(results$entity == "Transition")) {
+    trans_keep <- rep(TRUE, nrow(results))
+    for(i in seq_along(trans_keep)) {
+      if(results$entity[i] == "Transition") {
+        if(i == 1) {
+          ent_chk <- any(results$entity[i+1] %in% normal_ent)
+          expr_chk <- any(results$expr[i+1] %in% special_expr)
+          ent_dist <- bp[i+1] - ep[i]
+          tk <- (ent_chk | expr_chk) & ent_dist <= 10
+        } else if(i == nrow(results)) {
+          ent_chk <- any(results$entity[i-1] %in% normal_ent)
+          expr_chk <- any(results$expr[i-1] %in% special_expr)
+          ent_dist <- bp[i] - ep[i-1]
+          tk <- (ent_chk | expr_chk) & ent_dist <= 10
+        } else {
+          ent_chk <- results$entity[c(i-1,i+1)]
+          ent_dist <- c(bp[i] - ep[i-1], bp[i+1] - ep[i])
+          tk <- all(!(ent_chk %in% other_ent)) & all(ent_dist <= 10)
         }
-      }else{
-        trans_keep <- c(trans_keep, TRUE)
+        trans_keep[i] <- tk
       }
     }
     results <- results[trans_keep,]
+    bp <- bp[trans_keep]
+    ep <- ep[trans_keep]
   }
 
   # Similar but slightly more relaxed for TimeKeyword
-  if(any(results$entity == "TimeKeyword")){
-    res_temp <- results
-    res_temp$bp <- as.numeric(gsub(":.+", "", res_temp$pos))
-    res_temp$ep <- as.numeric(gsub(".+:", "", res_temp$pos))
-
-
-    timekey_keep <- c()
-    for(i in 1:nrow(res_temp)){
-      if(res_temp$entity[i] == "TimeKeyword"){
-        if(i == 1){
-          timekey_keep <- c(timekey_keep, grepl(paste0(res_temp$expr[i], "\\s(\\w+\\s)?", res_temp$expr[i+1]),
-                                                substr(note, res_temp$bp[i], res_temp$ep[i+1])))
-        }else if(i == nrow(res_temp)){
-          timekey_keep <- c(timekey_keep, grepl(paste0(res_temp$expr[i-1], "\\s(\\w+\\s)?", res_temp$expr[i]),
-                                                substr(note, res_temp$bp[i-1], res_temp$ep[i])))
-        }else{
-          timekey_keep <- c(timekey_keep,
-                            grepl(paste0(res_temp$expr[i], "\\s(\\w+\\s)?", gsub("\\*|\\.", "", res_temp$expr[i+1])),
-                                  substr(note, res_temp$bp[i], gsub("\\*|\\.", "", res_temp$ep[i+1]))) |
-                              grepl(paste0(gsub("\\*|\\.", "", res_temp$expr[i-1]),
-                                           "\\s(\\w+\\s)?", res_temp$expr[i]),
-                                    gsub("\\*|\\.", "", substr(note, res_temp$bp[i-1], res_temp$ep[i]))))
+  if(any(results$entity == "TimeKeyword")) {
+    timekey_keep <- rep(TRUE, nrow(results))
+    rmAstDot <- function(x) {
+      gsub("\\*|\\.", "", x)
+    }
+    tk_pattern <- "\\s(\\w+\\s)?"
+    corr_expr <- rmAstDot(results[,'expr'])
+    for(i in seq_along(timekey_keep)) {
+      if(results$entity[i] == "TimeKeyword") {
+        if(i == 1) {
+          seg <- rmAstDot(substr(note, bp[i], ep[i+1]))
+          tkk <- grepl(paste0(corr_expr[i], tk_pattern, corr_expr[i+1]), seg)
+        } else if(i == nrow(results)) {
+          seg <- rmAstDot(substr(note, bp[i-1], ep[i]))
+          tkk <- grepl(paste0(corr_expr[i-1], tk_pattern, corr_expr[i]), seg)
+        } else {
+          seg1 <- rmAstDot(substr(note, bp[i], ep[i+1]))
+          seg2 <- rmAstDot(substr(note, bp[i-1], ep[i]))
+          tkk <- grepl(paste0(corr_expr[i], tk_pattern, corr_expr[i+1]), seg1) |
+                   grepl(paste0(corr_expr[i-1], tk_pattern, corr_expr[i]), seg2)
         }
-      }else{
-        timekey_keep <- c(timekey_keep, TRUE)
+        timekey_keep[i] <- tkk
       }
     }
     results <- results[timekey_keep,]
+    bp <- bp[timekey_keep]
+    ep <- ep[timekey_keep]
   }
 
   # failsafe to stop while loop if needed - check again to make sure we don't end on a transition, preposition, or timekeyword

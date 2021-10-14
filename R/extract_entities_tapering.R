@@ -139,6 +139,23 @@ extract_entities_tapering <- function(phrase, p_start, d_stop, unit, frequency_f
   phrase_orig <- phrase
   p_start <- p_start-1
 
+  # generic extraction
+  xtra_args <- list(...)
+  ent_types <- sub('_dict', '', grep('_dict', names(xtra_args), value = TRUE))
+  known_types <- c('dosechange','doseschedule','duration','frequency','intaketime','preposition','route','timekeyword','transition')
+  oth_types <- setdiff(ent_types, known_types)
+  oth_l <- length(oth_types)
+  oth_ent <- vector('list', oth_l)
+  if(oth_l) {
+    for(i in seq(oth_l)) {
+      ent_type <- oth_types[i]
+      oth_args <- list(phrase = phrase, type = ent_type, fun = NULL, ...)
+      df <- do.call(extract_type, oth_args)
+      my_ent <- entity_metadata(phrase, p_start, df)
+      oth_ent[[i]] <- data.frame(entity = ent_type, expr = my_ent)
+    }
+  }
+
   ### DURATION ####
   df <- extract_type(phrase, 'duration', duration_fun, ...)
   duration <- entity_metadata(phrase, p_start, df)
@@ -710,13 +727,12 @@ extract_entities_tapering <- function(phrase, p_start, d_stop, unit, frequency_f
 
 
   #### Building results ###
+  special_expr <- c("done", "off", "stop", "last", "completed", "complete", "discontinue", "discontinuing", "finished", "dosepack", "dose pack")
 
   # If no strength/dose was found, then set all values to NA (only want when associated dose info is present)
   if(length(dosestr)==0){dosestr <- NA}
   if(all(sapply(list(strength, doseamt, dosestr, duration), function(x) all(is.na(x))))){
-    if(!any(tolower(gsub(";.+", "", doseschedule)) %in% c("done", "off", "stop", "last", "completed",
-                                                          "complete", "discontinue", "discontinuing",
-                                                          "finished", "dose pack", "dosepack"))) {
+    if(!any(tolower(gsub(";.+", "", doseschedule)) %in% special_expr)) {
       return(empty_result)
     }
   }
@@ -746,51 +762,46 @@ extract_entities_tapering <- function(phrase, p_start, d_stop, unit, frequency_f
   ldisp <- sum(!is.na(disp))
   lref <- sum(!is.na(refill))
 
-
   not_found <- entities[which(c(lf, lit, lstr, lda, lds, ldur, lrt, lt, lprep, ltk, ldsc, ldch, ldisp, lref) == 0)]
   found <- setdiff(entities, not_found)
 
-  res_nf <- if(length(not_found) > 0){
-    data.frame(entity = not_found, expr = rep(NA, length(not_found)))
+  res_f <- NULL
+  res_nf <- NULL
+  if(length(not_found) > 0) {
+    res_nf <- data.frame(entity = not_found, expr = NA_character_)
   }
-
-  res_f <- if(length(found) > 0){
+  if(length(found) > 0) {
     found_res <- ent_res[names(ent_res) %in% found]
-    do.call(rbind, lapply(seq(found_res), function(i){
-      fr <- found_res[[i]]
-
-      data.frame(entity = rep(found[i], length(fr)),
-                 expr = fr)
-    }))
+    fr <- vector('list', length(found_res))
+    for(i in seq_along(found_res)) {
+      fr[[i]] <- data.frame(entity = found[i], expr = found_res[[i]])
+    }
+    # include other generic entities
+    res_f <- do.call(rbind, c(fr, oth_ent))
   }
-
-
-
-  if(is.null(res_nf)){
-    res <- res_f
-  }else{
-    res <- rbind.data.frame(res_nf, res_f)
-  }
+  res <- rbind.data.frame(res_nf, res_f)
   res <- unique(res)
-  res <- res[!is.na(res[,'expr']),]
+  res <- res[!is.na(res[,'expr']) & !is.na(res[,'entity']),]
 
   ## !! RESTRICT EXTRACTED ENTITIES - only consider distances between dose-critical entities (str/dose, doseamt, duration)
   res$pos = gsub(".+;", "", res$expr)
   res$start = as.numeric(gsub(":.+", "", res$pos))
   res$stop = as.numeric(gsub(".+:", "", res$pos))
-  res <- res[order(res$start, res$stop),]
-  res <- res[!is.na(res[,'entity']),]
+  res <- res[order(res[,'start'], res[,'stop'], !(res[,'entity'] %in% entities)),]
+  # remove exact position duplicates
+  posKey <- do.call(paste, c(res[,c('start', 'stop')], sep = '|'))
+  res <- res[!duplicated(posKey),]
 
   # If expressions overlap, keep the longest match
-  if(nrow(res)>1){
-    start_match <- c((res$start[1:(nrow(res)-1)] == res$start[2:nrow(res)]),FALSE)
-    stop_match <- c(FALSE, (res$stop[2:nrow(res)] == res$stop[1:(nrow(res)-1)]))
-    dup <- c(start_match | stop_match)
+  resN <- nrow(res)
+  if(resN > 1) {
+    start_match <- c(res[-resN,'start'] == res[-1,'start'], FALSE)
+    stop_match <- c(FALSE, res[-1,'stop'] == res[-resN,'stop'])
+    dup <- start_match | stop_match
     res <- res[!dup,]
   }
 
-
-  res$rn <- 1:nrow(res)
+  res[,'rn'] <- seq(nrow(res))
   res1 <- res[!(res[,'entity'] %in% c("Preposition", "Transition")),]
 
   # Only look for gaps if there is more than one row
@@ -884,13 +895,10 @@ extract_entities_tapering <- function(phrase, p_start, d_stop, unit, frequency_f
 
   # Check for key entities again
   if(!any(res$entity %in% c("Strength", "DoseAmt", "DoseStrength", "Duration"))){
-    if(!any(tolower(gsub(";.+", "", doseschedule)) %in% c("done", "off", "stop", "last", "completed",
-                                                          "complete", "discontinue", "discontinuing",
-                                                          "finished", "dose pack", "dosepack"))) {
+    # if no key entity and no special expression, extraction failed
+    if(!any(tolower(gsub(";.+", "", doseschedule)) %in% special_expr)) {
       return(empty_result)
     }
   }
-
-#   res <- res[,c("entity", "expr")]
-  return(res)
+  res
 }
