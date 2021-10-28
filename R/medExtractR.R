@@ -264,16 +264,19 @@ medExtractR <- function(note, drug_names, window_length, unit, max_dist = 0,
   rm_index <- unique(unlist(sapply(tolower(drug_names), function(x){
     grep(x, tolower(dl))
   })))
-  dl <- dl[-rm_index]
-  dl_wb <- paste0("\\b", tolower(dl), "\\b")
-  dl_wb <- gsub("([+()])", "\\\\\\1", dl_wb)
-  other_drugs <- stringi::stri_locate_all_regex(note_lc, dl_wb, omit_no_match = TRUE)
-  other_drugs <- other_drugs[lengths(other_drugs) > 0]
-  if(length(other_drugs)) {
-    other_drugs_m <- do.call(rbind, other_drugs)
-    other_drugs_start <- sort(other_drugs_m[,1])
-  } else {
-    other_drugs_start <- numeric(0)
+  if(length(rm_index)) {
+    dl <- dl[-rm_index]
+  }
+  other_drugs_start <- numeric(0)
+  if(length(dl)) {
+    dl_wb <- paste0("\\b", tolower(dl), "\\b")
+    dl_wb <- gsub("([+()])", "\\\\\\1", dl_wb)
+    other_drugs <- stringi::stri_locate_all_regex(note_lc, dl_wb, omit_no_match = TRUE)
+    other_drugs <- other_drugs[lengths(other_drugs) > 0]
+    if(length(other_drugs)) {
+      other_drugs_m <- do.call(rbind, other_drugs)
+      other_drugs_start <- sort(other_drugs_m[,1])
+    }
   }
 
   # are other drugs within string window?

@@ -1,0 +1,40 @@
+#' Counts Strings in Text
+#'
+#' This function counts occurrences of text within one or more phrases.
+#'
+#' @param strings character vector; value(s) to find
+#' @param search_data character vector; phrase(s) where values may exist
+#' @param ignore.case logical; indicates if spelling case matters, defaulting to \sQuote{TRUE}
+#'
+#' @return list with two elements; \sQuote{cntByTotal} contains total occurrences
+#' and \sQuote{cntByData} contains occurrences for each element in \sQuote{search_data}
+#'
+#' @examples
+#' note1 <- "I am the very model of a modern major general
+#' I've information vegetable, animal, and mineral
+#' I know the kings of England, and I quote the fights historical
+#' From marathon to Waterloo in order categorical;
+#' I'm very well acquainted, too, with matters mathematical,
+#' I understand equations both the simple and quadratical
+#' About binomial theorem I'm teeming with a lot o' news,
+#' With many cheerful facts about the square of the hypotenuse"
+#' note2 <- "The quick brown fox jumps over the lazy dog"
+#' string_counts(c('I','the','couth'), c(note1, note2))
+#' @export
+
+string_counts <- function(strings, search_data, ignore.case = TRUE) {
+  allsrch <- do.call(rbind, lapply(strings, stringPlace, search_data, stringPlaceExact, ignore.case = ignore.case))
+  total.cnt <- as.data.frame(table(allsrch[,'value']), stringsAsFactors = FALSE)
+  names(total.cnt) <- c('value','Freq')
+
+  keys <- do.call(paste, c(allsrch, sep = '|'))
+  tk <- table(keys)
+  allsrch[,'Freq'] <- unname(tk[match(keys, names(tk))])
+  allsrch <- allsrch[!duplicated(keys),]
+  file.cnt <- allsrch[order(allsrch[,'place']),]
+
+  total.cnt <- total.cnt[order(total.cnt[,'Freq'], decreasing = TRUE),]
+  rownames(total.cnt) <- NULL
+  rownames(file.cnt) <- NULL
+  list(cntByTotal = total.cnt, cntByData = file.cnt)
+}

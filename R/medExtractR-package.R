@@ -14,7 +14,7 @@
 #'
 #' @importFrom stringr str_extract str_extract_all str_replace_all
 #' @importFrom stringi stri_locate_all_regex
-#' @importFrom utils aregexec data
+#' @importFrom utils adist aregexec data
 #'
 #' @examples
 #' \donttest{

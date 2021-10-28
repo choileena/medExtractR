@@ -197,43 +197,56 @@ medExtractR_tapering <- function(note, drug_names,
   lmi <- split(mi, mi[,'start_pos'])
   match_info <- do.call(rbind, lapply(lmi, function(dd) {
     ddl <- dd[,'length']
-    dd[ddl == max(ddl),,drop = FALSE]
+    # in the rare case where match has same `start_pos` and `length`, then it's a complete duplicate
+    # rather than `ddl == max(ddl)`, take first max
+    dd[which.max(ddl),,drop = FALSE]
   }))
 
   nr <- nrow(match_info)
 
   # If drug names overlap, keep the longer name
-  if(nr > 1){
+  # unless, one name is an exact match
+  if(nr > 1) {
     x <- table(match_info$start_pos)
-    if(any(x>1)){
+    if(any(x>1)) {
       ix <- names(x)[which(x>1)]
 
       for(y in ix) {
         pos_at_y <- match_info[,'start_pos'] == y
-        mi_end_pos <- match_info[,'start_pos'] + match_info[,'length']
-        max_end_pos <- max(mi_end_pos[pos_at_y])
-        rm_row <- which(pos_at_y & mi_end_pos < max_end_pos)
+        # if one of the matches is a misspelling, use the exact match
+        dup_but_exact <- match(tolower(match_info[pos_at_y, 'drug']), tolower(drug_names))
+        if(sum(!is.na(dup_but_exact)) == 1) {
+          rm_row <- which(pos_at_y)[is.na(dup_but_exact)]
+        } else {
+          mi_end_pos <- match_info[,'start_pos'] + match_info[,'length']
+          max_end_pos <- max(mi_end_pos[pos_at_y])
+          rm_row <- which(pos_at_y & mi_end_pos < max_end_pos)
+        }
         match_info <- match_info[-rm_row,]
       }
-
     }
-    x <- table(match_info$start_pos + match_info$length)
-    if(any(x>1)){
+
+    mi_end_pos <- match_info[,'start_pos'] + match_info[,'length']
+    x <- table(mi_end_pos)
+    if(any(x>1)) {
       ix <- names(x)[which(x>1)]
 
       for(y in ix) {
-        mi_end_pos <- match_info[,'start_pos'] + match_info[,'length']
         pos_at_y <- mi_end_pos == y
-        min_start_pos <- min(match_info[pos_at_y,'start_pos'])
-        rm_row <- which(pos_at_y & match_info[,'start_pos'] > min_start_pos)
+        dup_but_exact <- match(tolower(match_info[pos_at_y, 'drug']), tolower(drug_names))
+        if(sum(!is.na(dup_but_exact)) == 1) {
+          rm_row <- which(pos_at_y)[is.na(dup_but_exact)]
+        } else {
+          min_start_pos <- min(match_info[pos_at_y,'start_pos'])
+          rm_row <- which(pos_at_y & match_info[,'start_pos'] > min_start_pos)
+        }
         match_info <- match_info[-rm_row,]
+        mi_end_pos <- mi_end_pos[-rm_row]
       }
-
     }
   }
   # Update
   nr <- nrow(match_info)
-
 
   note_lc <- tolower(note)
 
@@ -256,21 +269,22 @@ medExtractR_tapering <- function(note, drug_names,
   rm_index <- unique(unlist(sapply(tolower(drug_names), function(x){
     grep(x, tolower(dl))
   })))
-  dl <- dl[-rm_index]
-  dl_wb <- paste0("\\b", tolower(dl), "\\b")
-  # escape some problematic characters
-  dl_wb <- gsub("([+()])", "\\\\\\1", dl_wb)
-
-
-  other_drugs <- stringi::stri_locate_all_regex(note_lc, dl_wb, omit_no_match = TRUE)
-  other_drugs <- other_drugs[lengths(other_drugs) > 0]
-  other_drugs_m <- do.call(rbind, other_drugs) # position of other drugs (possibly return for post-processing with other entities) - alternative to line 171 above (adjacent only from drug name forward to next drug name?)
-  other_drugs_m <- if(is.null(other_drugs_m)){
-    other_drugs_m
-  }else{
-    if(nrow(other_drugs_m)>1){other_drugs_m[order(other_drugs_m[,1]),]}else{other_drugs_m}
+  if(length(rm_index)) {
+    dl <- dl[-rm_index]
   }
+  other_drugs_m <- NULL
+  if(length(dl)) {
+    dl_wb <- paste0("\\b", tolower(dl), "\\b")
+    # escape some problematic characters
+    dl_wb <- gsub("([+()])", "\\\\\\1", dl_wb)
 
+    other_drugs <- stringi::stri_locate_all_regex(note_lc, dl_wb, omit_no_match = TRUE)
+    other_drugs <- other_drugs[lengths(other_drugs) > 0]
+    other_drugs_m <- do.call(rbind, other_drugs) # position of other drugs (possibly return for post-processing with other entities) - alternative to line 171 above (adjacent only from drug name forward to next drug name?)
+    if(!is.null(other_drugs_m) && nrow(other_drugs_m) > 1) {
+      other_drugs_m <- other_drugs_m[order(other_drugs_m[,1]),]
+    }
+  }
 
   ## Initial window length
   wndw_sp <- c(1, match_info[-nr,'start_pos'] + match_info[-nr,'length'] + 1)
