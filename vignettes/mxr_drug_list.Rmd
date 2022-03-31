@@ -23,7 +23,7 @@ medExtractR(note, drug_names, unit, window_length, max_dist, ...)
 
 where `...` refers to additional arguments to `medExtractR`. One of the key additional arguments is `drug_list`.
 
-- `drug_list`, a list of other drug names (besides the drug names of interest). This list is used to shorten the search window in which `medExtractR` looks for dosing entities by truncating at the nearest mentions of a competing drug name. By default, this calls `rxnorm_druglist`, a partially cleaned and processed list of brand name and ingredient drug names in the RxNorm database.$^{1}$ This list could also incorporate other competing information besides drug names, such as drug abbreviations, symptoms, procedures, or names of laboratory measurements.
+- `drug_list`, a list of other drug names (besides the drug names of interest). This list is used to shorten the search window in which `medExtractR` looks for dosing entities by truncating at the nearest mentions of a competing drug name. By default, this calls `rxnorm_druglist`, a partially cleaned and processed list of brand name and generic drug names in the RxNorm database.$^{1}$ This list could also incorporate other competing information besides drug names, such as drug abbreviations, symptoms, procedures, or names of laboratory measurements.
 
 The default `rxnorm_druglist` contains far more drug names than likely needed. This results in slow run times for both `medExtractR` and `medExtractR_tapering`. This vignette will demonstrate how to create your own `drug_list` for improved performance.
 
@@ -43,18 +43,21 @@ getNote <- function(x) paste(scan(x, '', sep = '\n', quiet = TRUE), collapse = '
 notes <- vapply(fn, getNote, character(1))
 ```
 
-Here's an example run with the last note. We're using the default argument for drug_list, the full rxnorm data.
+Here's an example run with the last note (note 7). We're using the default argument for drug_list, the full RxNorm data.
 
 ```{r}
 medExtractR(note = notes[7], drug_names = c("lamotrigine", "lamictal"),
   window_length = 130, unit = "mg", drug_list = "rxnorm")
 ```
 
-Let's take a look at this note. The text highlighted yellow are drugnames found in the rxnrom druglist. We want to extract entities associated with the drugnames highlighted in blue.
+Let's take a look at this note. We want to extract entities associated with the drugnames highlighted in blue (i.e., "lamotrigine", "lamictal").
+Note that there are several drug names (yellow highlighted) which should be recognized by medExtractR in order not to extract irrelevant
+entities not associated with the drug of our interest.
 
 ![note7](note_highlight.png)
 
-You can examine our druglist by loading `rxnorm_druglist`.
+To let medExtractR recognize drugs that are not of our interest, we need to provide a list of drugs. Unless specified otherwise, we use the list of drugs in the
+RxNorm database (`druglist = "rxnorm"`). You can examine this druglist by loading `rxnorm_druglist`.
 
 ```{r}
 data(rxnorm_druglist, package = 'medExtractR')
@@ -62,14 +65,14 @@ length(rxnorm_druglist)
 head(rxnorm_druglist)
 ```
 
-We can pass the full druglist directly to `medExtractR`.
+We can pass the full druglist directly to `medExtractR`. Note that the result will be equal to the previous example.
 
 ```{r}
 medExtractR(note = notes[7], drug_names = c("lamotrigine", "lamictal"),
   window_length = 130, unit = "mg", drug_list = rxnorm_druglist)
 ```
 
-We can even set `drug_list` to be empty, though this would lead to many false positives.
+We can even set `drug_list` to be empty (with NULL), though this would lead to many false positives.
 
 ```{r}
 medExtractR(note = notes[7], drug_names = c("lamotrigine", "lamictal"),
@@ -83,7 +86,7 @@ medExtractR(note = notes[7], drug_names = c("lamotrigine", "lamictal"),
   window_length = 130, unit = "mg", drug_list = 'lorazepam')
 ```
 
-Before running `medExtractR` we can search for drugname values present in our notes. If we restrict our `drug_list` to only these values, the `medExtractR` function will run much faster. To do this, we can use the `string_occurs` function. The first argument is a vector of character strings to find (ie, the full drug list). The second argument is a vector of text to search (ie, all of our notes). This function also has an argument for ignoring case (`ignore.case`) as well as the number of cores available for parallel processing (`nClust`, which requires the `parallel` package).
+Before running `medExtractR` we can search for drugname values present in our notes. If we restrict our `drug_list` to only these values, the `medExtractR` function will run much faster. To do this, we can use the `string_occurs` function. The first argument is a vector of character strings to find (i.e., the full drug list). The second argument is a vector of text to search (i.e., all of our notes). This function also has an argument for ignoring case (`ignore.case`) as well as the number of cores available for parallel processing (`nClust`, which requires the `parallel` package).
 
 ```{r}
 drug_check <- string_occurs(rxnorm_druglist, notes)
