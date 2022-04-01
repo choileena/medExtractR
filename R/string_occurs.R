@@ -37,7 +37,13 @@ string_occurs <- function(dict_list, haystack, ignore.case = TRUE, nClust = 2) {
 
   isFound <- function(pattern) any(stringi::stri_detect_regex(haystack, pattern, max_count = 1))
   if(nClust > 1 && requireNamespace("parallel", quietly = TRUE)) {
-    cl <- parallel::makeCluster(getOption('cl.cores', nClust))
+    nCores <- getOption('cl.cores', nClust)
+    cl <- tryCatch(parallel::makeCluster(nCores), error = function(e) {
+      # setup_strategy may be deprecated, so investigate
+      parallel::makeCluster(nCores, setup_strategy = "sequential")
+    })
+  }
+  if(!is.null(cl)) {
     appears <- parallel::parSapply(cl, patt, isFound, USE.NAMES = FALSE)
     parallel::stopCluster(cl)
   } else {
