@@ -120,7 +120,7 @@ medExtractR <- function(note, drug_names, window_length, unit, max_dist = 0,
   def.saf <- getOption('stringsAsFactors')
   on.exit(options(stringsAsFactors = def.saf))
   options(stringsAsFactors = FALSE)
-  if(length(dosechange_dict) == 1L && dosechange_dict[1] == 'default') {
+  if(inherits(dosechange_dict, 'character') && length(dosechange_dict) == 1L && dosechange_dict == 'default') {
     e <- new.env()
     data("dosechange_vals", package = 'medExtractR', envir = e)
     dosechange_dict <- get("dosechange_vals", envir = e)
