@@ -89,6 +89,7 @@ medExtractR(note = notes[7], drug_names = c("lamotrigine", "lamictal"),
 Before running `medExtractR` we can search for drugname values present in our notes. If we restrict our `drug_list` to only these values, the `medExtractR` function will run much faster. To do this, we can use the `string_occurs` function. The first argument is a vector of character strings to find (i.e., the full drug list). The second argument is a vector of text to search (i.e., all of our notes). This function also has an argument for ignoring case (`ignore.case`) as well as the number of cores available for parallel processing (`nClust`, which requires the `parallel` package).
 
 ```{r}
+parallel::makeCluster(2, setup_strategy = "sequential")
 drug_check <- string_occurs(rxnorm_druglist, notes)
 names(drug_check)
 lengths(drug_check)
